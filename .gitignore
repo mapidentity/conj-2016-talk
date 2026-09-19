@@ -1,0 +1,17 @@
+# Big, high-churn build output: rewritten wholesale by presenter/refresh.sh
+# and undeltifiable, so it stays out of history. Rebuild with:
+#   bash presenter/refresh.sh --deck-only
+/livecode-presenter.html
+/livecode-presenter.pdf
+
+# Committed on purpose, for contrast: figures/ costs a full re-capture to
+# reproduce (clean demo tree, four step-branch boots, a headless browser),
+# and slides.html is 16K. Both are cheap to carry.
+
+# Build junk
+__pycache__/
+*.pyc
+
+# Editor / OS droppings
+.DS_Store
+*.swp
