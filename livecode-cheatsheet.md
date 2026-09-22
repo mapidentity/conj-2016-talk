@@ -46,14 +46,15 @@
 
 ```clojure
 (ns demo.dev.watcher
-  "Polls src/, dev/ and resources/ for changes, loads what changed, and asks
-  the browsers to reload — once per batch, and never onto a failed load."
+  "Polls src/, dev/, resources/ and static/ for changes, loads what changed,
+  and asks the browsers to reload — once per batch, and never onto a failed
+  load."
   (:require
     [clojure.java.io :as io]
     [clojure.string :as str]
     [demo.dev.socket :as socket]))
 
-;; --- a tiny file watcher: poll modified times under src/, dev/ and resources/ ---
+;; --- a tiny file watcher: poll modified times under the four source dirs ---
 ;; (the real app uses java.nio's WatchService; polling behaves the same on
 ;; every OS, which is what you want on stage)
 
@@ -67,7 +68,7 @@
              (str/ends-with? n ".js")))))
 
 (defn- modified-times
-  "Path → last-modified for every file under src/, dev/ and resources/.
+  "Path → last-modified for every file under the watched dirs.
   Comparing two of these maps is the whole change detector — so it stats
   everything and leaves the filtering to the diff (watched?)."
   []
@@ -76,7 +77,7 @@
           (filter #(.isFile ^java.io.File %))
           (map (juxt #(.getPath ^java.io.File %)
                      #(.lastModified ^java.io.File %))))
-    ["src" "dev" "resources"]))
+    ["src" "dev" "resources" "static"]))
 
 (defn- load-changed!
   "Load a changed .clj (other types need no load). True when the browser may
@@ -115,10 +116,10 @@
                     (recur current)))))
         (.setDaemon true)
         (.start)))
-    (println "watching src/ + dev/ + resources/")))
+    (println "watching src/ + dev/ + resources/ + static/")))
 ```
 
-**§2c CHECKOUT — `resources/dev/reload.js`** (landed by `step-1`; slide 6):
+**§2c CHECKOUT — `static/dev/reload.js`** (landed by `step-1`; slide 6):
 
 ```js
 // Dev-only: refresh the page when the server says the source reloaded.
@@ -143,8 +144,8 @@ render boundary, and `start!`:
 ```clojure
 (ns demo.dev
   (:require
-    [clojure.java.io :as io]
     [demo.dev.socket :as socket]
+    [demo.dev.static :as static]
     [demo.dev.watcher :as watcher]
     [demo.main :as main]
     [demo.views :as views]))
@@ -159,14 +160,12 @@ render boundary, and `start!`:
         [:script {:src "/dev/reload.js"}]))
 
 (defn- dev-route
-  "The dev endpoints; nil for anything that is the app's."
+  "The dev endpoints, then anything under static/ — the dev scripts among
+  them. nil for whatever is left, which is the app's."
   [req]
   (case (:uri req)
     "/dev/ws" (socket/ws-handler req)
-    "/dev/reload.js" {:status 200
-                      :headers {"Content-Type" "text/javascript"}
-                      :body (slurp (io/resource "dev/reload.js"))}
-    nil))
+    (static/file (:uri req))))
 
 (defn wrap-dev
   "Middleware around the app: answers the dev endpoints, and renders every
@@ -354,8 +353,8 @@ file reloads via plain `load-file`):
         (load-views!))))
 ```
 
-…and in `dev.clj`'s `start!`: `(watcher/load-views!)` before
-`(watcher/start-watcher!)`.
+…and in `dev.clj`'s `start!`: `(watcher/load-views!)` as the *first* line —
+before the server starts, so no request can ever be served from untagged views.
 The second branch of `load-clj!` is what keeps the rest of the talk honest:
 every later section edits the *engine* and the views re-tag themselves.
 
@@ -364,7 +363,7 @@ every later section edits the *engine* and the views re-tag themselves.
 ```clojure
 (demo.dev.watcher/load-views!)
 (meta (demo.views/recipe-card (first demo.main/recipes)))
-;; => {:line 14, :column 3, :end-line 29, :end-column 64, :file "demo/views.clj"}
+;; => {:line 14, :column 3, :end-line 31, :end-column 64, :file "demo/views.clj"}
 ```
 
 (reader meta is positional-first; the assoc'd `:file` prints **last**)
@@ -421,18 +420,11 @@ apart, element by element.
 **§6a PASTE/CHECKOUT — the overlay:**
 
 ```
-git restore -s step-4 -- resources/dev/inspector.js
+git restore -s step-4 -- static/dev/inspector.js
 ```
 
-then TYPE the route in `dev.clj`'s `dev-route`:
-
-```clojure
-    "/dev/inspector.js" {:status 200
-                         :headers {"Content-Type" "text/javascript"}
-                         :body (slurp (io/resource "dev/inspector.js"))}
-```
-
-and the script tag in `dev-body`:
+No route to add — `dev-route` already serves anything under `static/`. Just
+the script tag in `dev-body`:
 
 ```clojure
   (list (inspector/tag-tree body)
@@ -686,7 +678,7 @@ terminal shows both reloads). Hover:
 **§8c CHECKOUT — the glue (relay roles, editor push, highlight JS, agent):**
 
 ```
-git restore -s step-6 -- dev/demo/ resources/dev/inspector.js .joyride/scripts/workspace_activate.cljs
+git restore -s step-6 -- dev/demo/ static/dev/inspector.js .joyride/scripts/workspace_activate.cljs
 ```
 
 Then show the `socket.clj` + `editor.clj` diff (45s): clients get roles (`hello`/`cursor` mark

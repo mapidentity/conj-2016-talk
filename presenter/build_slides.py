@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-r"""livecode-talk.md → slides.html: the ten bookend slides.
+r"""livecode-talk.md → slides.html: the bookend slides.
 
 The slides are defined inside the run-sheet, each in a
 `<!-- slide N · name -->` … `<!-- /slide -->` block placed right after the

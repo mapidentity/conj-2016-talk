@@ -8,7 +8,15 @@
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; background: #16141f; color: #ece9f1; }
-  body { font: 28px/1.45 system-ui, sans-serif; overflow: hidden; }
+  /* The deck is sized from this one root — every size below is em-relative, so the
+     slides scale with the viewport instead of clipping on a smaller projector.
+     min(vh, vw) holds the 1920x1080 design proportional at any aspect ratio (28px at
+     1080p, and it shrinks by width on a 4:3 beamer). No clamp() floor on purpose:
+     a floor would bring the clipping back below it. */
+  body {
+    font-family: system-ui, sans-serif; font-size: min(2.593vh, 1.458vw);
+    line-height: 1.45; overflow: hidden;
+  }
   .slide {
     display: none; height: 100vh; padding: 8vh 10vw;
     flex-direction: column; justify-content: center; gap: 1.2em;
@@ -21,7 +29,7 @@
   .green { color: #34d399; }
   code, pre {
     font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
-    background: #211d30; border-radius: 8px;
+    background: #211d30; border-radius: .3em;
   }
   code { padding: .1em .35em; font-size: .92em; }
   pre { padding: .8em 1em; font-size: .8em; line-height: 1.5; overflow-x: auto; }
@@ -34,17 +42,21 @@
   pre .rm { display: block; color: #f6d9d9; background: rgba(248, 113, 113, .12); }
   /* inline figures (```svg fences) */
   .figure { display: flex; justify-content: flex-start; }
-  .figure svg { width: 100%; max-width: 64rem; height: auto; }
+  /* em, not rem: rem is the html root and would not follow the scaled body size */
+  .figure svg { width: 100%; max-width: 36.6em; height: auto; }
   pre code { background: none; padding: 0; }
   pre .cm { color: #6f7890; font-style: italic; } pre .st { color: #7ec699; } pre .kw { color: #e0a06a; }
   pre .bi { color: #b7a5ff; } pre .mt { color: #e28ac0; } pre .at { color: #e0a06a; }
   ul { padding-left: 1.1em; display: grid; gap: .55em; }
   li::marker { color: #8b7ff5; }
   .big { font-size: 1.35em; }
-  .rule { border-left: 6px solid #8b7ff5; padding: .4em 0 .4em .8em; }
+  .rule { border-left: .21em solid #8b7ff5; padding: .4em 0 .4em .8em; }
+  /* a remark on the block above — boxed, so it reads as an aside, not as body copy */
+  .note { border-left: .18em solid #8b7ff5; background: rgba(139, 127, 245, .10);
+          border-radius: 0 .3em .3em 0; padding: .5em .8em; color: #cdc5e4; font-size: .88em; }
   .num {
-    position: fixed; right: 18px; bottom: 12px;
-    font-size: 15px; color: #565070;
+    position: fixed; right: 1.19em; bottom: .79em;
+    font-size: .54em; color: #565070;
   }
   .steps { display: grid; grid-template-columns: 1fr 1fr; gap: .5em 2em; font-size: .85em; }
   .steps div { display: flex; gap: .6em; align-items: baseline; }
@@ -101,7 +113,7 @@
       (<span class="bi">when</span> (<span class="bi">every?</span> true? (<span class="bi">mapv</span> load-changed! (<span class="bi">sort</span> changed)))
         (socket/notify-reload!)))
     (<span class="bi">recur</span> current)))</code></pre>
-  <p>&gt; notify-reload! for every file changed in the last 200 milliseconds.</p>
+  <p class="note"><code>notify-reload!</code> for every file changed in the last 200 milliseconds.</p>
 </section>
 
 <!-- 5 · the socket -->
@@ -121,7 +133,7 @@
   (http/as-channel req
     {<span class="kw">:on-open</span>  (<span class="bi">fn</span> [ch] (<span class="bi">swap!</span> clients conj ch))
      <span class="kw">:on-close</span> (<span class="bi">fn</span> [ch _] (<span class="bi">swap!</span> clients disj ch))}))</code></pre>
-  <p class="quote">&gt; uses <code>org.clojure/data.json</code> to send a websocket message with <code>http-kit</code></p>
+  <p class="note">uses <code>org.clojure/data.json</code> to send a websocket message with <code>http-kit</code></p>
 </section>
 
 <!-- 6 · the browser side -->
@@ -136,43 +148,47 @@
 };</code></pre>
 </section>
 
-<!-- 7 · the void -->
+<!-- 7 · the question -->
 <section class="slide">
-  <h2>Prior / current art</h2>
-  <table class="void">
-    <tr><td>Hot code reloading</td><td>figwheel, shadow-cljs, Vite, many others</td></tr>
-    <tr><td>Element to code inspection</td><td>React and Svelte (dev mode) - via <code>__source</code> metadata</td></tr>
-  </table>
-</section>
-
-<!-- 8 · the question -->
-<section class="slide">
-  <h2>Why can’t I point at a pixel<br>and ask <span class="accent">which Clojure made it</span>?</h2>
+  <h1>☝ What do we need to point at a pixel<br>and ask <span class="accent">which Clojure made it</span>? 🮰</h1>
   <pre><code>&lt;<span class="bi">span</span> <span class="at">class</span>=<span class="st">"badge hot"</span>&gt;🌶 spicy&lt;/<span class="bi">span</span>&gt;</code></pre>
-  <p>…and why can’t my editor <span class="accent">ask the page</span>?</p>
-  <p class="rule sub">Why don’t we have this? · Can we have it? · How?</p>
 </section>
 
-<!-- 9 · why not: render deletes the structure -->
+<!-- 8 · why not: render deletes the structure -->
 <section class="slide">
-  <h2>Render erases the structure, on every request.</h2>
-  <pre><code>[<span class="kw">:span.badge.hot</span> <span class="st">"🌶 "</span> t]  ─►  <span class="st">"&lt;span class=\"badge hot\"&gt;🌶 spicy&lt;/span&gt;"</span>
- its line and column              …gone, and the class was never a string</code></pre>
+  <h1>🗺 source mapping</h1>
+  <h2>What we have</h2>
+  <pre><code>(hiccup2/html [<span class="kw">:span.badge.hot</span> <span class="st">"🌶 "</span> t])</code></pre>
+  <pre><code>&lt;<span class="bi">span</span> <span class="at">class</span>=<span class="st">"badge hot"</span>&gt;🌶 spicy&lt;/<span class="bi">span</span>&gt;</code></pre>
+  <h2>What we need</h2>
+  <pre><code>(hiccup2/html {<span class="kw">:data-src</span> <span class="st">"demo/views.clj:21:8"</span>} [<span class="kw">:span.badge.hot</span> <span class="st">"🌶 "</span> t])</code></pre>
+  <pre><code>&lt;<span class="bi">span</span> <span class="at">class</span>=<span class="st">"badge hot"</span> <span class="at">data-src</span>=<span class="st">"demo/views.clj:21:8"</span>&gt;🌶 spicy&lt;/<span class="bi">span</span>&gt;</code></pre>
+</section>
+
+<!-- 9 · how? -->
+<section class="slide">
+  <h1>How?</h1>
   <ul>
-    <li>React keeps a live component tree — its devtools just read it</li>
-    <li>we flatten <b>our own data</b> with <b>our own render fn</b> — for good reasons</li>
-    <li>what gets deleted <b>by choice</b><br>can be kept <span class="green">by choice</span></li>
+    <li>✅ We already know which source file is loaded;</li>
+    <li>❗ Line &amp; column data; only <span class="accent"><b>R</b></span>ead from <span class="accent"><b>R</b></span>EPL touches source files</li>
+    <li>🤔 Can it add metadata to hiccup forms?</li>
   </ul>
+  <pre><code>(read-string <span class="st">"[:span.badge.hot \"🌶 \" t]"</span>)
+→ [<span class="kw">:span.badge.hot</span> \"🌶 \" t]
+(<span class="bi">meta</span> …) → nil</code></pre>
 </section>
 
 <!-- 10 · the insight -->
 <section class="slide">
-  <h2>Three facts that make it a small tool</h2>
-  <ul class="big">
-    <li>the default reader: <code>(meta [:div …])</code> → <code>nil</code></li>
-    <li><code>tools.reader</code>: <code>:line :column :end-line :end-column</code> —<br>on <b>every nested vector</b></li>
-    <li>the compiler <b>preserves</b> a literal’s metadata<br>onto the runtime value — even in loops</li>
-  </ul>
+  <h1>clojure.tools reader</h1>
+  <pre><code>(with-open [r (clojure.tools.reader.reader-types/indexing-push-back-reader
+               <span class="st">"[:span.badge.hot
+                \"🌶 \"
+                t]"</span>)]
+  (-&gt; (clojure.tools.reader/read r)
+      (<span class="bi">nth</span> 2)
+      (#(vector (<span class="bi">name</span> %) (<span class="bi">meta</span> %)))))
+→ [<span class="st">"t"</span> {<span class="kw">:column</span> 17, <span class="kw">:end-column</span> 18, <span class="kw">:end-line</span> 3, <span class="kw">:line</span> 3}]</code></pre>
   <p class="rule">Load views through tools.reader → every element knows its source.<br>The position <b>is</b> part of the value.</p>
 </section>
 

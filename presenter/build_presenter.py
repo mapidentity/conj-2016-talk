@@ -8,11 +8,11 @@
 #                              comments (invisible in rendered markdown); the
 #                              lines inside the comment say what is ON THE SCREEN
 #                              for that page (see README.md, "Page markers").
-#   ../livecode-cheatsheet.md  code blocks, addressed by label (§2a, §2d#2) or by
-#                              a line they contain (~"(defn tr-load!").
-#                              Also holds the ten bookend slides, as
+#                              It also holds the bookend slides, as
 #                              `<!-- slide N · name -->` … `<!-- /slide -->` blocks
 #                              (build_slides.py renders them; see README.md, "Slides").
+#   ../livecode-cheatsheet.md  code blocks, addressed by label (§2a, §2d#2) or by
+#                              a line they contain (~"(defn tr-load!").
 #   ../figures/talk/*.png      screenshots, by name (capture.cjs).
 #
 # Code is syntax-highlighted at build time; screenshots are embedded as resized
@@ -156,6 +156,9 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
 .slide .figure svg { width:100%; height:auto; display:block; }
 .slide .sub { color:#9d94b8; } .slide .big { font-size:1.12em; }
 .slide .rule { border-left:4px solid #8b7ff5; padding:.5mm 0 .5mm 3.5mm; }
+/* a remark on the block above — boxed, so it reads as an aside, not as body copy */
+.slide .note { border-left:3px solid #8b7ff5; background:rgba(139,127,245,.10);
+               border-radius:0 1.5mm 1.5mm 0; padding:1mm 2.5mm; color:#cdc5e4; font-size:.92em; }
 .slide table { border-collapse:collapse; font-size:9.5pt; margin:1mm 0; }
 .slide th, .slide td { text-align:left; padding:1.3mm 6mm 1.3mm 0; }
 .slide th { color:#9d94b8; font-weight:600; } .slide tr+tr { border-top:1px solid #2c2740; }

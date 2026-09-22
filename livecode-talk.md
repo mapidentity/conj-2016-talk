@@ -93,7 +93,7 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 ---
 
-## §1 · The problem, and the chain that closes it (0:00–10:00) — slides 1–6
+## §1 · The problem, and the chain that closes it (0:00–9:21) — slides 1–6
 
 > The first three minutes are the abstract coming true in front of them —
 > same arc, same key phrases ("the div forgets it was ever Clojure code on a
@@ -157,7 +157,7 @@ Patrick de Kruif · Clojure/Conj 2026 {.sub}
 
 "I also left behind a development environment that I really liked. That tight connection between the code and the running application isn’t there anymore. Shopping around for existing tools turned up empty, and I *really* started feeling that when working without that again."
 
-<!-- page "A very simple app — and nothing to inspect it with" @1:00 [demo]
+<!-- page "A very simple app — and nothing to inspect it with" @3:12 [demo]
   shot s01-page "The recipe app: a featured recipe, filters, eight cards, ratings, icons. Server-rendered Hiccup, zero JavaScript. The spicy pills hang crooked." tall
 -->
 
@@ -191,7 +191,7 @@ Patrick de Kruif · Clojure/Conj 2026 {.sub}
 
 "There! it looks like it affects both featured and regular badges. But this edit, reload, refresh loop will get really annoying really fast and this is about the most basic of tooling that we're missing here."
 
-<!-- page "Save, and the page follows" @1:50
+<!-- page "Save, and the page follows" @5:47
   slide 2
 -->
 
@@ -215,7 +215,7 @@ Patrick de Kruif · Clojure/Conj 2026 {.sub}
 
 **[SLIDE 2: hot reload]** "I've set my editor to save when switching context. And when it does that, something should inform the server to reload the file. If that succeeds, something should let the browser know to do a page refresh. Of course I could let Calva or Emacs do the reloading but lets not rely on any particular editor unless we really have to. And of course, all the development tooling that we add should not ship to production. Using macros would be one way to do that, but deps tools gives us something out of the box."
 
-<!-- page "One alias, and dev/ exists" @1:55
+<!-- page "One alias, and dev/ exists" @6:45
   slide 3
 -->
 
@@ -237,7 +237,7 @@ Patrick de Kruif · Clojure/Conj 2026 {.sub}
 
 **[SLIDE 3: deps.edn]** "We'll start the REPL with an extra `:dev` alias. This split ensures that any library dependency or source file under that alias is excluded from the production build."
 
-<!-- page "Watch the files" @2:00
+<!-- page "Watch the files" @7:14
   slide 4
 -->
 
@@ -264,7 +264,7 @@ Patrick de Kruif · Clojure/Conj 2026 {.sub}
 
 **[SLIDE 4: the watcher]** "Watching for source file changes can be relatively easy, just poll every 200 milliseconds for any file change. Reload any and all that have been changed in the mean time."
 
-<!-- page "One socket" @2:05
+<!-- page "One socket" @7:44
   slide 5
 -->
 
@@ -293,7 +293,7 @@ uses `org.clojure/data.json` to send a websocket message with `http-kit` {.note}
 
 **[SLIDE 5: the socket]** "http-kit can trivially setup a websocket. We can use that to restore our connection to browser, similar to what Vite, figwheel, shadow-cljs and others do. Server sent events would be an option here too, but in this case I went with websockets."
 
-<!-- page "And the browser acts" @2:10
+<!-- page "And the browser acts" @8:17
   slide 6
 -->
 
@@ -324,12 +324,12 @@ ws.onmessage = function (e) {
 
 ---
 
-## §2 · The question, asked twice (10:00–11:30) — slides 7–8
+## §2 · The question, asked twice (9:21–10:38) — slides 7–8
 
 > The wire is in and the page still knows nothing about itself. Ask the
 > question here, answer *why not* here; everything after this is *how*.
 
-<!-- page "The question — said twice" @10:00
+<!-- page "The question — said twice" @9:21
   slide 7
 -->
 
@@ -347,7 +347,7 @@ can't I point at a pixel and ask which Clojure made it — and why can't my
 editor ask the *page*? Three smaller questions hide inside: why don't we
 have this? *Can* we have it? How? We'll keep asking those three, all talk."
 
-<!-- page "Why not: render deletes the structure" @10:45
+<!-- page "Why not: render deletes the structure" @9:59
   slide 8
 -->
 
@@ -376,13 +376,13 @@ have this? *Can* we have it? How? We'll keep asking those three, all talk."
 
 ---
 
-## §3 · Why not? Can we? (11:30–14:30) — slides 9–10, then REPL
+## §3 · Why not? Can we? (10:38–11:20) — slides 9–10, then REPL
 
 > The intellectual heart, run exactly on the triad: form (1) is the WHY NOT
 > shown live; forms (2)+(3) are the CAN WE. Slow down. Type all three; let
 > each result sit on screen for a breath.
 
-<!-- page "How? — what the reader could tell us" @11:30
+<!-- page "How? — what the reader could tell us" @10:38
   slide 9
 -->
 
@@ -402,7 +402,7 @@ have this? *Can* we have it? How? We'll keep asking those three, all talk."
 
 "The reader converts our source code file into actual data structures. To match this with line numbers, we need to do that in the reader. But our standard reader does not provide that. Should we build our own reader then?"
 
-<!-- page "The reader that keeps the position" @11:45 compact
+<!-- page "The reader that keeps the position" @10:58 compact
   slide 10
 -->
 
@@ -428,40 +428,39 @@ The position **is** part of the value. {.rule}
 
 ---
 
-## §4 · Keep the structure: `tr-load!` (14:30–18:00) → `step-2`
+## §4 · Keep the structure: `tr-load!` (11:20–14:56) → `step-2`
 
-<!-- page "tr-load! — load, but keep the lines" @14:30
+<!-- page "tr-load! — load, but keep the lines" @11:20
   code §4b "Not every vector is Hiccup: only vectors whose head is a bare HTML-tag keyword; the split strips `.class`/`#id` sugar."
   code §4d
 -->
 
 **[editor: `dev/demo/inspector.clj`, new file]**
-- **PASTE** the ns form + `html-tags` set (§4a). "A set of tag names —
-  boring, but it's the safety gate."
-- **TYPE** `element?` (§4b). "Not every vector is Hiccup — `let` bindings,
-  pull patterns, tuples. We only ever touch vectors whose head is a bare
-  HTML tag keyword; the split strips `.class`/`#id` sugar. This gate is what
-  makes everything else safe to apply blindly."
+- **PASTE** the ns form + `html-tags` (§4a). "Boring — but it's the safety
+  gate."
+- **TYPE** `element?` (§4b). "Not every vector is Hiccup: `let` bindings,
+  tuples, pull patterns. We only ever touch vectors whose head is a bare
+  HTML tag keyword. That gate is what makes everything after it safe to
+  apply blindly."
 - **PASTE** `add-file-meta` (§4c), one sentence over it: "tools.reader gives
-  line and column but not *which file* — one postwalk adds one key, and on
-  Clojure 1.12 postwalk preserves metadata on everything it rebuilds; that
-  guarantee is load-bearing."
-- **TYPE** `tr-load!` (§4d) — narrate the one subtlety: "the `ns` form is
+  line and column, but not *which file*. One postwalk, one key — and on 1.12
+  postwalk preserves metadata on everything it rebuilds. That guarantee is
+  load-bearing."
+- **TYPE** `tr-load!` (§4d). One subtlety, said once: "the `ns` form is
   evaluated *before* the body is read, because `::aliased` keywords resolve
   at *read* time. Get that order wrong and files with auto-resolved keywords
-  mysteriously fail."
+  fail mysteriously."
 - **PASTE** the watcher wiring in `watcher.clj` (§4e): `view-file?`,
-  `load-views!`, `load-clj!` + the call in `start!` — but deliver its two
-  beats out loud: "by naming convention, `views.clj` — so both view
-  namespaces, the page and the ui kit, load through it, and we don't pay
-  tools.reader on files with no Hiccup. Note what `load-clj!` really is:
-  *`tr-load!` is now the only path that loads views* — remember that
-  sentence; it comes back to bite in twenty minutes. And its second branch:
-  the views were compiled *by* the loader, so when anything else changes —
-  the loader itself included — re-tag them. That one line is going to quietly
-  carry every remaining section of this talk."
+  `load-views!`, `load-clj!` + the call in `start!`. Two beats, out loud:
+  "Views load by naming convention — `views.clj` — so both view namespaces
+  go through the loader, and files with no Hiccup never pay for
+  tools.reader." Then: "*`tr-load!` is now the only path that loads a view.*
+  Remember that sentence; it comes back to bite in twenty minutes. And its
+  second branch: the views were compiled *by* the loader, so when anything
+  else changes — the loader included — re-tag them. That one line quietly
+  carries the rest of this talk."
 
-<!-- page "A runtime value that knows its source" @17:00 [demo]
+<!-- page "A runtime value that knows its source" @14:17 [demo]
   repl ~"(demo.dev.watcher/load-views!)"
 -->
 
@@ -475,29 +474,29 @@ knowledge cross the wire?"
 
 ---
 
-## §5 · Carry it to the DOM: `tag-tree` (18:00–21:30) → `step-3`
+## §5 · Carry it to the DOM: `tag-tree` (14:56–18:06) → `step-3`
 
-<!-- page "tag-tree — metadata becomes attributes" @18:00
+<!-- page "tag-tree — metadata becomes attributes" @14:56
   code §5a "At the render boundary — after the views ran, before hiccup stringifies — one walk turns metadata into `data-src` / `data-name`. Elements without metadata pass through untouched."
   code §5b
 -->
 
 - **TYPE** `tag-tree` in `inspector.clj` (§5a). "The browser can't read
-  Clojure metadata, so at the render boundary — after the views ran, before
-  hiccup stringifies — one walk turns metadata into `data-src` and
-  `data-name` attributes. Elements without the metadata pass through
-  untouched." (Pre-decided fallback: if §5 starts later than 15:30, PASTE
-  the cond skeleton and type only the `assoc` of the two attributes — the
-  idea lives in those three lines.)
+  Clojure metadata. So at the render boundary — after the views ran, before
+  hiccup stringifies — one walk turns that metadata into `data-src` and
+  `data-name`. Elements without it pass through untouched."
+  *(Fallback if this section starts late: PASTE the `cond` skeleton, type
+  only the `assoc` of the two attributes — the idea lives in those three
+  lines.)*
 - **TYPE** the one-line change in `dev-body` (§5b): `body` →
-  `(inspector/tag-tree body)`. "Not a line in the app. The walk hangs off
-  the seam we bound in §1 — the render boundary, where hiccup meets the
-  stringifier; this app has exactly one; if yours renders fragments, tag
-  each boundary, or better, make it one helper. And in prod nothing binds
-  that seam, and nothing could: the walk isn't on the classpath. Structurally
+  `(inspector/tag-tree body)`. "Not a line of this is in the app. The walk
+  hangs off the seam — the render boundary, where hiccup meets the
+  stringifier. This app has exactly one; if yours renders fragments, funnel
+  them through one helper and tag there. And in prod nothing binds that
+  seam — nothing *could*: the walk isn't on the classpath. Structurally
   absent, not turned off."
 
-<!-- page "That div now remembers" @20:00 [demo]
+<!-- page "That div now remembers" @16:40 [demo]
   dom '<span class="badge hot" data-src="demo/views.clj:21:8">' "DevTools, on the same crooked pill from minute one — the whole thesis rendered into one line of HTML."
 -->
 
@@ -516,35 +515,35 @@ tell?"
 
 ---
 
-## §6 · The overlay, and a click that opens your editor (21:30–25:00) → `step-4`
+## §6 · The overlay, and a click that opens your editor (18:06–21:12) → `step-4`
 
-<!-- page "The overlay, the trust boundary, the dispatch" @21:30
+<!-- page "The overlay, the trust boundary, the dispatch" @18:06
   code ~"(defn handle-msg!" "Typed messages over one socket; the dispatch grows by adding cases — the hub never learns what they mean."
   code ~":on-receive (fn"
 -->
 
-- **PASTE** `static/dev/inspector.js` + its script tag (§6a) — no route: the
-  dev route already serves `static/` — then
-  walk THREE functions only (60–90s, don't read JS aloud): "`chain` walks up
-  the `data-src` ancestors — that's the breadcrumb; `sendOpen` peels
-  `file:line:col` and sends `{type: open}` down the same dev socket; the
-  click handler swallows the app's click while inspecting. 200 lines of
-  overlay, zero lines of framework."
+- **PASTE** `static/dev/inspector.js` + its script tag (§6a) — no route
+  needed; the dev route already serves `static/`. Then walk THREE functions,
+  60–90s, without reading JS aloud: "`chain` walks up the `data-src`
+  ancestors — that's the breadcrumb. `sendOpen` peels `file:line:col` and
+  sends `{type: open}` down the same dev socket. The click handler swallows
+  the app's click while inspecting. 200 lines of overlay, zero lines of
+  framework."
 - **PASTE** `resolve-src` + `handle-open!` into the new `editor.clj`, and
-  `origin-ok?` into `socket.clj` (§6b), narrating the ideas over the paste: "the border asks two questions.
-  Which files may be named? — a browser can send *any* string, so
-  canonicalize, require `.clj`, confine to `src/` with a real path check,
-  not a string prefix. And who may speak? — WebSockets aren't
-  same-origin-restricted, so any page you have open could knock; browsers
-  always announce their origin, native clients send none, so: no Origin, or
-  the Host we were reached on, everyone else gets a 403. And then the naive bridge:
-  `code -g file:line:col`. It works; it has one flaw we'll fix when the
-  editor joins the conversation."
+  `origin-ok?` into `socket.clj` (§6b). The border asks two questions —
+  narrate them over the paste: "Which files may be named? A browser can send
+  *any* string, so canonicalize, require `.clj`, confine to `src/` with a
+  real path check, not a string prefix. And who may speak? WebSockets aren't
+  same-origin-restricted, so any page you have open could knock — browsers
+  always announce their origin, native clients send none. So: no Origin, or
+  the Host we were reached on. Everyone else gets a 403." Then the naive
+  bridge: "`code -g file:line:col`. It works. It has one flaw, and we fix it
+  when the editor joins the conversation."
 - **TYPE** `handle-msg!` + the `:on-receive` line (§6c) — the dispatch is
   the shape worth typing: "typed messages over one socket; the dispatch
   grows by adding cases, and the hub never learns what they mean."
 
-<!-- page "From a pixel to a paren" @23:30 [demo]
+<!-- page "From a pixel to a paren" @20:03 [demo]
   shot s06-hover-badge "Hover → a box on the element and the breadcrumb of its tagged ancestors. Click → your editor jumps to `views.clj` 21:8."
 -->
 
@@ -565,9 +564,9 @@ What *made* this thing?"
 
 ---
 
-## §7 · Components: name what produced it (25:00–27:00) → `step-5`
+## §7 · Components: name what produced it (21:12–23:29) → `step-5`
 
-<!-- page "instrument-var! — the loader does it all" @25:00
+<!-- page "instrument-var! — the loader does it all" @21:12
   code §7b "The wrapper stamps the *var's* file and line onto the returned root; the `::orig` marker makes it idempotent, so reloads re-wrap cleanly."
   code §7c
 -->
@@ -575,19 +574,20 @@ What *made* this thing?"
 "Element positions can't answer 'what made this' — that needs the enclosing
 `defn`. The loader can supply it invisibly."
 
-- **PASTE** `tag-hiccup` (§7a) — "the one-element version of `tag-tree`;
+- **PASTE** `tag-hiccup` (§7a). "The one-element version of `tag-tree`: a
   no-op on anything that isn't a Hiccup element, and it never overwrites an
-  existing tag, so the innermost component wins."
+  existing tag — so the innermost component wins."
 - **PASTE** `instrument-var!` + `instrument-ns!` (§7b), then narrate the two
-  ideas over the pasted code, pointing: "the wrapper stamps the *var's* file
-  and line — always present after a defn — onto the returned root; the
-  `::orig` marker makes it idempotent, so reloads re-wrap cleanly. And we
-  map it over the whole namespace — wrapping a non-view fn is harmless, so
-  we don't have to pick functions." (Pasting here, not typing, is what buys
-  the knockout its slack — see the hard gate.)
+  ideas over the code, pointing: "the wrapper stamps the *var's* file and
+  line — always there after a `defn` — onto the returned root. The `::orig`
+  marker makes it idempotent, so reloads re-wrap cleanly. And we map it over
+  the whole namespace: wrapping a non-view fn is harmless, so we never have
+  to pick functions."
+  *(Pasting here rather than typing is what buys the knockout its slack —
+  see the hard gate.)*
 - **TYPE** the one added line in `tr-load!` (§7c): `(instrument-ns! …)`.
 
-<!-- page "The breadcrumb names the whole tower" @26:00 [demo]
+<!-- page "The breadcrumb names the whole tower" @22:47 [demo]
   shot s07-hover-star "After instrumenting: the breadcrumb now names the whole tower of components."
 -->
 
@@ -602,42 +602,43 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 
 ---
 
-## §8 · The reverse direction: your cursor drives the browser (27:00–32:00) → `step-6`
+## §8 · The reverse direction: your cursor drives the browser (23:29–27:12) → `step-6`
 
 > THE KNOCKOUT. Protect it (see the hard gate in the cuts section), and when
 > the stars light, stop talking for three full seconds.
 
-<!-- page "An index, an agent, a highlighter" @27:00
+<!-- page "An index, an agent, a highlighter" @23:29
   code §8b "Cursor → strings that are **byte-identical** to what we stamped into the DOM. The browser match is one attribute selector; no fuzzy matching anywhere."
   code §8c "Clients get a role (an editor announces itself); `handle-cursor!` broadcasts a highlight; `handle-open!` now *pushes* to the connected editor. The Joyride script is ClojureScript in VS Code's extension host."
 -->
 
-"This is the half almost nobody has, in any ecosystem. We need three small
-things: an index, an agent in the editor, and a highlighter."
+"This is the half almost nobody has, in any ecosystem. Three small things:
+an index, an agent in the editor, and a highlighter."
 
 - **PASTE** the index block (§8a: `view-index`, spans, `collect-elements`,
-  `index-ns!`, containment helpers) — "the same read pass we already do;
+  `index-ns!`, containment helpers). "The same read pass we already do —
   while we're there, remember every defn's span and every element literal's
-  span. Those *end* positions from minute eight — this is what they buy."
+  span. Those *end* positions we noticed back at the REPL: this is what they
+  buy."
 - **TYPE** `resolve-cursor` + the `index-ns!` line in `tr-load!` (§8b).
-  "Cursor to strings — and note they are *byte-identical* to what we stamped
-  into the DOM. The browser match will be one attribute selector. No fuzzy
-  matching anywhere."
+  "Cursor to strings — and they are *byte-identical* to what we stamped into
+  the DOM. The browser match is one attribute selector. No fuzzy matching
+  anywhere."
 - **CHECKOUT** the glue in one move (§8c):
   `git restore -s step-6 -- dev/demo/ static/dev/inspector.js
-  .joyride/scripts/workspace_activate.cljs` — then narrate the
-  `socket.clj` + `editor.clj` diff for 45s: "clients now carry a role — an editor announces itself;
+  .joyride/scripts/workspace_activate.cljs`. Then three narrations.
+  **The diff, 45s:** "clients now carry a role — an editor announces itself.
   `handle-cursor!` is seven lines: confine the path, `resolve-cursor`,
-  broadcast a highlight; and `handle-open!` now *pushes* opens to the
+  broadcast a highlight. And `handle-open!` now *pushes* opens to the
   connected editor — exact window, exact range — with `code -g` demoted to
-  fallback." Then the Joyride script, 30s: "ClojureScript running *inside*
+  fallback." **The Joyride script, 30s:** "ClojureScript running *inside*
   VS Code's extension host — the whole editor API, no extension to build or
   package. It reports the cursor, debounced, and receives the opens." Run
-  "Joyride: Run Workspace Script". One sentence for the JS: "the highlight
-  handler finds nodes by attribute — frame per component instance, strong
-  box on the element."
+  *Joyride: Run Workspace Script*. **The JS, one sentence:** "the highlight
+  handler finds nodes by attribute — a frame per component instance, a
+  strong box on the element."
 
-<!-- page "Your cursor drives the browser" @29:00 [demo]
+<!-- page "Your cursor drives the browser" @25:46 [demo]
   shots s08-desc-9 "cursor in `recipe-card`'s `[:p description]` → nine green boxes, one per card" | s08-badges-3 "cursor onto `[:span.badge]` → the three NEW badges"
 -->
 
@@ -649,7 +650,7 @@ component outlines. "Your cursor is driving the browser." Cursor onto
 spicy pills right beside them stay dark.** "Not a class selector: the page
 knows which line made which pill."
 
-<!-- page "The knockout — all forty-five stars" @30:00 [the knockout]
+<!-- page "The knockout — all forty-five stars" @26:23 [the knockout]
   shot s08-stars-45 "Cursor in `star`'s body, in the UI-kit namespace → all 45 stars on the page ignite." tall hero
 -->
 
@@ -664,9 +665,9 @@ one*?" **[point at the featured card]**
 
 ---
 
-## §9 · Call sites: telling instances apart (32:00–34:30) → `step-7` (CHECKOUT)
+## §9 · Call sites: telling instances apart (27:12–30:57) → `step-7` (CHECKOUT)
 
-<!-- page "Same function, two call sites, told apart" @32:00
+<!-- page "Same function, two call sites, told apart" @27:12
   bash "git switch -f step-7" "The watcher loads the new engine, re-tags the views, and reloads the page — `data-callsite` is in the DOM with no manual step."
   shots s09-grid-8 "grid `(recipe-card r)` → 8 grid cards; featured stays dark" | s09-featured-1 "`featured`'s `(recipe-card r)` → only the featured card"
 -->
@@ -684,7 +685,7 @@ fn becomes `(tag-callsite \"file:l:c\" (the-call …))`. Three guards make it
 safe: only *unqualified* heads naming fns this file defines; never inside
 threading macros or `quote`, where rewriting changes meaning; and every
 rebuilt form re-attaches its reader metadata — get that wrong and you
-silently break the element tags you built twenty minutes ago."
+silently break the element tags you built earlier in this talk."
 
 **[demo — the payoff pair]** `recipe-card` is called from TWO places: the
 grid's `for`, and `featured`.
@@ -695,7 +696,7 @@ grid's `for`, and `featured`.
    is minute one, answered: one line made all three spicy pills — and the
    page can now say which call made which, so I can give the big card its
    word and leave the grid alone."
-<!-- page "One crumb, two files" @33:30 [demo]
+<!-- page "One crumb, two files" @29:36 [demo]
   shot s09-hover-glyphs "The breadcrumb folds every component: `()` the call site, `λ` the definition. One crumb spans two files."
 -->
 
@@ -717,9 +718,9 @@ exactly when you should stop trusting me and ask: how does it *break*?"
 
 ---
 
-## §10 · The sharp edge (34:30–36:30) — slides 11–12
+## §10 · The sharp edge (30:57–34:45) — slides 11–12
 
-<!-- page "The re-def that strips every tag" @34:30
+<!-- page "The re-def that strips every tag" @30:57
   slide 11
 -->
 
@@ -738,21 +739,28 @@ The moment there are two ways to load a thing, one of them is wrong. {.sub}
 
 **[SLIDE 11: the re-def that strips every tag]** "Before you build this at
 home, the one thing that WILL bite you. Everything works because the loader
-applied the tags. Watch what happens when I go around it." **[live]** Calva:
-*Load/Evaluate buffer* on `views.clj` (a plain load, no tools.reader).
-"Perfectly good code, evaluated the way you eval Clojure every day. The page
-still *looks* fine — it was rendered before. Refresh it." **[F5]** → hover a
-card body: **dead. No boxes, no breadcrumbs.** Then hover a star: **still
-alive.** "Only the file I bypassed died — the ui kit was never re-evaled.
-That's exactly how it presents at home, and the partialness is what makes it
-so baffling: 'I evaluated a view and *some* of my elements lost their
-borders.'" Recover: **make a whitespace edit** in `views.clj`, then save —
-the buffer is *clean* after a Calva load, and saving an unmodified buffer
-writes nothing, so the watcher would never fire (rehearse this; a silent
-recovery fumble inside the section about silent failures would be brutal).
-Watcher tr-loads → page reloads itself → everything returns.
+applied the tags. Watch what happens when I go around it."
 
-<!-- page "Your REPL is the second loader" @35:15 [slide 11]
+> **[live]** Calva: *Load/Evaluate buffer* on `views.clj` — a plain load, no
+> tools.reader. Then **[F5]**.
+
+"Perfectly good code, evaluated the way you eval Clojure every day. The page
+still *looks* fine — it was rendered before. Refresh it." → hover a card
+body: **dead. No boxes, no breadcrumbs.** Then hover a star: **still alive.**
+"Only the file I bypassed died — the ui kit was never re-evaled. That's
+exactly how it presents at home, and the partialness is what makes it so
+baffling: 'I evaluated a view and *some* of my elements lost their
+borders.'"
+
+> Recover: **make a whitespace edit** in `views.clj`, then save. Watcher
+> tr-loads → page reloads itself → everything returns.
+
+*(Rehearse the recovery: after a Calva load the buffer is clean, and saving
+an unmodified buffer writes nothing — so without the edit the watcher never
+fires. A silent fumble inside the section about silent failures would be
+brutal.)*
+
+<!-- page "Your REPL is the second loader" @32:49 [slide 11]
   slide 11
 -->
 
@@ -766,7 +774,7 @@ views — or, the structural version, you make your editor's load path go
 ways to load a thing, one of them is wrong. That's true of every
 instrumentation system you'll ever build."
 
-<!-- page "Nothing ships" @35:45
+<!-- page "Nothing ships" @33:41
   slide 12
   repl ~"demo.views/*render-boundary*"
 -->
@@ -800,9 +808,9 @@ production. There, we still throw it away."
 
 ---
 
-## §11 · What it generalizes to + close (36:30–38:00) — slides 13–15
+## §11 · What it generalizes to + close (34:45–38:00) — slides 13–15
 
-<!-- page "What you take home" @36:30
+<!-- page "What you take home" @34:45
   slide 13
 -->
 
@@ -821,15 +829,15 @@ production. There, we still throw it away."
 
 **[SLIDE 13: three take-homes]**
 - "'Code is data' is usually sold with macros. This is the better demo:
-  because Hiccup is data, ~450 lines of Clojure bought a bidirectional
-  inspector — the same source-stamping trick JSX needs a build-time plugin
-  for, and half of it the framework inspectors don't have at all."
+  because Hiccup is data, ~450 lines bought a bidirectional inspector — the
+  source-stamping trick JSX needs a build plugin for, and a reverse
+  direction the framework inspectors don't have at all."
 - "Every system throws structure away at some boundary. Keep even a thread
   across it and loops close everywhere — logs that jump to code, errors that
   highlight UI." *(if behind: compress this bullet to one clause)*
 - "The highest-leverage tool is the small one you build for *your* system."
 
-<!-- page "Take the same walk" @37:00
+<!-- page "Take the same walk" @35:37
   slide 14
 -->
 
@@ -856,7 +864,7 @@ the production-shaped version, every trade-off argued:\
 version — classpath separation, morphing reloads, reconnect handling, every
 trade-off argued — is a chapter in the open companion book."
 
-<!-- page "Hiccup is just data. So inspect it." @37:30
+<!-- page "Hiccup is just data. So inspect it." @36:12
   slide 15
 -->
 

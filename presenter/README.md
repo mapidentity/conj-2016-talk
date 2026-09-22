@@ -77,7 +77,7 @@ node measure.cjs
 - `../../demo` is its own git repo with step branches `step-0`…`step-7`; `run-tag.sh`
   leaves it on a detached HEAD. **Put it back on `main` when done.**
 - Authoritative content sources the builder transcribes: `../livecode-talk.md`
-  (run-sheet: spoken lines and the 10 bookend slides), `../livecode-cheatsheet.md`
+  (run-sheet: spoken lines and the bookend slides), `../livecode-cheatsheet.md`
   (per-section code).
 
 ## Page markers (how the run-sheet becomes pages)
@@ -121,7 +121,7 @@ marker to split the page or mark it `compact`.
 
 ## Slides (how the run-sheet's slide blocks become `slides.html`)
 
-The ten bookend slides live in `livecode-talk.md`, each as a
+The bookend slides live in `livecode-talk.md`, each as a
 `<!-- slide N · name -->` … `<!-- /slide -->` block placed right after the page
 marker that first shows it (a later page can show it again with the same
 `slide N` item). `slides-template.html` holds their look; `build_slides.py`
@@ -163,7 +163,9 @@ for how views load. {.rule .big}
 | `==text==`, `++text++`, `~~text~~` | accent (purple), green, strike spans |
 
 The classes are the ones `slides-template.html` styles: `sub` (muted),
-`big`, `rule` (left bar), `accent`, `green`, `strike`, `steps`. Add a class
+`big`, `rule` (left bar, for the talk's assertions), `note` (boxed aside —
+a caption remarking on the block above it), `accent`, `green`, `strike`,
+`steps`. Add a class
 there when a slide needs a new look; add markdown syntax here only when the
 content cannot be said with the above. `slides.html` still opens standalone in
 a browser tab (arrow keys / click to advance) for the projector. The current
