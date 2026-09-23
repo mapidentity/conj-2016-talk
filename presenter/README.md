@@ -1,7 +1,7 @@
 # presenter/ — how the flip-through talk deck is generated
 
 Source for `../livecode-presenter.html` and `../livecode-presenter.pdf` — the
-28/29-page landscape presenter script for *Where Did This `<div>` Come From?*
+48-page landscape presenter script for *Where Did This `<div>` Come From?*
 (projector-left / speaker-notes-right, one talk beat per page).
 
 Everything here is **generated**: the builder contains no talk text. The
@@ -22,6 +22,13 @@ Edit those; never the deck.
   `slides-template.html` is its shell (CSS + arrow-key navigation).
   `build_presenter.py` imports it, so the deck always reads the same blocks and
   keeps them out of the speaker column. See "Slides" below.
+- **`diagram.py`** / **`diagram.css`** / **`diagram.js`** — "the map": the one
+  architecture diagram, written once in the run-sheet as a `<!-- diagram NAME · note -->`
+  block and shown state by state on slides. `diagram.py` parses the DSL and draws
+  each state (and each minimap) as SVG, `diagram.css` is its look, and `diagram.js`
+  plays its message flows in `slides.html`. Both builders inline the CSS, and
+  `build_slides.py` also inlines the JS, even when the run-sheet has no diagram.
+  See "Diagrams" below, and **`DIAGRAM.md`** for the DSL reference.
 - **`highlight.py`** — the build-time syntax highlighter (Clojure, JS, bash, HTML
   snippets), shared by the deck's code and REPL cards and the slides' fenced blocks.
 - **`topdf.cjs`** — renders the HTML to `../livecode-presenter.pdf` (A4 landscape).
@@ -157,6 +164,8 @@ for how views load. {.rule .big}
 | `\| a \| b \|` rows, with a `\|---\|---\|` row after the first | a table; the first row becomes the header |
 | ```` ```clojure ```` … ```` ``` ```` fenced block | `<pre><code>`, verbatim; syntax-highlighted when the fence names a language: `clojure`/`clj`, `html`/`dom`, `js`, `bash`/`sh` (no inline markup inside) |
 | ```` ```svg ```` … ```` ``` ```` fenced block | an inline figure: the SVG is passed through **verbatim** (not escaped) inside `<div class="figure">`. Use the slide palette (`#ece9f1` text, `#8b7ff5` accent, `#9d94b8` muted, `#211d30` chips) and a `viewBox` with no fixed width, so it scales in both `slides.html` and the deck |
+| ```` ```diagram NAME K ```` fence (empty body) | state K of the run-sheet's `diagram NAME` block, full size, filling the room below the heading. See "Diagrams" |
+| ```` ```minimap NAME K ID,ID… ```` fence (empty body) | state K as a small you-are-here inset beside the heading, with those parts lit. One per slide. See "Diagrams" |
 | `{.big}` on a line of its own | classes for the block that follows; `{.steps}` renders a list as the two-column step grid |
 | `… {.sub}` at the end of a paragraph, list item or table cell | classes for that paragraph / item / cell |
 | `**bold**`, `` `code` `` | inline |
@@ -165,10 +174,103 @@ for how views load. {.rule .big}
 The classes are the ones `slides-template.html` styles: `sub` (muted),
 `big`, `rule` (left bar, for the talk's assertions), `note` (boxed aside —
 a caption remarking on the block above it), `accent`, `green`, `strike`,
-`steps`. Add a class
+`steps`. For a ```` ```diagram ```` fence there are also the flow modes
+`flow-step`, `flow-auto`, `flow-loop` and `flow-off`, plus `pop`. For a
+```` ```minimap ```` fence there are `rev` and `warn`. Add a class
 there when a slide needs a new look; add markdown syntax here only when the
 content cannot be said with the above. `slides.html` still opens standalone in
 a browser tab (arrow keys / click to advance) for the projector. The current
 slide is kept in the URL hash (`slides.html#3`), so a reload — e.g. after
 `refresh.sh` rebuilt the file — stays on that slide, and `#N` jumps straight
 to slide N.
+
+## Diagrams (the map)
+
+The talk has one architecture diagram, "the map". It grows state by state: a full
+MAP slide opens a section with its new parts lit, and a code slide can carry a
+small minimap of the current state with the part under discussion lit. The whole
+diagram is **content**, so it lives in the run-sheet, written once as a block in a
+small DSL. The builders only draw it. The reference, with every statement and
+option, is **`DIAGRAM.md`**. In short:
+
+````text
+<!-- diagram arch · what we build: one more piece per section -->
+```text
+canvas 1760x870
+step 1 "a webserver, a REPL, an editor"   # a state; the caption is its heading and aria-label
+step 3 "hot reload"
+region jvm lane "JVM" 380,16 1020x846
+…                                    # the other regions, nodes and edges
+node watcher "watcher" 420,318 180x64 @3          # @3: on screen from state 3 on
+edge e-poll src:r=350 -> watcher:l @3
+flow save-load @3 : e-save, e-poll, e-dep, e-def
+```
+<!-- /diagram -->
+````
+
+- **The block** goes in the run-sheet, outside every slide block (the talk keeps it
+  in the appendix section "The map (diagram source)", at the end). It starts with
+  `<!-- diagram NAME · note -->`, holds one ```` ```text ```` fence and ends with
+  `<!-- /diagram -->`. The deck's speaker column never sees it. Every state is
+  drawn from the same geometry, and an element is simply absent before its first
+  state, so a cut between two map slides changes only what was added. States follow
+  the talk's sections; there is no branch chip, and `chip` / `branch=` are build
+  errors.
+- **A full map on a slide:** an empty ```` ```diagram NAME K ```` fence inside a
+  slide block, with a flow-mode class line before it. Give the slide a one-line
+  `##` heading (`## 🗺 caption` on the talk's map slides), so the map sits at the
+  same place and scale on every map slide:
+
+  ````text
+  <!-- slide 4 · the dev channel -->
+  ## 🔥 hot reload
+
+  {.flow-step}
+  ```diagram arch 3
+  ```
+  <!-- /slide -->
+  ````
+
+- **A minimap:** an empty ```` ```minimap NAME K ID,ID… ```` fence anywhere in the
+  slide block. It lights the listed regions, nodes, rows, cells or edges in the
+  accent colour, or green with `{.rev}`, or amber with `{.warn}`. The build places
+  it top right, beside the heading and out of the flow, so the body never moves.
+  It sizes the inset to the heading row, about 327 px wide at 1080p beside an h1.
+  Beside a long heading it narrows the inset (`note:`), and warns when even
+  `--ax-mini-min` doesn't fit.
+
+  ````text
+  ```minimap arch 3 watcher,e-poll
+  ```
+  ````
+
+  Both fences also work on one line: ```` ```minimap arch 3 watcher``` ````.
+- **Flow modes** (the class line before a ```` ```diagram ```` fence):
+  - `{.flow-step}` (use this in the talk): → plays the state's next flow; → again
+    goes on to the next flow, or advances once every flow has played. → while a
+    token is still travelling finishes that flow. ← always goes back at once.
+  - `{.flow-auto}` (the default): every flow plays once, 2 s after the cut.
+  - `{.flow-loop}`: plays and repeats. Not for the talk.
+  - `{.flow-off}`: the static picture only.
+  - `{.pop}` combines with any of them: the new parts pop on a forward arrival.
+
+  The deck, the PDF and reduced motion show the static picture with numbered hops
+  instead.
+- **Build checks.** Errors stop the build:
+  - unknown ids;
+  - a flow or `lands=` that is not on screen in its state;
+  - a fence naming a diagram or state that doesn't exist;
+  - a non-empty fence body;
+  - two minimaps on one slide;
+  - a minimap id that is not on screen in that state;
+  - `chip` or `branch=`.
+
+  Warnings let the build go on: labels wider than their box, a flow whose token
+  would jump, a message or hop number with no clear spot, a minimap with no room
+  beside its heading. The full list is in `DIAGRAM.md`, "Build checks".
+- **Where the look lives:**
+  - `diagram.css` holds the colours of the map and the minimap;
+  - `slides-template.html` places the map and minimap on the projector, and holds
+    the minimap's width limits `--ax-mini-max` / `--ax-mini-min`, which
+    `build_slides.py` reads;
+  - `build_presenter.py` places them on the deck's slide cards.

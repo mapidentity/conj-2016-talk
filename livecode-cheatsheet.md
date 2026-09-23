@@ -14,10 +14,10 @@
 
 ## §2 · The page is deaf (live reload) → `step-1` — CHECKOUT, then walk
 
-> `git switch -f step-1` happens in §1 (after slides 4–6). Nothing here is
+> `git switch -f step-1` happens in §1 (after slides 6–8). Nothing here is
 > typed on stage; these blocks are what landed, for reference and recovery.
 
-**§2a CHECKOUT — `dev/dev/socket.clj`** (landed by `step-1`; slide 5 showed it):
+**§2a CHECKOUT — `dev/dev/socket.clj`** (landed by `step-1`; slide 7 showed it):
 
 ```clojure
 (ns dev.socket
@@ -41,7 +41,7 @@
      :on-close (fn [ch _] (swap! clients disj ch))}))
 ```
 
-**§2b CHECKOUT — `dev/dev/watcher.clj`** (landed by `step-1`; its loop is slide 4):
+**§2b CHECKOUT — `dev/dev/watcher.clj`** (landed by `step-1`; its loop is slide 6):
 
 ```clojure
 (ns dev.watcher
@@ -151,7 +151,7 @@
     (println "watching src/ + dev/ + resources/ + static/")))
 ```
 
-**§2c CHECKOUT — `static/dev/reload.js`** (landed by `step-1`; slide 6):
+**§2c CHECKOUT — `static/dev/reload.js`** (landed by `step-1`; slide 8):
 
 ```js
 // Dev-only: refresh the page when the server says the source reloaded.
@@ -168,7 +168,7 @@
 })();
 ```
 
-**§2d CHECKOUT — the wiring** (landed by `step-1`; `dev-body` is slide 6):
+**§2d CHECKOUT — the wiring** (landed by `step-1`; `dev-body` is slide 8):
 
 `dev/dev/core.clj` (new file) — the composition root: the dev routes, the
 render boundary, and `start!`:
@@ -251,7 +251,7 @@ demo, not a load path):
 
 **Demo:** change `.badge` color in `resources/style.css`, save → instant.
 
-## §3 · The insight → slides 9–10 (the three facts behind them)
+## §3 · The insight → slides 12–13 (the three facts behind them)
 
 ```clojure
 (meta (read-string "[:div [:span 42]]"))
@@ -314,7 +314,7 @@ demo, not a load path):
        (contains? html-tags (first (str/split (name (first x)) #"[.#]")))))
 ```
 
-**§4c CHECKOUT** (told the file name, the reader stamps `:file` itself — slide 11):
+**§4c CHECKOUT** (told the file name, the reader stamps `:file` itself — slide 15):
 
 ```clojure
 (defn tr-load!
@@ -454,7 +454,7 @@ Walk these three in the JS (60–90s max): `chain` (ancestors with `data-src`),
 **§6b CHECKOUT — two files.** First `dev/dev/socket.clj` gains the peer
 gate (`send1!` after `notify-reload!`, `origin-ok?` before `ws-handler`);
 then `dev/dev/editor.clj` is a **new file** holding the relay
-(the trust boundary + the naive bridge — slide 13):
+(the trust boundary + the naive bridge — slide 19):
 
 ```clojure
 (defn send1! [ch msg]
@@ -510,7 +510,7 @@ block below goes right after it):
            (str/replace origin #"^https?://" "")))))
 ```
 
-**§6d CHECKOUT — the dispatch** (the shape slide 13 shows; it goes in
+**§6d CHECKOUT — the dispatch** (the shape slide 19 shows; it goes in
 `editor.clj`, after `handle-open!` — and it is public: the composition root
 hands it to the socket):
 
@@ -564,7 +564,7 @@ comes right after it):
     h))
 ```
 
-**§7b CHECKOUT** (the var's-meta trick + `::orig` idempotence — slide 14):
+**§7b CHECKOUT** (the var's-meta trick + `::orig` idempotence — slide 21):
 
 ```clojure
 (defn instrument-var!

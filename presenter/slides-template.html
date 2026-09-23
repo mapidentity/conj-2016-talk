@@ -21,8 +21,9 @@
      last lines instead of overflowing the slide. Slide geometry still measures
      as "fits", so test by measuring scrollHeight-clientHeight on every <pre>,
      at 1920x1080, across all slides. At this padding/gap/leading, base 38 clips
-     slides 5 (69px), 11 and 13. The binding slides are always 5, 11 and 13 —
-     the tall code blocks. */
+     slide 7 (27px, the socket). The binding slides are the tall code blocks —
+     7 (the socket), 15 (the loader) and 19 (a click that travels); the
+     numbers move when slides are inserted, the names don't. */
   body {
     font-family: system-ui, sans-serif; font-size: min(3.333vh, 1.875vw);
     line-height: 1.45; overflow: hidden;
@@ -51,7 +52,7 @@
   }
   code { padding: .1em .35em; font-size: .92em; }
   /* 1.35 leading, not 1.5: on tall blocks that difference is what buys the
-     larger base above without clipping slides 5, 11 and 13 */
+     larger base above without clipping slides 7, 15 and 19 (see above) */
   pre { padding: .5em 1em; font-size: .85em; line-height: 1.35; overflow-x: auto; }
   /* box-drawing diagrams: rules must sit tight against their sides to read as a box */
   pre.diagram { line-height: 1.05; font-size: .78em; }
@@ -64,6 +65,28 @@
   .figure { display: flex; justify-content: flex-start; }
   /* em, not rem: rem is the html root and would not follow the scaled body size */
   .figure svg { width: 100%; max-width: 36.6em; height: auto; }
+  /* ```diagram NAME K``` figures: the growing map. It takes all the room the heading
+     leaves (1766x879 at 1080p, the canvas is 1760x870: 1 unit = 1 screen px), so
+     every map slide lays out identically — a hard cut between two states then
+     changes only the pixels of what was added. No transition, on purpose: the
+     only motion is a state's `flow`s (diagram.js), and the opt-in {.pop}. */
+  .figure.ax-fig { flex: 1 1 0; min-height: 0; justify-content: center; }
+  .figure.ax-fig svg { max-width: none; width: 100%; height: 100%; }
+  /* ```minimap NAME K ID,…``` insets: a you-are-here map of the current state, top
+     right, .8em above the heading's top edge. Out of the flow, and the first child of
+     the section, so the two rules below hand the auto margins on and the body stays
+     exactly where it would be without it. build_slides.py writes each inset's width
+     (--ax-mini-w, in em): as wide as the heading row allows without reaching down to
+     the body (~9em beside an h1, ~7.6em beside an h2), at most --ax-mini-max, narrowed
+     beside a long heading down to --ax-mini-min (below that the build warns). It reads
+     those two numbers here, and assumes this sheet's padding, gap and h1/h2 sizes. */
+  .slide { --ax-mini-max: 10; --ax-mini-min: 6.5; }
+  .slide:has(> .ax-mini) { position: relative; }
+  .slide > .ax-mini { position: absolute; top: calc(4vh - .8em); right: 4vw;
+                      width: calc(var(--ax-mini-w, 9) * 1em); }
+  .slide > .ax-mini:first-child + * { margin-top: 0; }
+  .slide > .ax-mini:first-child + * + * { margin-top: auto; }
+/*{{DIAGRAM_CSS}}*/
   /* font-size too: `code` above is .92em, which would compound with pre's own
      reduction and set block code smaller than intended (.8 x .92 = .736em) */
   pre code { background: none; padding: 0; font-size: inherit; }
@@ -96,23 +119,31 @@
 {{SLIDES}}
 
 <div class="num" id="num"></div>
+<script>/*{{DIAGRAM_JS}}*/</script>
 <script>
   // The current slide lives in the URL hash (#1, #2, …), so a reload keeps it.
-  var slides = [].slice.call(document.querySelectorAll('.slide')), i = 0;
+  var slides = [].slice.call(document.querySelectorAll('.slide')), i = -1;   // -1: nothing shown yet
   function show(n) {
+    var from = i;
     i = Math.max(0, Math.min(slides.length - 1, n));
     slides.forEach(function (s, j) { s.classList.toggle('on', j === i); });
+    if (!(i !== n && i === from)) {                      // → on the last slide, ← on the first: stay put, don't restart
+      slides[i].classList.toggle('fwd', from >= 0 && i === from + 1);   // {.pop} plays on forward moves only
+      if (window.axFlows) axFlows.enter(slides[i]);      // a map's flows restart on every arrival
+    }
     document.getElementById('num').textContent = (i + 1) + ' / ' + slides.length;
     if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));
   }
+  // forward: a {.flow-step} map plays its next flow first; ← never waits
+  function next() { if (!(window.axFlows && axFlows.step(slides[i]))) show(i + 1); }
   function fromHash() { return (parseInt(location.hash.slice(1), 10) || 1) - 1; }
   window.addEventListener('hashchange', function () { show(fromHash()); });
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') show(i + 1);
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') next();
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(i - 1);
     else if (e.key === 'Home') show(0);
   });
-  document.addEventListener('click', function () { show(i + 1); });
+  document.addEventListener('click', function () { next(); });
   show(fromHash());
 </script>
 </body>

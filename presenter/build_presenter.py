@@ -266,6 +266,13 @@ q { quotes: "\201C" "\201D"; }
 .pg.compact .say { font-size:9.7pt; } .pg.compact .dir { font-size:8.5pt; } .pg.compact .beat { font-size:9.1pt; }
 .pg.compact .repl { font-size:8.6pt; } .pg.compact .code pre { font-size:8pt; } .pg.compact .slide { font-size:10pt; }
 """
+CSS += r"""
+/* ```minimap``` insets on the slide card: top right under the slide number, out of the
+   flow; --ax-mini-w is the width build_slides.py settled on, in the projector's em */
+.slide > .ax-mini { position:absolute; top:7.5mm; right:5mm; width:calc(var(--ax-mini-w, 9) * 2.1mm); }
+.slide > .ax-mini svg.axm { --axm-s:.6; }
+"""
+CSS += (Path(__file__).resolve().parent / "diagram.css").read_text(encoding="utf-8")   # ```diagram``` maps and minimaps: the slides' look; static here (hop numbers instead of motion)
 HEAD = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
         "<title>Where Did This &lt;div&gt; Come From? — presenter script</title>"
