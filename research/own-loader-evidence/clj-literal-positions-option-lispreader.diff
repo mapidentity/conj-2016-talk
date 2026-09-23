@@ -1,0 +1,81 @@
+--- LispReader.orig.java	2026-09-23 18:38:37.018402607 +0000
++++ src/clojure/lang/LispReader.java	2026-09-23 18:39:31.506780544 +0000
+@@ -181,6 +181,7 @@
+ static public final Keyword OPT_EOF = Keyword.intern(null,"eof");
+ static public final Keyword OPT_FEATURES = Keyword.intern(null,"features");
+ static public final Keyword OPT_READ_COND = Keyword.intern(null, "read-cond");
++static public final Keyword OPT_POSITIONS = Keyword.intern(null, "positions");
+ 
+ // EOF special value to throw on eof
+ static public final Keyword EOFTHROW = Keyword.intern(null,"eofthrow");
+@@ -649,6 +650,7 @@
+ public static class NamespaceMapReader extends AFn{
+ 	public Object invoke(Object reader, Object colon, Object opts, Object pendingForms) {
+ 		PushbackReader r = (PushbackReader) reader;
++		IPersistentMap pos = startPosition(r, 2, opts);
+ 
+ 		boolean auto = false;
+ 		int autoChar = read1(r);
+@@ -743,7 +745,7 @@
+ 			a[i] = key;
+ 			a[i+1] = val;
+ 		}
+-		return RT.map(a);
++		return withPosition((IObj) RT.map(a), pos);
+ 	}
+ }
+ 
+@@ -1344,10 +1346,29 @@
+ //
+ //}
+ 
++
++// OPTION C sketch: with {:positions true} in the read opts, vector, map and set
++// literals get the :line/:column ListReader always gives lists. Opt-in per read
++// call; Compiler.load asks for it when *compiler-options* has :literal-positions.
++static IPersistentMap startPosition(PushbackReader r, int delimLength, Object opts){
++	if(!(r instanceof LineNumberingPushbackReader) || !(opts instanceof IPersistentMap)
++	   || !RT.booleanCast(((IPersistentMap) opts).valAt(OPT_POSITIONS)))
++		return null;
++	LineNumberingPushbackReader lr = (LineNumberingPushbackReader) r;
++	return RT.map(RT.LINE_KEY, lr.getLineNumber(), RT.COLUMN_KEY, lr.getColumnNumber()-delimLength);
++}
++
++static Object withPosition(IObj o, IPersistentMap pos){
++	if(pos == null || RT.count(o) == 0)
++		return o;
++	return o.withMeta(pos);
++}
++
+ public static class VectorReader extends AFn{
+ 	public Object invoke(Object reader, Object leftparen, Object opts, Object pendingForms) {
+ 		PushbackReader r = (PushbackReader) reader;
+-		return LazilyPersistentVector.create(readDelimitedList(']', r, true, opts, ensurePending(pendingForms)));
++		IPersistentMap pos = startPosition(r, 1, opts);
++		return withPosition((IObj) LazilyPersistentVector.create(readDelimitedList(']', r, true, opts, ensurePending(pendingForms))), pos);
+ 	}
+ 
+ }
+@@ -1355,10 +1376,11 @@
+ public static class MapReader extends AFn{
+ 	public Object invoke(Object reader, Object leftparen, Object opts, Object pendingForms) {
+ 		PushbackReader r = (PushbackReader) reader;
++		IPersistentMap pos = startPosition(r, 1, opts);
+ 		Object[] a = readDelimitedList('}', r, true, opts, ensurePending(pendingForms)).toArray();
+ 		if((a.length & 1) == 1)
+ 			throw Util.runtimeException("Map literal must contain an even number of forms");
+-		return RT.map(a);
++		return withPosition((IObj) RT.map(a), pos);
+ 	}
+ 
+ }
+@@ -1366,7 +1388,8 @@
+ public static class SetReader extends AFn{
+ 	public Object invoke(Object reader, Object leftbracket, Object opts, Object pendingForms) {
+ 		PushbackReader r = (PushbackReader) reader;
+-		return PersistentHashSet.createWithCheck(readDelimitedList('}', r, true, opts, ensurePending(pendingForms)));
++		IPersistentMap pos = startPosition(r, 2, opts);
++		return withPosition(PersistentHashSet.createWithCheck(readDelimitedList('}', r, true, opts, ensurePending(pendingForms))), pos);
+ 	}
+ 
+ }

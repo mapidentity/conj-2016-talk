@@ -548,7 +548,11 @@ talk_secs = [talk_pages(h, b) for h, b in SECTIONS if h.startswith("§")]
 # cover: legend is the deck's own; the map and the recovery rule come from the run-sheet
 decision = section("The one design decision")
 rec = [b for t, b in blocks_of(decision) if t == "para" and b[0].startswith("**Recovery")]
-screen_rule = [b for t, b in blocks_of(decision) if t == "para" and b[0].startswith("**The screen")]
+screen_rule = [b for t, b in blocks_of(decision)                 # the section's leading rule,
+               if t == "para" and b[0].startswith("**")          # however it happens to be worded
+               and not b[0].startswith("**Recovery")]
+if not screen_rule:
+    raise SystemExit("run-sheet: 'The one design decision' has no leading **bold** rule paragraph")
 screen_rule_text = " ".join(l.strip() for l in screen_rule[0])
 if screen_rule_text.endswith(":"):                      # drop a sentence that introduces a list we don't show
     screen_rule_text = screen_rule_text[:screen_rule_text.rfind(". ") + 1]
@@ -562,9 +566,8 @@ COVER = f"""<div class="cover">
     <div class="legend">
       <h3>How to read this script</h3>
       <dl>
-        <dt><span class="tag t-type">TYPE</span></dt><dd>Write it on stage, narrating — it carries the idea.</dd>
-        <dt><span class="tag t-paste">PASTE</span></dt><dd>Drop it in, one sentence, move on — infrastructure with no idea in it.</dd>
-        <dt><span class="tag t-checkout">CHECKOUT</span></dt><dd>Git lands it — code too intricate to write live; show it, narrate the guard.</dd>
+        <dt><span class="tag t-type">SLIDE</span></dt><dd>The few lines that carry the idea, on the projector — fragments, not files.</dd>
+        <dt><span class="tag t-checkout">CHECKOUT</span></dt><dd>Git lands the step: <code>git switch -f step-N</code>. The watcher reloads, the browser refreshes itself.</dd>
         <dt style="color:#6b5fd6;font-weight:700;">pill</dt><dd>A stage direction: the editor, the browser, a slide, a demo cue.</dd>
         <dt style="color:#8a5a1e;font-style:italic;">beat</dt><dd>A design note from the run-sheet. The talk lives in these.</dd>
       </dl>

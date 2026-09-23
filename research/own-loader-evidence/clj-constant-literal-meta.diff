@@ -1,0 +1,78 @@
+--- a/src/jvm/clojure/lang/Compiler.java
++++ b/src/jvm/clojure/lang/Compiler.java
+@@ -3633,7 +3633,7 @@
+ 			}
+ 
+ 		Expr ret = new MapExpr(keyvals);
+-		if(form instanceof IObj && ((IObj) form).meta() != null)
++		if(form instanceof IObj && ((IObj) form).meta() != null && !(keysConstant && allConstantKeysUnique && valsConstant && constantMeta(((IObj) form).meta())))
+ 			return new MetaExpr(ret, MapExpr
+ 					.parse(context == C.EVAL ? context : C.EXPRESSION, ((IObj) form).meta()));
+ 		else if(keysConstant)
+@@ -3649,7 +3649,7 @@
+ 					m = m.assoc(((LiteralExpr)keyvals.nth(i)).val(), ((LiteralExpr)keyvals.nth(i+1)).val());
+ 					}
+ //				System.err.println("Constant: " + m);
+-				return new ConstantExpr(m);
++				return new ConstantExpr(withFormMeta(m, form));
+ 				}
+ 			else
+ 				return ret;
+@@ -3704,7 +3704,7 @@
+ 				constant = false;
+ 			}
+ 		Expr ret = new SetExpr(keys);
+-		if(form instanceof IObj && ((IObj) form).meta() != null)
++		if(form instanceof IObj && ((IObj) form).meta() != null && !(constant && constantMeta(((IObj) form).meta())))
+ 			return new MetaExpr(ret, MapExpr
+ 					.parse(context == C.EVAL ? context : C.EXPRESSION, ((IObj) form).meta()));
+ 		else if(constant)
+@@ -3716,13 +3716,29 @@
+ 				set = (IPersistentSet)set.cons(ve.val());
+ 				}
+ //			System.err.println("Constant: " + set);
+-			return new ConstantExpr(set);
++			return new ConstantExpr(withFormMeta(set, form));
+ 			}
+ 		else
+ 			return ret;
+ 	}
+ }
+ 
++// PROTOTYPE (constfix): an otherwise-constant collection literal whose metadata is itself all-constant
++// (e.g. reader positions) stays a hoisted constant; emitValue already emits the metadata onto constants.
++static boolean constantMeta(IPersistentMap m){
++	for(ISeq s = RT.seq(m); s != null; s = s.next())
++		{
++		IMapEntry e = (IMapEntry) s.first();
++		if(!(analyze(C.EXPRESSION, e.key()) instanceof LiteralExpr) || !(analyze(C.EXPRESSION, e.val()) instanceof LiteralExpr))
++			return false;
++		}
++	return true;
++}
++static Object withFormMeta(Object v, Object form){
++	IPersistentMap m = (form instanceof IObj) ? ((IObj) form).meta() : null;
++	return m == null ? v : ((IObj) v).withMeta(m);
++}
++
+ public static class VectorExpr implements Expr{
+ 	public final IPersistentVector args;
+     final static Method vectorMethod = Method.getMethod("clojure.lang.IPersistentVector vector(Object[])");
+@@ -3777,7 +3793,7 @@
+ 				constant = false;
+ 			}
+ 		Expr ret = new VectorExpr(args);
+-		if(form instanceof IObj && ((IObj) form).meta() != null)
++		if(form instanceof IObj && ((IObj) form).meta() != null && !(constant && constantMeta(((IObj) form).meta())))
+ 			return new MetaExpr(ret, MapExpr
+ 					.parse(context == C.EVAL ? context : C.EXPRESSION, ((IObj) form).meta()));
+ 		else if (constant)
+@@ -3789,7 +3805,7 @@
+ 				rv = rv.cons(ve.val());
+ 				}
+ //			System.err.println("Constant: " + rv);
+-			return new ConstantExpr(rv);
++			return new ConstantExpr(withFormMeta(rv, form));
+ 			}
+ 		else
+ 			return ret;

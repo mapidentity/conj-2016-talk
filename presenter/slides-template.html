@@ -9,18 +9,37 @@
   html, body { height: 100%; background: #16141f; color: #ece9f1; }
   /* The deck is sized from this one root — every size below is em-relative, so the
      slides scale with the viewport instead of clipping on a smaller projector.
-     min(vh, vw) holds the 1920x1080 design proportional at any aspect ratio (28px at
+     min(vh, vw) holds the 1920x1080 design proportional at any aspect ratio (36px at
      1080p, and it shrinks by width on a 4:3 beamer). No clamp() floor on purpose:
-     a floor would bring the clipping back below it. */
+     a floor would bring the clipping back below it.
+     Tuned for a 16:9 1080p projector: code lands at 30.6px = 23pt, well over the
+     "font >= 20pt" rule in the run-sheet's stage setup, and the slides fill ~88%
+     of the height and ~92% of the width.
+     RAISING THIS IS NOT FREE, and the failure is silent: `pre` is a scroll
+     container (overflow-x), so its automatic minimum size is 0 — inside this
+     fixed-height flex column an oversized block is squashed and CLIPS its own
+     last lines instead of overflowing the slide. Slide geometry still measures
+     as "fits", so test by measuring scrollHeight-clientHeight on every <pre>,
+     at 1920x1080, across all slides. At this padding/gap/leading, base 38 clips
+     slides 5 (69px), 11 and 13. The binding slides are always 5, 11 and 13 —
+     the tall code blocks. */
   body {
-    font-family: system-ui, sans-serif; font-size: min(2.593vh, 1.458vw);
+    font-family: system-ui, sans-serif; font-size: min(3.333vh, 1.875vw);
     line-height: 1.45; overflow: hidden;
   }
   .slide {
-    display: none; height: 100vh; padding: 8vh 10vw;
-    flex-direction: column; justify-content: center; gap: 1.2em;
+    display: none; height: 100vh; padding: 4vh 4vw;
+    /* the heading is pinned to the top-left corner; the body is centred in
+       whatever height is left over (see the auto-margin rule below) */
+    flex-direction: column; justify-content: flex-start; gap: .9em;
   }
   .slide.on { display: flex; }
+  /* auto margins absorb free space in a flex column. One above the first body
+     element and one below the last splits the leftover evenly, so the body
+     block sits centred between the heading and the bottom edge — while the
+     heading itself stays put at the top. */
+  .slide > :first-child + * { margin-top: auto; }
+  .slide > :last-child { margin-bottom: auto; }
   h1 { font-size: 2.6em; line-height: 1.15; }
   h2 { font-size: 1.9em; line-height: 1.2; }
   .sub { color: #9d94b8; font-size: .95em; }
@@ -31,7 +50,9 @@
     background: #211d30; border-radius: .3em;
   }
   code { padding: .1em .35em; font-size: .92em; }
-  pre { padding: .8em 1em; font-size: .8em; line-height: 1.5; overflow-x: auto; }
+  /* 1.35 leading, not 1.5: on tall blocks that difference is what buys the
+     larger base above without clipping slides 5, 11 and 13 */
+  pre { padding: .5em 1em; font-size: .85em; line-height: 1.35; overflow-x: auto; }
   /* box-drawing diagrams: rules must sit tight against their sides to read as a box */
   pre.diagram { line-height: 1.05; font-size: .78em; }
   /* ```diff fences: context recedes, additions get a band */
@@ -43,7 +64,9 @@
   .figure { display: flex; justify-content: flex-start; }
   /* em, not rem: rem is the html root and would not follow the scaled body size */
   .figure svg { width: 100%; max-width: 36.6em; height: auto; }
-  pre code { background: none; padding: 0; }
+  /* font-size too: `code` above is .92em, which would compound with pre's own
+     reduction and set block code smaller than intended (.8 x .92 = .736em) */
+  pre code { background: none; padding: 0; font-size: inherit; }
   pre .cm { color: #6f7890; font-style: italic; } pre .st { color: #7ec699; } pre .kw { color: #e0a06a; }
   pre .bi { color: #b7a5ff; } pre .mt { color: #e28ac0; } pre .at { color: #e0a06a; }
   ul { padding-left: 1.1em; display: grid; gap: .55em; }

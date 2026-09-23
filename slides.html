@@ -10,18 +10,37 @@
   html, body { height: 100%; background: #16141f; color: #ece9f1; }
   /* The deck is sized from this one root — every size below is em-relative, so the
      slides scale with the viewport instead of clipping on a smaller projector.
-     min(vh, vw) holds the 1920x1080 design proportional at any aspect ratio (28px at
+     min(vh, vw) holds the 1920x1080 design proportional at any aspect ratio (36px at
      1080p, and it shrinks by width on a 4:3 beamer). No clamp() floor on purpose:
-     a floor would bring the clipping back below it. */
+     a floor would bring the clipping back below it.
+     Tuned for a 16:9 1080p projector: code lands at 30.6px = 23pt, well over the
+     "font >= 20pt" rule in the run-sheet's stage setup, and the slides fill ~88%
+     of the height and ~92% of the width.
+     RAISING THIS IS NOT FREE, and the failure is silent: `pre` is a scroll
+     container (overflow-x), so its automatic minimum size is 0 — inside this
+     fixed-height flex column an oversized block is squashed and CLIPS its own
+     last lines instead of overflowing the slide. Slide geometry still measures
+     as "fits", so test by measuring scrollHeight-clientHeight on every <pre>,
+     at 1920x1080, across all slides. At this padding/gap/leading, base 38 clips
+     slides 5 (69px), 11 and 13. The binding slides are always 5, 11 and 13 —
+     the tall code blocks. */
   body {
-    font-family: system-ui, sans-serif; font-size: min(2.593vh, 1.458vw);
+    font-family: system-ui, sans-serif; font-size: min(3.333vh, 1.875vw);
     line-height: 1.45; overflow: hidden;
   }
   .slide {
-    display: none; height: 100vh; padding: 8vh 10vw;
-    flex-direction: column; justify-content: center; gap: 1.2em;
+    display: none; height: 100vh; padding: 4vh 4vw;
+    /* the heading is pinned to the top-left corner; the body is centred in
+       whatever height is left over (see the auto-margin rule below) */
+    flex-direction: column; justify-content: flex-start; gap: .9em;
   }
   .slide.on { display: flex; }
+  /* auto margins absorb free space in a flex column. One above the first body
+     element and one below the last splits the leftover evenly, so the body
+     block sits centred between the heading and the bottom edge — while the
+     heading itself stays put at the top. */
+  .slide > :first-child + * { margin-top: auto; }
+  .slide > :last-child { margin-bottom: auto; }
   h1 { font-size: 2.6em; line-height: 1.15; }
   h2 { font-size: 1.9em; line-height: 1.2; }
   .sub { color: #9d94b8; font-size: .95em; }
@@ -32,7 +51,9 @@
     background: #211d30; border-radius: .3em;
   }
   code { padding: .1em .35em; font-size: .92em; }
-  pre { padding: .8em 1em; font-size: .8em; line-height: 1.5; overflow-x: auto; }
+  /* 1.35 leading, not 1.5: on tall blocks that difference is what buys the
+     larger base above without clipping slides 5, 11 and 13 */
+  pre { padding: .5em 1em; font-size: .85em; line-height: 1.35; overflow-x: auto; }
   /* box-drawing diagrams: rules must sit tight against their sides to read as a box */
   pre.diagram { line-height: 1.05; font-size: .78em; }
   /* ```diff fences: context recedes, additions get a band */
@@ -44,7 +65,9 @@
   .figure { display: flex; justify-content: flex-start; }
   /* em, not rem: rem is the html root and would not follow the scaled body size */
   .figure svg { width: 100%; max-width: 36.6em; height: auto; }
-  pre code { background: none; padding: 0; }
+  /* font-size too: `code` above is .92em, which would compound with pre's own
+     reduction and set block code smaller than intended (.8 x .92 = .736em) */
+  pre code { background: none; padding: 0; font-size: inherit; }
   pre .cm { color: #6f7890; font-style: italic; } pre .st { color: #7ec699; } pre .kw { color: #e0a06a; }
   pre .bi { color: #b7a5ff; } pre .mt { color: #e28ac0; } pre .at { color: #e0a06a; }
   ul { padding-left: 1.1em; display: grid; gap: .55em; }
@@ -75,6 +98,7 @@
 <section class="slide on">
   <h1>Where Did This <code>&lt;div&gt;</code> Come From?</h1>
   <p class="sub">Patrick de Kruif · Clojure/Conj 2026</p>
+  <p class="sub">“Creators need an immediate connection to what they make.” — Bret Victor</p>
 </section>
 
 <!-- 2 · the dev channel -->
@@ -110,7 +134,9 @@
                                  (watched? path))]
                   path)]
     (<span class="bi">when</span> (seq changed)
-      (<span class="bi">when</span> (<span class="bi">every?</span> true? (<span class="bi">mapv</span> load-changed! (<span class="bi">sort</span> changed)))
+      (<span class="bi">when</span> (<span class="bi">if</span> (<span class="bi">some</span> #(str/ends-with? % <span class="st">".clj"</span>) changed)
+              (reload-clojure!)     <span class="cm">; tools.namespace: dependency order</span>
+              true)                 <span class="cm">; assets need no load</span>
         (socket/notify-reload!)))
     (<span class="bi">recur</span> current)))</code></pre>
   <p class="note"><code>notify-reload!</code> for every file changed in the last 200 milliseconds.</p>
@@ -150,7 +176,7 @@
 
 <!-- 7 · the question -->
 <section class="slide">
-  <h1>☝ What do we need to point at a pixel<br>and ask <span class="accent">which Clojure made it</span>? 🮰</h1>
+  <h1>🖝 What do we need to point at a pixel<br>and ask <span class="accent">which Clojure made it</span>?</h1>
   <pre><code>&lt;<span class="bi">span</span> <span class="at">class</span>=<span class="st">"badge hot"</span>&gt;🌶 spicy&lt;/<span class="bi">span</span>&gt;</code></pre>
 </section>
 
@@ -192,28 +218,120 @@
   <p class="rule">Load views through tools.reader → every element knows its source.<br>The position <b>is</b> part of the value.</p>
 </section>
 
-<!-- 11 · the sharp edge -->
+<!-- 11 · the loader -->
+<section class="slide">
+  <h1>📐 a loader that keeps the lines</h1>
+  <pre><code>(<span class="bi">defn</span> tr-load! [path]
+  (<span class="bi">let</span> [rdr (rt/indexing-push-back-reader (<span class="bi">slurp</span> path) 1 file) <span class="cm">; …told the file</span>
+        …]
+    (<span class="bi">binding</span> [*ns* *ns*, *file* file]
+      (eval (read1))                    <span class="cm">; the ns form FIRST</span>
+      (<span class="bi">doseq</span> [form body]                <span class="cm">; …then everything else</span>
+        (eval form)))))</code></pre>
+  <p class="note">views load through <code>tr-load!</code>, everything else through <code>load-file</code></p>
+  <p class="sub">why our own? Clojure's loader hard-wires its reader: <code>Compiler.load</code> → <code>LispReader.read</code></p>
+</section>
+
+<!-- 12 · metadata becomes attributes -->
+<section class="slide">
+  <h1>🏷 metadata → attributes</h1>
+  <pre><code><span class="cm">;; tag-tree walks the assembled page; for every element that carries</span>
+<span class="cm">;; reader metadata, it rebuilds the vector with two attributes added:</span>
+(<span class="bi">assoc</span> attrs
+  <span class="kw">:data-src</span>  (<span class="bi">str</span> (<span class="kw">:file</span> m) <span class="st">":"</span> (<span class="kw">:line</span> m) <span class="st">":"</span> (<span class="kw">:column</span> m))
+  <span class="kw">:data-name</span> (<span class="bi">name</span> (<span class="bi">first</span> node)))</code></pre>
+  <pre><code>(<span class="bi">defn-</span> dev-body [body]
+  (list (inspector/tag-tree body)         <span class="cm">; ← the only change in the app</span>
+        [<span class="kw">:script</span> {<span class="kw">:src</span> <span class="st">"/dev/reload.js"</span>}]))</code></pre>
+  <p class="note">the render boundary: where hiccup meets the stringifier</p>
+</section>
+
+<!-- 13 · a click that travels -->
+<section class="slide">
+  <h1>🖱 a click that travels</h1>
+  <pre><code><span class="bi">function</span> sendOpen(src) {                  <span class="cm">// src is "file:line:col"</span>
+  <span class="bi">var</span> p = src.split(<span class="st">':'</span>), col = +p.pop(), line = +p.pop();
+  ws.send(JSON.stringify({type: <span class="st">'open'</span>, src: p.join(<span class="st">':'</span>), line, col}));
+}</code></pre>
+  <pre><code>(<span class="bi">defn</span> handle-msg! [ch msg]                <span class="cm">; typed messages, one socket</span>
+  (<span class="bi">case</span> (<span class="kw">:type</span> msg)
+    <span class="st">"open"</span> (handle-open! ch msg)
+    nil))
+
+(<span class="bi">defn-</span> resolve-src [src]                  <span class="cm">; a browser can send ANY string</span>
+  (<span class="bi">when</span> (and (.exists f) (str/ends-with? (.getName f) <span class="st">".clj"</span>)
+             (.startsWith (.toPath f) (.toPath root)))
+    f))</code></pre>
+  <p class="note"><code>code -g file:line:col</code> — naive, and it works</p>
+</section>
+
+<!-- 14 · what made this -->
+<section class="slide">
+  <h1>🧩 name what made it</h1>
+  <pre><code>(<span class="bi">defn</span> instrument-var! [v]                 <span class="cm">; v is a plain view defn</span>
+  (<span class="bi">let</span> [orig (or (<span class="kw">::orig</span> (<span class="bi">meta</span> @v)) @v)   <span class="cm">; idempotent across reloads</span>
+        m    (<span class="bi">meta</span> v)                     <span class="cm">; the VAR knows its file and line</span>
+        src  (<span class="bi">str</span> (<span class="kw">:file</span> m) <span class="st">":"</span> (<span class="kw">:line</span> m) <span class="st">":"</span> (<span class="kw">:column</span> m))
+        nm   (<span class="bi">str</span> (ns-name (<span class="kw">:ns</span> m)) <span class="st">"/"</span> (<span class="kw">:name</span> m))]
+    (<span class="bi">alter-var-root</span> v (constantly
+      (<span class="bi">with-meta</span> (<span class="bi">fn</span> [&amp; args] (tag-hiccup (<span class="bi">apply</span> orig args) src nm))
+                 {<span class="kw">::orig</span> orig})))))</code></pre>
+  <pre><code>(instrument-ns! (ns-name *ns*))           <span class="cm">; ← one line, inside tr-load!</span></code></pre>
+  <p class="note">the var now holds the wrapper. the source on disk is untouched</p>
+  <p class="sub">no annotations, no registry. the loader takes care of it.</p>
+</section>
+
+<!-- 15 · the other direction -->
+<section class="slide">
+  <h1>↩ the other direction</h1>
+  <pre><code>(<span class="bi">defn</span> resolve-cursor [file line col]      <span class="cm">; → the SAME strings the DOM has</span>
+  (<span class="bi">when-let</span> [{<span class="kw">:keys</span> [defns elements]} (<span class="bi">get</span> @view-index file)]
+    (<span class="bi">when-let</span> [d (innermost defns line col)]
+      {<span class="kw">:component</span> (<span class="kw">:name</span> d)                     <span class="cm">; matches data-name</span>
+       <span class="kw">:element</span>   (<span class="kw">:key</span> (innermost elements line col))})))  <span class="cm">; matches data-src</span></code></pre>
+  <pre><code><span class="cm">;; the editor agent, in ClojureScript, inside VS Code</span>
+(ws-send! {<span class="kw">:type</span> <span class="st">"cursor"</span> <span class="kw">:file</span> file <span class="kw">:line</span> line <span class="kw">:col</span> col})</code></pre>
+  <p class="note">the index is built by the same read pass — that's what the<br><code>:end-line</code>/<code>:end-column</code> were for</p>
+</section>
+
+<!-- 16 · which call made it -->
+<section class="slide">
+  <h1>🎯 which call made it</h1>
+  <pre><code><span class="cm">;; during the load, each call to a view fn is rewritten:</span>
+(recipe-card r)  →  (tag-callsite <span class="st">"demo/views.clj:81:8"</span> (recipe-card r))</code></pre>
+  <pre><code>(<span class="bi">defn-</span> wrap-callsites [names file form wrap?]
+  …
+  (<span class="bi">if</span> (and wrap? (call-head names form) (form-span form))
+    (<span class="bi">with-meta</span>                                  <span class="cm">; ← re-attach, or the</span>
+      (list `tag-callsite (src-key file (form-span form)) walked)
+      (<span class="bi">meta</span> form))                              <span class="cm">;    element tags break</span>
+    walked))</code></pre>
+  <p class="note">guards: only known view fns · never inside <code>-&gt;</code> or <code>quote</code></p>
+  <p class="sub">rewriting between read and eval — a step no Clojure loader has</p>
+</section>
+
+<!-- 17 · the sharp edge -->
 <section class="slide">
   <h2>The re-def that strips every tag</h2>
   <p>The tags exist <b>only because the loader applied them</b>.<br>A plain <code>load-file</code> — or your editor’s eval-on-save —<br>re-defs the views untagged. Silently.</p>
+  <p class="note">hooking <code>load</code> (it's <code>^:redef</code>) reaches <code>require</code> — never your editor's eval</p>
   <p class="rule big">The loader is the <span class="accent">single source of truth</span><br>for how views load.</p>
   <p class="sub">The moment there are two ways to load a thing, one of them is wrong.</p>
 </section>
 
-<!-- 12 · nothing ships -->
+<!-- 18 · the inspector doesn't ship -->
 <section class="slide">
-  <h2>Nothing ships</h2>
+  <h2>The inspector doesn't ship</h2>
   <pre><code>(<span class="bi">def</span> <span class="mt">^</span><span class="kw">:dynamic</span> *render-boundary* identity)        <span class="cm">; the app's one seam</span>
 (<span class="bi">binding</span> [views/*render-boundary* dev-body] …)    <span class="cm">; dev/, per request</span></code></pre>
   <ul>
     <li>no loader in prod → no metadata, no wrapping, empty index</li>
     <li>overlay + agent + middleware live in <code>dev/</code></li>
-    <li>a dev-only <b>classpath</b>: nothing binds the seam — structurally absent,<br>not <span class="strike">disabled</span></li>
-    <li class="sub">the reason we never had this — we throw structure away —<br>is what keeps it safe in prod: there, we still do</li>
+    <li>a dev-only <b>classpath</b>: nothing binds the seam. absent, not <span class="strike">disabled</span></li>
   </ul>
 </section>
 
-<!-- 13 · what generalizes -->
+<!-- 19 · what generalizes -->
 <section class="slide">
   <h2>What you take home</h2>
   <ul class="big">
@@ -223,7 +341,7 @@
   </ul>
 </section>
 
-<!-- 14 · repo -->
+<!-- 20 · repo -->
 <section class="slide">
   <h2>Take the same walk</h2>
   <div class="steps">
@@ -239,7 +357,7 @@
   <p class="sub">demo repo: branched, step by step — github.com/mapidentity/…<br>the production-shaped version, every trade-off argued:<br><b>Parens to Production</b> — mapidentity.github.io/parens-to-production</p>
 </section>
 
-<!-- 15 · close -->
+<!-- 21 · close -->
 <section class="slide">
   <h1><span class="green">Hiccup is just data.</span><br>So inspect it.</h1>
   <p class="sub">“Creators need an immediate connection to what they make.” — Bret Victor</p>

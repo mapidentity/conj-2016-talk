@@ -1,0 +1,15 @@
+Vector, map and set literals have no source position on the JVM
+
+The reader attaches :line/:column only to lists. Vector, map and set literals get no position, so nothing inside one can be located. Three consequences:
+
+1. Errors. A problem inside a collection literal is reported at the enclosing list, sometimes many lines away. See CLJ-2624 (a duplicate in a #{} literal on line 11, reported at line 7) and CLJ-2700.
+
+2. Macros. A macro cannot report or record where an element of its vector or map argument was written. The same .cljc macro can do this under ClojureScript, whose reader positions collections. re-frame2, for example, notes that its per-element source coordinates only appear on CLJS.
+
+3. Dev tooling. We map rendered Hiccup back to the literal that produced it: click an element and land on its [:div ...]. This works when views are loaded through tools.reader, but every load path needs its own override: a redefined load for require, an nREPL read-fn middleware for editor evals. Paths without a hook silently drop the positions, for example clj-reload (which calls Compiler/load) and plain load-file. The same source then yields different values depending on how it was loaded.
+
+Related: #13314, which names Hiccup as one of its examples.
+
+We measured the obvious approaches. Keeping positions on runtime values defeats constant hoisting and can change which Java overload gets chosen, so they must stay out of production code. We can share the numbers.
+
+Is this a problem core would consider, or should it stay with libraries?

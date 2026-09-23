@@ -1,0 +1,131 @@
+--- Compiler.orig.java	2026-09-23 18:38:37.015760080 +0000
++++ src/clojure/lang/Compiler.java	2026-09-23 18:39:31.507775964 +0000
+@@ -262,6 +262,7 @@
+ static final public Keyword disableLocalsClearingKey = Keyword.intern("disable-locals-clearing");
+ static final public Keyword directLinkingKey = Keyword.intern("direct-linking");
+ static final public Keyword elideMetaKey = Keyword.intern("elide-meta");
++static final public Keyword literalPositionsKey = Keyword.intern("literal-positions");
+ 
+ static final public Var COMPILER_OPTIONS;
+ 
+@@ -3633,9 +3634,9 @@
+ 			}
+ 
+ 		Expr ret = new MapExpr(keyvals);
+-		if(form instanceof IObj && ((IObj) form).meta() != null)
++		if(form instanceof IObj && ((IObj) form).meta() != null && !(keysConstant && allConstantKeysUnique && valsConstant && constantMeta(((IObj) form).meta())))
+ 			return new MetaExpr(ret, MapExpr
+-					.parse(context == C.EVAL ? context : C.EXPRESSION, ((IObj) form).meta()));
++					.parse(context == C.EVAL ? context : C.EXPRESSION, literalMeta(((IObj) form).meta())));
+ 		else if(keysConstant)
+ 			{
+ 			// TBD: Add more detail to exception thrown below.
+@@ -3649,7 +3650,7 @@
+ 					m = m.assoc(((LiteralExpr)keyvals.nth(i)).val(), ((LiteralExpr)keyvals.nth(i+1)).val());
+ 					}
+ //				System.err.println("Constant: " + m);
+-				return new ConstantExpr(m);
++				return new ConstantExpr(withFormMeta(m, form));
+ 				}
+ 			else
+ 				return ret;
+@@ -3704,9 +3705,9 @@
+ 				constant = false;
+ 			}
+ 		Expr ret = new SetExpr(keys);
+-		if(form instanceof IObj && ((IObj) form).meta() != null)
++		if(form instanceof IObj && ((IObj) form).meta() != null && !(constant && constantMeta(((IObj) form).meta())))
+ 			return new MetaExpr(ret, MapExpr
+-					.parse(context == C.EVAL ? context : C.EXPRESSION, ((IObj) form).meta()));
++					.parse(context == C.EVAL ? context : C.EXPRESSION, literalMeta(((IObj) form).meta())));
+ 		else if(constant)
+ 			{
+ 			IPersistentSet set = PersistentHashSet.EMPTY;
+@@ -3716,13 +3717,41 @@
+ 				set = (IPersistentSet)set.cons(ve.val());
+ 				}
+ //			System.err.println("Constant: " + set);
+-			return new ConstantExpr(set);
++			return new ConstantExpr(withFormMeta(set, form));
+ 			}
+ 		else
+ 			return ret;
+ 	}
+ }
+ 
++// PROTOTYPE (constfix): an otherwise-constant collection literal whose metadata is itself all-constant
++// (e.g. reader positions) stays a hoisted constant; emitValue already emits the metadata onto constants.
++static boolean constantMeta(IPersistentMap m){
++	// position keys only, so a user's ^:foo [1 2] compiles exactly as before
++	for(ISeq s = RT.seq(m); s != null; s = s.next())
++		{
++		Object k = ((IMapEntry) s.first()).key();
++		if(!(k == RT.LINE_KEY || k == RT.COLUMN_KEY || k == RT.FILE_KEY))
++			return false;
++		}
++	return true;
++}
++// OPTION C sketch: under :literal-positions the compiler, which knows the source
++// path, adds :file to a positioned literal's metadata (the reader stays file-agnostic)
++static IPersistentMap literalMeta(IPersistentMap m){
++	if(m == null || !RT.booleanCast(getCompilerOption(literalPositionsKey))
++	   || !m.containsKey(RT.LINE_KEY) || m.containsKey(RT.FILE_KEY))
++		return m;
++	Object f = SOURCE_PATH.deref();
++	if(!(f instanceof String) || f.equals("NO_SOURCE_PATH") || f.equals("NO_SOURCE_FILE"))
++		return m;
++	return m.assoc(RT.FILE_KEY, f);
++}
++static Object withFormMeta(Object v, Object form){
++	IPersistentMap m = (form instanceof IObj) ? literalMeta(((IObj) form).meta()) : null;
++	return m == null ? v : ((IObj) v).withMeta(m);
++}
++
+ public static class VectorExpr implements Expr{
+ 	public final IPersistentVector args;
+     final static Method vectorMethod = Method.getMethod("clojure.lang.IPersistentVector vector(Object[])");
+@@ -3777,9 +3806,9 @@
+ 				constant = false;
+ 			}
+ 		Expr ret = new VectorExpr(args);
+-		if(form instanceof IObj && ((IObj) form).meta() != null)
++		if(form instanceof IObj && ((IObj) form).meta() != null && !(constant && constantMeta(((IObj) form).meta())))
+ 			return new MetaExpr(ret, MapExpr
+-					.parse(context == C.EVAL ? context : C.EXPRESSION, ((IObj) form).meta()));
++					.parse(context == C.EVAL ? context : C.EXPRESSION, literalMeta(((IObj) form).meta())));
+ 		else if (constant)
+ 			{
+ 			IPersistentVector rv = PersistentVector.EMPTY;
+@@ -3789,7 +3818,7 @@
+ 				rv = rv.cons(ve.val());
+ 				}
+ //			System.err.println("Constant: " + rv);
+-			return new ConstantExpr(rv);
++			return new ConstantExpr(withFormMeta(rv, form));
+ 			}
+ 		else
+ 			return ret;
+@@ -7371,7 +7400,7 @@
+ 				Expr ret = new EmptyExpr(form);
+ 				if(RT.meta(form) != null)
+ 					ret = new MetaExpr(ret, MapExpr
+-							.parse(context == C.EVAL ? context : C.EXPRESSION, ((IObj) form).meta()));
++							.parse(context == C.EVAL ? context : C.EXPRESSION, literalMeta(((IObj) form).meta())));
+ 				return ret;
+ 				}
+ 		else if(form instanceof ISeq)
+@@ -8179,10 +8208,10 @@
+ 
+ private static final Object OPTS_COND_ALLOWED = RT.mapUniqueKeys(LispReader.OPT_READ_COND, LispReader.COND_ALLOW);
+ private static Object readerOpts(String sourceName) {
+-    if(sourceName != null && sourceName.endsWith(".cljc"))
+-        return OPTS_COND_ALLOWED;
+-    else
+-        return null;
++    Object opts = (sourceName != null && sourceName.endsWith(".cljc")) ? OPTS_COND_ALLOWED : null;
++    if(RT.booleanCast(getCompilerOption(literalPositionsKey)))
++        opts = RT.assoc(opts == null ? PersistentArrayMap.EMPTY : opts, LispReader.OPT_POSITIONS, RT.T);
++    return opts;
+ }
+ 
+ public static Object load(Reader rdr, String sourcePath, String sourceName) {

@@ -1,14 +1,13 @@
 # Live-coding cheatsheet — exact code per section
 
-> Second-screen companion to `livecode-talk.md`. Every block is labeled
-> **TYPE** (you write it, narrating), **PASTE** (drop it in, one sentence),
-> or **CHECKOUT** (git does it). Code is byte-identical to the demo repo's
-> step branches, so a checkout always reconciles with what you typed.
+> Second-screen companion to `livecode-talk.md`. **Nothing here is typed on
+> stage.** Every section lands with `git switch -f step-N`, and the few lines
+> that carry each idea are on the slides. These blocks are the full versions
+> of what each checkout brings in: reference while you talk, and a paste
+> source if a checkout ever misbehaves.
 >
-> When TYPING, skip the docstrings — they're in the repo version; a later
-> checkout reconciles and the diff is docstring-only noise. PASTE blocks
-> match the branches verbatim. Typed budget for the whole talk: ~65 lines of
-> code.
+> Code is byte-identical to the demo repo's step branches, modulo docstrings
+> (some blocks shorten them).
 >
 > Recovery at any point: `git switch -f <end-branch-of-section>` — the watcher
 > reloads everything, the browser refreshes itself, keep talking.
@@ -18,10 +17,10 @@
 > `git switch -f step-1` happens in §1 (after slides 4–6). Nothing here is
 > typed on stage; these blocks are what landed, for reference and recovery.
 
-**§2a CHECKOUT — `dev/demo/dev/socket.clj`** (landed by `step-1`; slide 5 showed it):
+**§2a CHECKOUT — `dev/dev/socket.clj`** (landed by `step-1`; slide 5 showed it):
 
 ```clojure
-(ns demo.dev.socket
+(ns dev.socket
   (:require
     [clojure.data.json :as json]
     [org.httpkit.server :as http]))
@@ -42,36 +41,39 @@
      :on-close (fn [ch _] (swap! clients disj ch))}))
 ```
 
-**§2b CHECKOUT — `dev/demo/dev/watcher.clj`** (landed by `step-1`; its loop is slide 4):
+**§2b CHECKOUT — `dev/dev/watcher.clj`** (landed by `step-1`; its loop is slide 4):
 
 ```clojure
-(ns demo.dev.watcher
-  "Polls src/, dev/, resources/ and static/ for changes, loads what changed,
-  and asks the browsers to reload — once per batch, and never onto a failed
-  load."
+(ns dev.watcher
+  "Polls src/, dev/, resources/ and static/ for changes, reloads the Clojure
+  that changed, and tells browsers to reload once per batch.
+
+  What to load, and in what order, comes from clojure.tools.namespace: it
+  reads the ns forms, so a changed namespace reloads together with
+  everything that depends on it."
   (:require
     [clojure.java.io :as io]
     [clojure.string :as str]
-    [demo.dev.socket :as socket]))
+    [clojure.tools.namespace.dir :as ns-dir]
+    [clojure.tools.namespace.file :as ns-file]
+    [clojure.tools.namespace.track :as ns-track]
+    [dev.socket :as socket]))
 
-;; --- a tiny file watcher: poll modified times under the four source dirs ---
-;; (the real app uses java.nio's WatchService; polling behaves the same on
-;; every OS, which is what you want on stage)
+;; --- change detection: poll modified times under the watched dirs ---
+;; (a real app uses java.nio's WatchService; polling behaves the same on
+;; every OS. Assets are watched too: a .css/.js edit reloads the browser
+;; without loading anything into the JVM)
 
-(defn- watched?
-  "Only source and asset files — never editor droppings (.swp, backups~)."
-  [path]
+(def ^:private source-dirs ["src" "dev"])
+
+(defn- watched? [path]
   (let [n (.getName (io/file path))]
     (and (not (str/starts-with? n "."))
          (or (str/ends-with? n ".clj")
              (str/ends-with? n ".css")
              (str/ends-with? n ".js")))))
 
-(defn- modified-times
-  "Path → last-modified for every file under the watched dirs.
-  Comparing two of these maps is the whole change detector — so it stats
-  everything and leaves the filtering to the diff (watched?)."
-  []
+(defn- modified-times []
   (into {}
     (comp (mapcat #(file-seq (io/file %)))
           (filter #(.isFile ^java.io.File %))
@@ -79,25 +81,53 @@
                      #(.lastModified ^java.io.File %))))
     ["src" "dev" "resources" "static"]))
 
-(defn- load-changed!
-  "Load a changed .clj (other types need no load). True when the browser may
-  reload — a failed load must NOT reload it: the page would look fine while
-  showing stale code (the real app shows a stale-page banner here)."
-  [path]
-  (if (str/ends-with? path ".clj")
-    (try
-      (load-file path)
-      (println "reloaded" path)
-      true
-      (catch Throwable e
-        (println "reload FAILED" path "—" (.getMessage e))
-        false))
-    true))
+;; --- loading: the tracker decides what to load, and in what order ---
+
+(defonce tracker (atom (ns-track/tracker)))
+
+(defn- project-path [^java.io.File f]     ; the tracker reports absolute files
+  (str (.relativize (.toPath (io/file (System/getProperty "user.dir")))
+                    (.toPath f))))
+
+(defn- load-one! [path]
+  (try
+    (load-file path)
+    (println "reloaded" path)
+    true
+    (catch Throwable e
+      (println "reload FAILED" path "—" (.getMessage e))
+      false)))
+
+(defn- reload-clojure! []
+  (if-let [t (try (ns-dir/scan-dirs @tracker source-dirs)
+                  (catch Throwable e
+                    (println "scan FAILED —" (.getMessage e))
+                    nil))]
+    (let [paths (into {} (map (fn [[f n]] [n (project-path f)]))
+                      (::ns-file/filemap t))
+          [loaded ok?] (reduce (fn [[loaded _] ns-sym]
+                                 (if-let [path (paths ns-sym)]
+                                   (if (load-one! path)
+                                     [(conj loaded ns-sym) true]
+                                     (reduced [loaded false]))
+                                   [(conj loaded ns-sym) true]))
+                               [[] true]
+                               (::ns-track/load t))]
+      ;; drain only what loaded: a file that failed stays pending and is
+      ;; retried on the next scan instead of being forgotten
+      (reset! tracker (update t ::ns-track/load #(drop (count loaded) %)))
+      ok?)
+    false))
+
+(defn- prime-tracker! []                  ; at boot everything is already loaded
+  (reset! tracker (-> (ns-dir/scan-dirs (ns-track/tracker) source-dirs)
+                      (assoc ::ns-track/load () ::ns-track/unload ()))))
 
 (defonce watcher (atom nil))
 
 (defn start-watcher! []
   (when-not @watcher
+    (prime-tracker!)
     (reset! watcher
       (doto (Thread.
               (fn []
@@ -109,9 +139,11 @@
                                                  (watched? path))]
                                   path)]
                     (when (seq changed)
-                      ;; load everything first, ONE reload after — sorted, so
-                      ;; a multi-file change (a git checkout!) lands whole
-                      (when (every? true? (mapv load-changed! (sort changed)))
+                      ;; Clojure goes through the tracker (dependency order);
+                      ;; assets need no load at all
+                      (when (if (some #(str/ends-with? % ".clj") changed)
+                              (reload-clojure!)
+                              true)
                         (socket/notify-reload!)))
                     (recur current)))))
         (.setDaemon true)
@@ -138,15 +170,15 @@
 
 **§2d CHECKOUT — the wiring** (landed by `step-1`; `dev-body` is slide 6):
 
-`dev/demo/dev.clj` (new file) — the composition root: the dev routes, the
+`dev/dev/core.clj` (new file) — the composition root: the dev routes, the
 render boundary, and `start!`:
 
 ```clojure
-(ns demo.dev
+(ns dev.core
   (:require
-    [demo.dev.socket :as socket]
-    [demo.dev.static :as static]
-    [demo.dev.watcher :as watcher]
+    [dev.socket :as socket]
+    [dev.static :as static]
+    [dev.watcher :as watcher]
     [demo.main :as main]
     [demo.views :as views]))
 
@@ -203,7 +235,7 @@ render boundary, and `start!`:
 ```
 
 `dev/user.clj` — `start!` now goes through the middleware:
-`'demo.main/start!` → `'demo.dev/start!`.
+`'demo.main/start!` → `'dev.core/start!`.
 
 REPL after wiring (one bootstrap: reload the app, reload the helpers, restart
 the server wrapped — from here the watcher owns saves; §4's REPL call is a
@@ -219,7 +251,7 @@ demo, not a load path):
 
 **Demo:** change `.badge` color in `resources/style.css`, save → instant.
 
-## §3 · The insight — REPL only, TYPE all three
+## §3 · The insight → slides 9–10 (the three facts behind them)
 
 ```clojure
 (meta (read-string "[:div [:span 42]]"))
@@ -244,15 +276,14 @@ demo, not a load path):
 
 ## §4 · Keep the structure → `step-2`
 
-**§4a PASTE — `dev/demo/inspector.clj` (new file), ns + gate set:**
+**§4a CHECKOUT — `dev/dev/inspector.clj` (new file), ns + gate set:**
 
 ```clojure
-(ns demo.inspector
+(ns dev.inspector
   (:require
     [clojure.string :as str]
     [clojure.tools.reader :as tr]
-    [clojure.tools.reader.reader-types :as rt]
-    [clojure.walk :as walk]))
+    [clojure.tools.reader.reader-types :as rt]))
 
 (def ^:private html-tags
   #{"a" "abbr" "address" "article" "aside" "audio" "b" "blockquote" "body"
@@ -270,7 +301,7 @@ demo, not a load path):
     "ellipse" "defs" "stop" "use" "symbol"})
 ```
 
-**§4b TYPE:**
+**§4b CHECKOUT** (the gate — its first user is `tag-tree`, §5):
 
 ```clojure
 (defn element?
@@ -283,29 +314,14 @@ demo, not a load path):
        (contains? html-tags (first (str/split (name (first x)) #"[.#]")))))
 ```
 
-**§4c PASTE** (narrate: one postwalk, one key; 1.12 preserves metadata):
-
-```clojure
-(defn add-file-meta
-  "Stamp :file onto every Hiccup element literal's metadata in form.
-  tools.reader already put :line/:column there; this adds which file."
-  [file form]
-  (walk/postwalk
-    (fn [x]
-      (if (and (element? x) (:line (meta x)))
-        (vary-meta x assoc :file file)
-        x))
-    form))
-```
-
-**§4d TYPE:**
+**§4c CHECKOUT** (told the file name, the reader stamps `:file` itself — slide 11):
 
 ```clojure
 (defn tr-load!
   "load-file, except every Hiccup element literal keeps its source position."
   [path]
   (let [file  (str/replace path #"^src/" "")
-        rdr   (rt/indexing-push-back-reader (slurp path))
+        rdr   (rt/indexing-push-back-reader (slurp path) 1 file)
         eof   (Object.)
         read1 #(tr/read {:eof eof} rdr)]
     (binding [*ns* *ns*, *file* file]
@@ -314,22 +330,20 @@ demo, not a load path):
                    (let [form (read1)]
                      (if (identical? form eof) acc (recur (conj acc form)))))]
         (doseq [form body]
-          (eval (add-file-meta file form)))))))
+          (eval form))))))
 ```
 
-**§4e PASTE — `dev/demo/dev/watcher.clj`** (deliver the "only path that loads
-views" beat out loud): require `[demo.inspector :as inspector]`; replace
-`(load-file path)` inside `load-changed!` with `(load-clj! path)`, and insert
-this block **between `modified-times` and `load-changed!`** (define-before-use — the
-file reloads via plain `load-file`):
+**§4d CHECKOUT — `dev/dev/watcher.clj`** (deliver the "only path that loads
+views" beat out loud): require `[dev.inspector :as inspector]`; insert
+`view-file?` + `load-views!` above `tracker`, teach `load-one!` to route
+views, and re-tag after any non-view load. The tracker still decides *what*
+loads and in what order — this only decides *how*:
 
 ```clojure
 (defn- view-file?
   "True for a view namespace — by filename alone: anything ending in
-  views.clj. That is the whole routing rule: views load through tr-load!
-  so their Hiccup keeps its source positions, everything else through
-  plain load-file. Naive by design. Replace this by logic that fits your
-  own architecture."
+  views.clj. Naive by design. Replace this by logic that fits your own
+  architecture."
   [path]
   (str/ends-with? path "views.clj"))
 
@@ -341,36 +355,37 @@ file reloads via plain `load-file`):
           :when (and (.isFile ^java.io.File f) (view-file? (.getPath ^java.io.File f)))]
     (inspector/tr-load! (.getPath ^java.io.File f))))
 
-(defn- load-clj!
-  "tr-load! is the ONLY path that loads a view namespace — a plain load-file
-  would re-def the views with the default reader and silently strip every
-  tag. And the views were COMPILED by the loader: when anything else changes
-  (the loader itself included), re-tag them."
-  [path]
-  (if (view-file? path)
-    (inspector/tr-load! path)
-    (do (load-file path)
-        (load-views!))))
+;; …in load-one!, the one line that routes views through the loader:
+(if (view-file? path)
+  (inspector/tr-load! path)
+  (load-file path))
+
+;; …in reload-clojure!, right after the batch: the views were COMPILED by
+;; the loader and no ns form records that, so re-tag them whenever anything
+;; else was loaded — the loader itself included.
+(when (and ok?
+           (some #(when-let [path (paths %)] (not (view-file? path))) loaded))
+  (load-views!))
 ```
 
 …and in `dev.clj`'s `start!`: `(watcher/load-views!)` as the *first* line —
 before the server starts, so no request can ever be served from untagged views.
-The second branch of `load-clj!` is what keeps the rest of the talk honest:
+That re-tag in `reload-clojure!` is what keeps the rest of the talk honest:
 every later section edits the *engine* and the views re-tag themselves.
 
 **Demo — REPL:**
 
 ```clojure
-(demo.dev.watcher/load-views!)
+(dev.watcher/load-views!)
 (meta (demo.views/recipe-card (first demo.main/recipes)))
-;; => {:line 14, :column 3, :end-line 31, :end-column 64, :file "demo/views.clj"}
+;; => {:file "demo/views.clj", :line 14, :column 3, :end-line 31, :end-column 64}
 ```
 
-(reader meta is positional-first; the assoc'd `:file` prints **last**)
+(the reader stamps `:file` **first**, then the position)
 
 ## §5 · Carry it to the DOM → `step-3`
 
-**§5a TYPE — `inspector.clj`:**
+**§5a CHECKOUT — `inspector.clj`:**
 
 ```clojure
 (defn tag-tree
@@ -397,7 +412,7 @@ every later section edits the *engine* and the views re-tag themselves.
     :else node))
 ```
 
-**§5b TYPE — `dev.clj`, in `dev-body`:** `body` → `(inspector/tag-tree body)`:
+**§5b CHECKOUT — `dev.clj`, in `dev-body`:** `body` → `(inspector/tag-tree body)`:
 
 ```clojure
 (defn- dev-body
@@ -417,7 +432,7 @@ apart, element by element.
 
 ## §6 · Overlay + click→editor → `step-4`
 
-**§6a PASTE/CHECKOUT — the overlay:**
+**§6a CHECKOUT — the overlay:**
 
 ```
 git restore -s step-4 -- static/dev/inspector.js
@@ -436,10 +451,10 @@ Walk these three in the JS (60–90s max): `chain` (ancestors with `data-src`),
 `sendOpen` (peel `file:line:col`, send `{type: "open"}`), the capturing
 `click` handler (swallows the app's click while inspecting).
 
-**§6b PASTE — two files.** First `dev/demo/dev/socket.clj` gains the peer
+**§6b CHECKOUT — two files.** First `dev/dev/socket.clj` gains the peer
 gate (`send1!` after `notify-reload!`, `origin-ok?` before `ws-handler`);
-then `dev/demo/dev/editor.clj` is a **new file** holding the relay (narrate
-the trust boundary + the naive bridge over the paste):
+then `dev/dev/editor.clj` is a **new file** holding the relay
+(the trust boundary + the naive bridge — slide 13):
 
 ```clojure
 (defn send1! [ch msg]
@@ -447,12 +462,12 @@ the trust boundary + the naive bridge over the paste):
 ```
 
 ```clojure
-(ns demo.dev.editor
+(ns dev.editor
   (:require
     [clojure.java.io :as io]
     [clojure.java.shell :as shell]
     [clojure.string :as str]
-    [demo.dev.socket :as socket]))
+    [dev.socket :as socket]))
 
 (defn- resolve-src
   "The trust boundary: a browser can send any string. Canonicalize and
@@ -466,8 +481,8 @@ the trust boundary + the naive bridge over the paste):
       f)))
 ```
 
-**§6c PASTE — `editor.clj`** (the relay's other half; the dispatch you'll
-TYPE next goes right after it):
+**§6c CHECKOUT — `editor.clj`** (the relay's other half; the dispatch
+block below goes right after it):
 
 ```clojure
 (defn- handle-open! [ch {:keys [src line col]}]
@@ -484,7 +499,7 @@ TYPE next goes right after it):
 
 ```clojure
 (defn- origin-ok?
-  "The PEER trust boundary (demo.dev.editor/resolve-src is the path one). Browsers always
+  "The PEER trust boundary (dev.editor/resolve-src is the path one). Browsers always
   send Origin on a WebSocket handshake — sockets aren't same-origin
   restricted, so any page you have open could try — accept only our own.
   Native clients (the editor agent, curl) send no Origin at all."
@@ -495,7 +510,7 @@ TYPE next goes right after it):
            (str/replace origin #"^https?://" "")))))
 ```
 
-**§6c TYPE — the dispatch** (the shape worth typing; it goes in
+**§6d CHECKOUT — the dispatch** (the shape slide 13 shows; it goes in
 `editor.clj`, after `handle-open!` — and it is public: the composition root
 hands it to the socket):
 
@@ -506,7 +521,7 @@ hands it to the socket):
     nil))
 ```
 
-…**PASTE over `ws-handler`** in `socket.clj` (it grows the origin gate and
+…and `ws-handler` in `socket.clj` grows the origin gate and
 takes the dispatch as an argument — the hub never learns what messages
 mean):
 
@@ -521,7 +536,7 @@ mean):
 ```
 
 …and in `dev.clj` wire the two together — `"/dev/ws"` becomes
-`(socket/ws-handler req editor/handle-msg!)`, with `[demo.dev.editor :as
+`(socket/ws-handler req editor/handle-msg!)`, with `[dev.editor :as
 editor]` required.
 
 **Demo:** Alt+Shift+I → hover → click the spicy pill → editor at views.clj 21:8. Then
@@ -531,7 +546,7 @@ own line is what tells you `.hot` is the right hook.)
 
 ## §7 · Components → `step-5`
 
-**§7a PASTE — `inspector.clj`** (insert above `tag-tree`; `instrument-var!`
+**§7a CHECKOUT — `inspector.clj`** (insert above `tag-tree`; `instrument-var!`
 comes right after it):
 
 ```clojure
@@ -549,7 +564,7 @@ comes right after it):
     h))
 ```
 
-**§7b PASTE** (narrate the var's-meta trick + `::orig` idempotence over it):
+**§7b CHECKOUT** (the var's-meta trick + `::orig` idempotence — slide 14):
 
 ```clojure
 (defn instrument-var!
@@ -569,7 +584,7 @@ comes right after it):
         (alter-var-root v (constantly wrapped))))))
 ```
 
-**§7b′ PASTE:**
+**§7b′ CHECKOUT:**
 
 ```clojure
 (defn instrument-ns!
@@ -581,21 +596,21 @@ comes right after it):
     (instrument-var! v)))
 ```
 
-**§7c TYPE — in `tr-load!`, after the `doseq`:**
+**§7c CHECKOUT — in `tr-load!`, after the `doseq`:**
 
 ```clojure
         (instrument-ns! (ns-name *ns*))
 ```
 
 **Demo:** save `inspector.clj` — the watcher reloads the engine AND re-tags
-the views (that's §4e's `load-clj!` second branch earning its keep; the
+the views (that's §4d's re-tag in `reload-clojure!` earning its keep; the
 terminal shows both reloads). Hover:
 `page ▸ section ▸ recipe-card ▸ h2 ▸ span`; click a card root → the
 `defn recipe-card` line.
 
 ## §8 · The reverse direction → `step-6`
 
-**§8a PASTE — `inspector.clj`, above `tr-load!`:**
+**§8a CHECKOUT — `inspector.clj`, above `tr-load!`:**
 
 ```clojure
 ;; --- the reverse direction: editor cursor -> on-screen element ---
@@ -655,7 +670,7 @@ terminal shows both reloads). Hover:
        first))
 ```
 
-**§8b TYPE:**
+**§8b CHECKOUT:**
 
 ```clojure
 (defn resolve-cursor
@@ -678,7 +693,7 @@ terminal shows both reloads). Hover:
 **§8c CHECKOUT — the glue (relay roles, editor push, highlight JS, agent):**
 
 ```
-git restore -s step-6 -- dev/demo/ static/dev/inspector.js .joyride/scripts/workspace_activate.cljs
+git restore -s step-6 -- dev/ static/dev/inspector.js .joyride/scripts/workspace_activate.cljs
 ```
 
 Then show the `socket.clj` + `editor.clj` diff (45s): clients get roles (`hello`/`cursor` mark
@@ -710,9 +725,9 @@ git switch -f step-7
 ```
 
 Self-healing: the checkout changes `inspector.clj` (+ the overlay JS); the
-watcher loads the new engine, `load-clj!` re-tags the views, and ONE reload
-lands in the browser — `data-callsite` is in the DOM with no manual step
-(watch the terminal print the reloads).
+watcher loads the new engine in dependency order, the re-tag after the batch
+restores the view tags, and ONE reload lands in the browser — `data-callsite`
+is in the DOM with no manual step (watch the terminal print the reloads).
 
 Show on screen, don't type: `tag-callsite`, `wrap-callsites` (the
 `no-wrap-heads` guard + `(meta form)` re-attachment), `call-head` (one
@@ -720,7 +735,7 @@ sentence: unqualified calls this file defines, plus alias-qualified calls
 that resolve to a fn from any views namespace — that's how `(ui/rating …)`
 gets a call site), `collect-calls`, `:callsite` in `resolve-cursor`, and in
 `tr-load!` the eval line now reads
-`(eval (add-file-meta file (wrap-callsites names file form true)))`.
+`(eval (wrap-callsites names file form true))`.
 
 **Demo cursor positions** (verified against `step-7`; in `views.clj` unless noted):
 
@@ -748,7 +763,7 @@ nothing. The watcher then tr-loads and reloads the page on its own.
 Joyride plan B (if the agent won't connect — drive the reverse from the REPL):
 
 ```clojure
-(#'demo.dev.editor/handle-cursor! {:file "demo/ui/views.clj" :line 23 :col 5})
+(#'dev.editor/handle-cursor! {:file "demo/ui/views.clj" :line 23 :col 5})
 ```
 
 Prod beat (REPL):
@@ -757,13 +772,13 @@ Prod beat (REPL):
 demo.views/*render-boundary*
 ;; => #function[clojure.core/identity]   — the app's seam; outside a dev request, even here
 (clojure.java.io/resource "demo/dev.clj")
-;; => #object[java.net.URL … "file:/…/dev/demo/dev.clj"]   — dev/, the :dev alias only
+;; => #object[java.net.URL … "file:/…/dev/core.clj"]   — dev/, the :dev alias only
 ```
 
 Stretch-only (boots a second JVM, ~10s — prod, for real):
 
 ```
-clojure -M -e "(require 'demo.inspector)"
+clojure -M -e "(require 'dev.inspector)"
 ;; => Could not locate demo/inspector__init.class, demo/inspector.clj … on classpath.
 clojure -M -e "(require 'demo.main) (println (re-find #\"data-src|/dev/\" (:body (demo.main/app {:uri \"/\"}))))"
 ;; => nil
