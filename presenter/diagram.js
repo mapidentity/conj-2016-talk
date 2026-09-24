@@ -1,33 +1,65 @@
-/* diagram.js — plays the `flow`s of ```diagram``` figures (see diagram.py). Inlined
-   into slides.html by build_slides.py; the template calls axFlows.enter(slide) from
-   show() and asks axFlows.step(slide) before advancing. The deck/PDF never runs it:
-   there the figure is static and diagram.css shows the numbered hops instead.
+/* diagram.js — plays the `flow`s of ```diagram``` figures (see diagram.py) and draws the
+   speaker's progress line under them. Inlined into slides.html by build_slides.py; the
+   template calls axFlows.enter(slide) from show() and hands it the a and p keys
+   (axFlows.play / axFlows.back). The deck/PDF never runs it: there the figure is static
+   and diagram.css shows the numbered hops instead.
 
-   Why a script and not CSS motion: one clock drives token, pill, glow and edge, so
-   "play the next flow on →", "finish it on a second →", loop-with-rest, restart on
-   re-entry and prefers-reduced-motion are plain branches, not animation plumbing.
-   It only ever sets a transform attribute and toggles classes, which every SVG
-   engine has done the same way for 15 years — no offset-path, no keyframe names,
-   no ids (every slide lives in one document). The geometry is precomputed by the
-   generator: data-pts is the edge's own route in travel order, data-ms the hop's
-   time, data-smin/-smax/-off the stretch beside the wire where its message rides.
+   Why a script and not CSS motion: one clock drives token, pill, glow, edge and the
+   progress line, so "a plays the next flow", "a again restarts it", "p steps back",
+   loop-with-rest, reset on arrival and prefers-reduced-motion are plain branches, not
+   animation plumbing. It only ever sets a transform and toggles classes, which every
+   engine has done the same way for 15 years — no offset-path, no keyframe names, no ids
+   (every slide lives in one document). The geometry is precomputed by the generator:
+   data-pts is the edge's own route in travel order, data-ms the hop's time,
+   data-smin/-smax/-off the stretch beside the wire where its message rides.
+
+   Navigation never plays a flow: → / Space / PageDown / click always go to the next
+   slide. On a slide with flows the template passes two keys on (either case, no Ctrl /
+   Cmd / Alt, no auto-repeat):
+     a   nothing playing: play the flow at the cursor. Playing: restart that flow from its
+         start — while its token travels. In the 0.9 s hold after it has gone in, the flow
+         looks done and counts as done: a plays the next flow (the last one: replays it).
+         A second a within 250 ms of the last one is a key bounce or double tap: ignored.
+     p   one stop back. Playing: stop, back to the start of that flow (nothing lit). Idle
+         at the start of flow k > 1: to the start of flow k-1. Idle after the last flow:
+         to the start of the last flow. At the start of flow 1: nothing. So "show that
+         again" is p, then a (p also clears the bounce guard, so that a always counts).
+   The stops are the start of each flow plus "after the last". Arriving on a slide (any
+   direction, a #N jump, a reload) puts the cursor at flow 1 with nothing playing and
+   nothing lit; leaving stops everything. A flow that finishes moves the cursor to the
+   next one; after the last one it stays on the last, so a replays it.
 
    Per slide, a class on the figure (a {.class} line before the fence) picks:
-     flow-auto (default)  play every flow once, 2 s after the cut
-     flow-loop            play them, rest 2 s, play again, while the slide is up
-     flow-step            → / Space / PageDown / click plays the next flow; → while
-                          the token is still travelling finishes the flow; once the
-                          token has arrived, → goes on (next flow, or next slide)
-     flow-off             never animate (the static picture, numbers hidden)      */
+     flow-keys            only a and p play (flow-step is the same: the talk's old name)
+     flow-auto (default)  the first flow plays by itself, 2 s after the cut, as if a had
+                          been pressed; the rest is flow-keys (the cursor then on flow 2).
+                          An a or p before or during it takes over.
+     flow-loop            plays them all, GAP apart, rests 2 s, plays again while the slide
+                          is up; the first a or p stops the loop and from then on it is
+                          flow-keys
+     flow-off             never animates: no line, the keys do nothing
+
+   Reduced motion: nothing moves. a shows the cursor flow's numbered hops (the print
+   layer) and moves the line one whole segment on; p hides them and steps back one stop.
+   flow-auto shows flow 1's numbers on arrival (its "autoplay"; the line one segment on).
+   flow-loop shows every flow's numbers at once on arrival (the line full); its first a
+   starts over at flow 1, its first p hides them and steps back one stop.
+
+   The progress line (look: diagram.css, .ax-prog): a hairline along the very bottom of the
+   slide, as wide as the figure, one segment per flow, each as long as its flow's own time
+   (the hold included), with a small dot at each boundary between two flows. Its fill runs
+   from the left to where the clock is — drawn in the same render() as the token, from the
+   same t — and rests on the cursor's stop while nothing plays. It is plain DOM in the
+   figure, outside the SVG, built on the first visit.                                    */
 (function () {
   'use strict';
-  var START = 2000,  // after the hard cut, before autoplay: the audience finds the new parts first
+  var START = 2000,  // flow-auto/-loop: after the hard cut, before autoplay: the audience finds the new parts first
       PRE = 260,     // the token waits at the first door
       DWELL = 170,   // … and at every node between hops
       HOLD = 900,    // after the last hop, the whole path stays lit (the token has gone in)
-      GAP = 600,     // between two flows of one slide
+      GAP = 600,     // flow-loop: between two flows of one slide
       REST = 2000,   // flow-loop: the static picture between rounds
-      BOUNCE = 250;  // flow-step: a second press this soon after a start is a clicker bounce
+      BOUNCE = 250;  // a second a this soon after the last is a key bounce or double tap
   var KINDS = ['fwd', 'rev', 'warn'];
   var mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   var S = null, raf = 0, timer = 0, frozen = null;
@@ -86,20 +118,30 @@
     return [q[0] + h.off[0], q[1] + h.off[1]];
   }
 
-  // ---- what is on screen at time t: {flow, u} (u = ms into that flow), or null
+  // ---- the one run: S.run = {j, at} is flow j playing from time `at` (a future `at`:
+  // autoplay waiting for its start). What is on screen at time t: {j, u} (u = ms into
+  // flow j), or null.
   function frame(t) {
-    if (!S) return null;
-    if (S.run) return t >= S.run.at && t < S.run.at + S.run.flow.dur ? { flow: S.run.flow, u: t - S.run.at } : null;
-    if (S.t0 === null || t < S.t0 || !S.flows.length) return null;
-    var x = t - S.t0;
-    if (S.mode === 'loop') x %= S.total + REST;
-    for (var j = 0; j < S.flows.length; j++) {
-      var f = S.flows[j];
-      if (x < f.dur) return { flow: f, u: x };
-      x -= f.dur + GAP;
-      if (x < 0) return null;
+    if (!S || !S.run) return null;
+    var u = t - S.run.at;
+    return u >= 0 && u < S.flows[S.run.j].dur ? { j: S.run.j, u: u } : null;
+  }
+  // runs that have ended by t move the cursor on. flow-auto's autoplay is its first flow
+  // only; flow-loop chains the next one from the end of the last (not from when a tick
+  // noticed it), so a round never drifts
+  function advance(t) {
+    while (S && S.run && t >= S.run.at + S.flows[S.run.j].dur) {
+      var j = S.run.j, end = S.run.at + S.flows[j].dur, last = j + 1 === S.flows.length;
+      S.stop = j + 1; S.run = null;
+      if (!S.auto || S.mode !== 'loop') { S.auto = false; break; }
+      S.run = { j: last ? 0 : j + 1, at: end + (last ? REST : GAP) };
     }
-    return null;
+  }
+  // how far along the line (ms of flow time) the clock is: inside a run, or at the cursor's stop
+  function along(t) {
+    var r = S.run;
+    if (r && t >= r.at) return S.line.B[r.j] + Math.min(t - r.at, S.flows[r.j].dur);
+    return S.line.B[S.stop];
   }
 
   function cls(el, name, on) { if (el && el.classList.contains(name) !== on) el.classList.toggle(name, on); }
@@ -143,10 +185,19 @@
     if (active && !hidden) place(f.token, where);
   }
 
+  // the progress line: the fill to x (0..1), each boundary dot filled once reached
+  function paintLine(ms) {
+    var L = S.line;
+    if (!L) return;
+    var v = 'scaleX(' + (ms / L.total).toFixed(4) + ')';
+    if (L.v !== v) { L.fill.style.transform = v; L.v = v; }
+    L.dots.forEach(function (d, k) { cls(d, 'ax-passed', ms >= L.B[k + 1] - 0.5); });
+  }
+
   function render(t) {
-    if (!S) return;
+    if (!S || S.mode === 'off') return;
     var fr = frame(t), acc = { lit: [], trail: [], off: [], land: [] };
-    S.flows.forEach(function (f) { paint(f, fr && fr.flow === f ? fr.u : null, acc); });
+    S.flows.forEach(function (f, j) { paint(f, fr && fr.j === j ? fr.u : null, acc); });
     S.edges.forEach(function (e) {                      // an edge can serve several hops: decide once
       var lit = null, trail = null;
       acc.lit.forEach(function (l) { if (l[0].indexOf(e) >= 0) lit = l[1]; });
@@ -160,39 +211,63 @@
       var k = null; acc.land.forEach(function (l) { if (l[0][0] === el) k = l[1]; });
       cls(el, 'ax-landed', !!k); KINDS.forEach(function (kk) { cls(el, 'ax-lf-' + kk, k === kk); });
     });
+    paintLine(along(t));
     S.playing = !!fr;
   }
 
-  // the next moment anything changes (for sleeping between rounds), or null
+  // the next moment anything changes (animating: now; autoplay waiting: its start), or null
   function wake(t) {
-    if (!S || frozen !== null) return null;
-    if (S.run) return t < S.run.at + S.run.flow.dur ? t : null;
-    if (S.t0 === null || !S.flows.length) return null;
-    if (t < S.t0) return S.t0;
-    if (frame(t)) return t;
-    var P = S.total + REST, base = S.mode === 'loop' ? S.t0 + Math.floor((t - S.t0) / P) * P : S.t0, at = base;
-    for (var j = 0; j < S.flows.length; j++) { if (at > t) return at; at += S.flows[j].dur + GAP; }
-    return S.mode === 'loop' ? base + P : null;
+    if (!S || !S.run || frozen !== null) return null;
+    return t < S.run.at ? S.run.at : t;
   }
 
   function tick() {
     raf = 0; clearTimeout(timer); timer = 0;
+    if (!S) return;
     var t = now();
+    if (frozen === null) advance(t);
     render(t);
-    if (S && S.run && !S.playing) S.run = null;
     var w = wake(t);
     if (w === null) return;
     if (w <= t + 16) raf = requestAnimationFrame(tick);
     else timer = setTimeout(tick, w - t - 8);
   }
 
+  // reduced motion: which flow's numbered hops show — k, 'all' (the static overview) or -1
+  function reveal(k) {
+    S.svgs.forEach(function (svg) { cls(svg, 'ax-static', k === 'all'); });
+    S.flows.forEach(function (f, j) { cls(f.nums, 'ax-shown', j === k); });
+  }
+
   function stop() {
     if (raf) cancelAnimationFrame(raf); clearTimeout(timer); raf = 0; timer = 0;
+    frozen = null;
     if (S) {
-      S.run = null; S.t0 = null; frozen = null; render(0);
+      S.run = null; S.auto = false; S.stop = 0; render(0);
       S.svgs.forEach(function (svg) { cls(svg, 'ax-static', false); });
       S.flows.forEach(function (f) { cls(f.nums, 'ax-shown', false); });
     }
+  }
+
+  // the line's DOM, in the figure (outside the SVG), built once per slide: a fill and one
+  // dot per boundary between two flows. Placement and look: diagram.css.
+  function line(fig, flows) {
+    var B = [0];
+    flows.forEach(function (f, j) { B.push(B[j] + f.dur); });
+    var total = B[flows.length], el = null;
+    for (var c = fig.firstElementChild; c; c = c.nextElementSibling) if (c.classList.contains('ax-prog')) el = c;
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'ax-prog'; el.setAttribute('aria-hidden', 'true');
+      var fill = document.createElement('div'); fill.className = 'ax-prog-fill'; el.appendChild(fill);
+      for (var k = 1; k < flows.length; k++) {
+        var d = document.createElement('div'); d.className = 'ax-prog-dot';
+        d.style.left = (100 * B[k] / total).toFixed(3) + '%'; el.appendChild(d);
+      }
+      fig.appendChild(el);
+    }
+    return { el: el, fill: el.querySelector('.ax-prog-fill'), dots: [].slice.call(el.querySelectorAll('.ax-prog-dot')),
+             B: B, total: total, v: null };
   }
 
   function load(slide) {
@@ -200,61 +275,88 @@
     var flows = [];
     svgs.forEach(function (svg) { [].forEach.call(svg.querySelectorAll('.ax-flow'), function (g) { flows.push(parseFlow(g)); }); });
     if (!flows.length) return null;
-    var fig = svgs[0].parentNode.classList;
-    var mode = fig.contains('flow-step') ? 'step' : fig.contains('flow-loop') ? 'loop' : fig.contains('flow-off') ? 'off' : 'auto';
+    var fig = svgs[0].parentNode, fc = fig.classList;
+    var mode = fc.contains('flow-keys') || fc.contains('flow-step') ? 'keys' : fc.contains('flow-loop') ? 'loop' : fc.contains('flow-off') ? 'off' : 'auto';
     var edges = [], pills = [], lands = [];
     flows.forEach(function (f) { if (f.lands && lands.indexOf(f.lands) < 0) lands.push(f.lands); });
     flows.forEach(function (f) { f.hops.forEach(function (h) {
       h.edges.forEach(function (e) { if (edges.indexOf(e) < 0) edges.push(e); });
       if (h.pill && pills.indexOf(h.pill) < 0) pills.push(h.pill);
     }); });
-    var total = flows.reduce(function (a, f) { return a + f.dur; }, 0) + GAP * (flows.length - 1);
-    return { slide: slide, svgs: svgs, flows: flows, edges: edges, pills: pills, lands: lands, mode: mode, total: total,
-             t0: null, run: null, next: 0, playing: false };
+    return { slide: slide, svgs: svgs, flows: flows, edges: edges, pills: pills, lands: lands, mode: mode,
+             line: mode === 'off' ? null : line(fig, flows),
+             stop: 0, run: null, auto: false, lastA: -Infinity, shown: -1, playing: false };
   }
 
+  function mine(slide) { return !!S && S.slide === slide && S.mode !== 'off'; }
+
   var api = {
-    /* a slide was shown (also on re-entry and on a #N jump): reset, then schedule */
+    /* a slide was shown (also on re-entry and on a #N jump): reset, then maybe schedule */
     enter: function (slide) {
       stop();
       S = load(slide);
       if (!S || S.mode === 'off') return;
       if (reduced()) {                                  // no motion: the print look instead
-        if (S.mode !== 'step') S.svgs.forEach(function (svg) { cls(svg, 'ax-static', true); });
-        return;
+        if (S.mode === 'auto') { S.shown = 0; reveal(0); S.stop = 1; }                          // "autoplays" flow 1
+        else if (S.mode === 'loop') { S.shown = 'all'; reveal('all'); S.stop = S.flows.length; } // all of them, at rest
+        render(now()); return;
       }
-      if (S.mode !== 'step') { S.t0 = now() + START; tick(); }
+      if (S.mode !== 'keys') { S.auto = true; S.run = { j: 0, at: now() + START }; }   // flow-auto / flow-loop
+      tick();
     },
-    /* → on this slide: true = consumed (a flow started, was finished, or it was a bounce), false = advance */
-    step: function (slide) {
-      if (!S || S.slide !== slide || S.mode !== 'step') return false;
-      if (reduced()) {                                  // reveal each flow's numbered path instead
-        if (S.next >= S.flows.length) return false;
-        S.flows.forEach(function (f, j) { cls(f.nums, 'ax-shown', j === S.next); });
-        S.next++; return true;
-      }
+    /* the a key: play the flow at the cursor, or restart the one travelling. true = handled */
+    play: function (slide) {
+      if (!mine(slide)) return false;
       var t = now();
-      if (S.run) {
-        var u = t - S.run.at;
-        if (u < BOUNCE) return true;                    // a clicker's double press: keep playing
-        if (u < S.run.flow.end) { S.run = null; tick(); return true; }   // still travelling: finish (the static picture)
-        S.run = null;                                   // arrived, path still lit: that press means "go on"
+      if (t - S.lastA < BOUNCE) return true;            // a bounce: keep what is happening
+      S.lastA = t;
+      if (frozen === null) advance(t);
+      S.auto = false;                                   // a key takes over from autoplay
+      var n = S.flows.length;
+      if (reduced()) {                                  // reveal the cursor flow's numbers, one whole segment on
+        if (S.shown === 'all') S.stop = 0;              // from flow-loop's overview: start over at flow 1
+        var k = Math.min(S.stop, n - 1);
+        S.shown = k; reveal(k); S.stop = k + 1; render(t); return true;
       }
-      if (S.next >= S.flows.length) { tick(); return false; }
-      S.run = { flow: S.flows[S.next++], at: t };
+      var fr = frame(t);
+      if (fr && fr.u >= S.flows[fr.j].end) { S.stop = fr.j + 1; fr = null; }   // the hold: its token has gone in, it is done
+      S.run = { j: fr ? fr.j : Math.min(S.stop, n - 1), at: t };
       tick(); return true;
     },
-    /* for tests and screenshots: freeze the clock at ms into flow j of the current slide */
+    /* the p key: one stop back (see the top). true = handled */
+    back: function (slide) {
+      if (!mine(slide)) return false;
+      var t = now();
+      S.lastA = -Infinity;                              // p, then a at once is on purpose, not a bounce
+      if (frozen === null) advance(t);
+      S.auto = false;
+      if (reduced()) {
+        if (S.shown !== -1) { S.shown = -1; reveal(-1); }
+        if (S.stop > 0) S.stop--;
+        render(t); return true;
+      }
+      var fr = frame(t);
+      if (fr) S.stop = fr.j;                            // playing: back to that flow's start
+      else if (S.stop > 0) S.stop--;
+      S.run = null;
+      tick(); return true;
+    },
+    /* for tests and screenshots: freeze the clock at ms into flow j of the current slide
+       (the line follows: it shows exactly what the flow shows) */
     at: function (ms, j) {
-      if (!S) return null;
+      if (!S || S.mode === 'off') return null;
       if (raf) cancelAnimationFrame(raf); clearTimeout(timer); raf = 0; timer = 0;
-      frozen = 1e9; S.t0 = null; S.run = { flow: S.flows[j || 0], at: frozen - ms };
+      frozen = 1e9; S.auto = false; S.run = { j: j || 0, at: frozen - ms };
       render(frozen);
       return api.info();
     },
-    release: function () { frozen = null; if (S) { S.run = null; render(now()); } },
+    release: function () { frozen = null; if (S && S.mode !== 'off') { S.run = null; render(now()); } },
     info: function () {
-      return S && { mode: S.mode, playing: S.playing, next: S.next, total: S.total,
+      if (!S) return null;
+      var t = now(), n = S.flows.length;
+      return { mode: S.mode, playing: S.playing, stop: S.stop, cursor: Math.min(S.stop, n - 1), auto: S.auto,
+        running: S.run ? S.run.j : null, since: S.run ? t - S.run.at : null, shown: S.shown,
+        line: S.line ? { B: S.line.B, total: S.line.total, at: S.mode === 'off' ? 0 : along(t) / S.line.total } : null,
         flows: S.flows.map(function (f) { return { id: f.id, kind: f.kind, hops: f.hops.length, dur: f.dur, end: f.end,
           hopTimes: f.hops.map(function (h) { return [h.t0, h.t1]; }) }; }) };
     }

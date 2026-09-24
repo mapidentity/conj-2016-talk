@@ -14,7 +14,7 @@ Who holds what:
 | `../livecode-talk.md` | the content: the `<!-- diagram … -->` block (geometry, labels, states, flows) and the slides that show it |
 | `diagram.py` | structure and metrics: parsing, routing, font sizes, and the build checks |
 | `diagram.css` | the look of `svg.ax` (the map) and `svg.axm` (the minimap): colours, weights and dashes |
-| `diagram.js` | playing the flows in `slides.html` (the deck never runs it) |
+| `diagram.js` | playing the flows in `slides.html` on the `a` / `p` keys, and the progress line under them (the deck never runs it) |
 | `slides-template.html` | where a map or minimap sits on a projector slide, and how big it is |
 | `build_presenter.py` | the same for the deck's slide cards |
 
@@ -69,7 +69,8 @@ scale on every map slide, and a cut from one state to the next moves nothing. A
 ### ` ```minimap NAME K ID,ID…``` `: the you-are-here inset
 
 This draws state K small, in the free space at the right of the heading row, with
-the listed parts filled in the slides' accent colour.
+the listed parts filled in the map's highlighter ink, so "here" on a code slide
+looks like "new" on a map slide.
 
 - **The IDs** name regions (zones), nodes, rows, cells (`node.part`) or edges, and
   each must be on screen in state K. They are separated by commas, and spaces
@@ -217,25 +218,35 @@ outline: not built yet), `fallback` (dashed and thinner), `human`, `new`, `fwd`
 (violet) and `rev` (green). `fwd` and `rev` colour a loop's direction: in the final
 view, and in any state whose new parts run code → page (state 9 gives its cursor
 path `+rev:`). On a new part `rev` wins over the violet new tint, so the part is
-green and heavy: hue is the meaning, newness only weight.
+highlighted in green ink: hue is the meaning, the highlighter is the newness.
 
 **State classes the generator adds:**
 - `ax-cast`: the first state; everything is drawn equal.
-- `ax-new`: first on screen in this state. It is brighter, heavier and tinted, for
-  exactly one state. A part that comes back after an absence, or an old part the
+- `ax-new`: first on screen in this state, for exactly one state. It is drawn with
+  the highlighter: boxes, rows, cells, pills, edge labels, a zone's caption and
+  a note's or mark's words are filled with light ink and lettered dark and bold;
+  a new wire is drawn in the ink over a translucent band (`.ax-glow`, the path
+  `diagram.py` emits under every edge's line; hidden unless the look shows it).
+  Words without a plate of their own (notes, mark labels) get one (`.ax-tbg`),
+  also hidden unless the look shows it. A part that comes back after an absence, or an old part the
   state is about, is not new by itself: give it `+K-K:new` (the talk does this for
   you and F5 in state 11, the typed `(load-file …)` in state 2, and the
   tr-load! → views wire in state 8).
 - `ax-old`: on screen in an earlier state.
 - `ax-changed`: a label range or a class starts in this state. Only additions
-  count.
+  count. The new words are highlighted (the box, row or label plate takes the
+  ink), the wire is not; a changed role with a look of its own (`warn`,
+  `fallback`) keeps that look, with its words in bold.
 
 **Colour meaning:**
 - violet: page → code, and the dev machinery;
 - green: code → page;
 - amber: danger or a bypass.
 
-A new gap stays amber: hue is the meaning, and newness is shown only by weight.
+A new gap stays amber: hue is the meaning, and the highlighter shows the
+newness (amber ink under a new `cross`/`q` mark or gap). The loops are wires,
+never filled, so a filled violet part always means "new here" and a violet wire
+always means page → code.
 Violet and green differ in hue only (the same weight and dash): they stay apart for
 deuteranopia, protanopia and tritanopia, but not in greyscale, where the pills'
 words and the arrowheads carry the direction. A dash means a socket, a bypass or a
@@ -269,21 +280,53 @@ flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
   highlighted span, the opened buffer, the reloaded page. It lights up in the
   flow's colour when the token arrives.
 - **Several flows in one state** play in the order they are written, one per press
-  on a `flow-step` slide. Split a story where the speaker wants to pause.
+  of `a`. Split a story where the speaker wants to pause.
 
 ### How a slide plays them
 
-The class line before the ` ```diagram ``` ` fence decides:
+Navigation never plays a flow: → / Space / PageDown / a click always go to the next
+slide, and ← / PageUp to the previous one, whatever is playing. The flows have their
+own two keys, on any slide with flows (either case; Ctrl/Cmd/Alt+`a` stay the
+browser's, and a held key does not repeat):
+
+| key | behaviour |
+| --- | --- |
+| `a` | Nothing playing: plays the flow at the cursor.<br>Playing: restarts that flow from its start, while its token travels. In the 0.9 s hold after the token has gone in, the flow looks done and counts as done: `a` plays the next flow (after the last one: replays it).<br>A second `a` within 250 ms of the last one is a key bounce or double tap and is ignored. |
+| `p` | One stop back.<br>Playing: stops, back to the start of that flow (nothing lit).<br>Idle at the start of flow k > 1: to the start of flow k−1.<br>Idle after the last flow: to the start of the last one.<br>At the start of flow 1: nothing.<br>It also clears the bounce guard, so the `a` right after it always counts. |
+
+The stops are the start of each flow, plus "after the last". Arriving on a slide
+(by →, ←, `#N` or a reload) puts the cursor on flow 1 with nothing playing and
+nothing lit; leaving stops everything. When a flow finishes, the cursor moves on to
+the next flow; after the last one it stays on the last, so `a` replays it. To show a
+flow again: `p`, then `a`.
+
+The class line before the ` ```diagram ``` ` fence decides what happens without keys:
 
 | class | behaviour |
 | --- | --- |
-| `flow-step` (the talk's mode) | Each press of → / Space / PageDown / click plays the next flow.<br>A press while the token is travelling finishes the flow (the static picture).<br>A press after it has arrived goes on: the next flow, or the next slide once every flow has played.<br>A second press within 250 ms of a start is a clicker bounce and is ignored.<br>← always goes back at once. |
-| `flow-auto` (default) | Plays every flow once, 2 s after the cut. |
-| `flow-loop` | Plays, rests 2 s, and repeats while the slide is up. Not for the talk: it keeps moving while the speaker talks, and it is costly on a software-rendered browser. |
-| `flow-off` | Only the static picture. |
+| `flow-keys`, or `flow-step` (the same; the talk's) | Only `a` and `p` play. |
+| `flow-auto` (default) | The first flow plays by itself, 2 s after the cut, as if `a` had been pressed; the cursor then moves on to flow 2, and the rest is `flow-keys`. An `a` or `p` before or during it takes over. |
+| `flow-loop` | Plays every flow, 0.6 s apart, rests 2 s, and repeats while the slide is up. The first `a` or `p` stops the loop: from then on the slide is `flow-keys`. Not for the talk: it keeps moving while the speaker talks, and it is costly on a software-rendered browser. |
+| `flow-off` | Only the static picture: no progress line, and the keys do nothing. |
 | `pop` (combines with the others) | On a forward arrival, the state's new parts pop for 220 ms (scale 1.08 → 1 and a brightness flash; opacity never changes). |
 
-Arriving on a slide always starts from scratch, whether by →, ←, `#N` or a reload.
+### The progress line
+
+Under a map with flows, a hairline runs along the very bottom of the projector
+slide, as wide as the figure and below the `N / 33` counter. It is for the speaker,
+not the audience:
+- One segment per flow, each as long as that flow takes (its 0.9 s hold included).
+  When the state has two or more flows, a small dot marks each boundary; a dot is
+  hollow until the line reaches it, then solid, with a thin ring of the background
+  that keeps it apart from the fill.
+- A thicker fill grows from the left while a flow plays. The same clock drives it
+  and the token, so it shows exactly where the animation is. Idle, it rests at the
+  cursor's stop: empty on arrival, at a dot between flows, full after the last one.
+- It is quiet on purpose: a 1 px track at 1.3:1 on the background, a 3 px fill at
+  2.4:1 (the counter's own colour). Whoever knows where to look can read it.
+- `diagram.js` builds it as plain DOM in the figure (outside the SVG, no ids), and
+  `diagram.css` holds its look. It is fixed-positioned, so it never moves the slide.
+  Print hides it; the deck and the PDF never have it, since they run no script.
 
 **Timing** is set in `diagram.py` (per hop) and `diagram.js` (the pauses):
 - a hop shorter than 100 px takes 450 ms;
@@ -300,8 +343,11 @@ Arriving on a slide always starts from scratch, whether by →, ←, `#N` or a r
   A number keeps 56 units (centre to pill) from every pill of a different message,
   static or parked, so on a wire that carries several messages (`/dev/ws` →
   `inspector.js`: open and highlight) it never sits beside the wrong one.
-- Under reduced motion on a `flow-step` slide, each → reveals one flow's numbers
-  instead, so the number of presses stays the same.
+- Under reduced motion, `a` reveals the cursor flow's numbered hops instead, and
+  moves the progress line one whole segment on; `p` hides them and steps back one
+  stop. `flow-auto` shows flow 1's numbers on arrival (its autoplay, the line one
+  segment on). `flow-loop` shows every flow's numbers at once (the line full); its
+  first `a` starts over at flow 1, its first `p` hides them and steps back one stop.
 
 ## Build checks
 

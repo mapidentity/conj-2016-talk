@@ -57,7 +57,8 @@ DSL — one statement per line, `#` starts a comment:
         the box or row where the flow's effect shows (the highlighted span, the opened buffer): it lights
         up in the flow's colour while the path stays lit.
         How a slide plays them is the slide's business: {.flow-auto} (default),
-        {.flow-step}, {.flow-loop}, {.flow-off} on the line before the fence.
+        {.flow-keys} (= {.flow-step}: only the a / p keys), {.flow-loop},
+        {.flow-off} on the line before the fence (diagram.js, DIAGRAM.md).
 
   every element also takes
     @S  @S-E  @S-E,K…             visible from S on / S..E / several ranges
@@ -809,6 +810,8 @@ class Diagram:
         kinds = " ".join(f"ax-k-{f}" for f in ("ws", "gap", "human") if f in el.flags)
         s = [f'<g class="ax-edge {kinds} {self.state(el, k)}" data-ax="{el.id}">']
         if "over" in el.flags: s.append(f'<path class="ax-halo" d="{d}"/>')
+        # the wire's underlay (a highlighter band on a new edge); diagram.css decides when it shows
+        s.append(f'<path class="ax-glow" d="{d}"/>')
         s.append(f'<path class="ax-line" d="{d}"/>' + "".join(f'<path class="ax-head" d="{h}"/>' for h in heads))
         s.append("</g>")
         return "".join(s)
@@ -896,8 +899,15 @@ class Diagram:
 
     def _note(self, el, k):
         fs = int(el.opts.get("size", FS["note"]))
-        return (f'<text class="ax-note{" ax-mono" if el.mono else ""} {self.state(el, k)}" data-ax="{el.id}" x="{el.x:.1f}" y="{el.y:.1f}" '
-                f'text-anchor="{el.opts.get("anchor", "start")}" font-size="{fs}">{esc(el.text(k))}</text>')
+        t, anc, st = el.text(k), el.opts.get("anchor", "start"), self.state(el, k)
+        plate = ""
+        if t:                                   # a plate for the words, as edge labels have; diagram.css decides when it shows
+            tw = text_w(t, fs, el.mono, bold=True)
+            x0 = el.x - tw / 2 if anc == "middle" else el.x - tw if anc == "end" else el.x
+            plate = (f'<rect class="ax-tbg ax-note-bg {st}" data-ax="{el.id}" x="{x0 - 6:.1f}" y="{el.y - fs * .82:.1f}" '
+                     f'width="{tw + 12:.1f}" height="{fs * 1.14:.1f}" rx="5"/>')
+        return (plate + f'<text class="ax-note{" ax-mono" if el.mono else ""} {st}" data-ax="{el.id}" x="{el.x:.1f}" y="{el.y:.1f}" '
+                f'text-anchor="{anc}" font-size="{fs}">{esc(t)}</text>')
 
     def _mark(self, el, k):
         x, y = el.x, el.y
@@ -913,7 +923,8 @@ class Diagram:
             g = (f'<circle class="ax-glyph" cx="{x:.1f}" cy="{y:.1f}" r="{MARK_R}"/>'
                  f'<text class="ax-q" x="{x:.1f}" y="{y + FS["mark"] * .36:.1f}" text-anchor="middle" font-size="{FS["mark"]}">?</text>')
         ml = self._mark_label(el, k)
-        lbl = f'<text x="{ml[1]:.1f}" y="{ml[2]:.1f}" text-anchor="{ml[3]}" font-size="{FS["mark"]}">{esc(ml[0])}</text>' if ml else ""
+        lbl = (f'<rect class="ax-tbg" x="{ml[4][0] - 6:.1f}" y="{ml[2] - FS["mark"] * .82:.1f}" width="{ml[4][2] + 12:.1f}" height="{FS["mark"] * 1.14:.1f}" rx="5"/>'
+               f'<text x="{ml[1]:.1f}" y="{ml[2]:.1f}" text-anchor="{ml[3]}" font-size="{FS["mark"]}">{esc(ml[0])}</text>') if ml else ""
         return f'<g class="ax-mark ax-m-{el.mkind} {self.state(el, k)}" data-ax="{el.id}">{g}{lbl}</g>'
 
     def _mark_label(self, el, k):

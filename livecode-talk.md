@@ -242,7 +242,7 @@ Patrick de Kruif · Clojure/Conj 2026 {.sub}
 > New: the DEV ONLY band — the watcher, `/dev/ws`, `reload.js`,
 > `dev-body` at the seam.
 
-> → plays save-load, → plays save-reload, → next slide.
+> `a` plays save-load, `a` plays save-reload, → next slide.
 
 **[SLIDE 4: hot reload]** "I've set my editor to save when switching context. And when it does that, something should inform the server to reload the file. If that succeeds, something should let the browser know to do a page refresh. Of course I could let Calva or Emacs do the reloading but lets not rely on any particular editor unless we really have to. And of course, all the development tooling that we add should not ship to production. Using macros would be one way to do that, but deps tools gives us something out of the box."
 
@@ -391,7 +391,7 @@ ws.onmessage = function (e) {
 
 <!-- slide 10 · the question -->
 # 🖝 What do we need to point at a pixel\
-and ask ==which Clojure made it==?
+and ask ==which Clojure form made it==?
 
 ```html
 <span class="badge hot">🌶 spicy</span>
@@ -654,7 +654,7 @@ tell?"
 > (`origin-ok?` at the /dev/ws handshake, `resolve-src` on the dispatch),
 > `code -g` into the editor. The ? is gone.
 
-> → plays click-open, → next slide.
+> `a` plays click-open, → next slide.
 
 <!-- page "The overlay, the trust boundary, the dispatch" @17:24
   slide 19
@@ -833,7 +833,7 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 > path: `resolve-cursor`, `highlight` → `inspector.js` → page. `open`
 > now rides the Joyride wire; `code -g` is the fallback.
 
-> → plays cursor, → next slide.
+> `a` plays cursor, → next slide.
 
 <!-- page "An index, an agent, a highlighter" @22:48
   slide 23
@@ -1027,7 +1027,7 @@ exactly when you should stop trusting me and ask: how does it *break*?"
 > `load-file` re-defs `demo.views` untagged. Back, lit: you and F5 —
 > the watcher stays silent, so F5 is by hand again.
 
-> → plays calva-load, → plays by-hand, → next slide.
+> `a` plays calva-load, `a` plays by-hand, → next slide.
 
 <!-- page "The re-def that strips every tag" @30:12
   slide 27
@@ -1148,7 +1148,7 @@ production. There, we still throw it away."
 > The whole loop, both directions lit: violet page → code, green
 > code → page.
 
-> → plays pixel-paren, → plays cursor-pixel, → next slide.
+> `a` plays pixel-paren, `a` plays cursor-pixel, → next slide.
 
 <!-- page "What you take home" @34:14
   slide 31
@@ -1485,7 +1485,7 @@ edge e-light  overlay:t=1720 -> page:b=1720   @9
 key k-fwd fwd "page → code"  1100,106  @13
 key k-rev rev "code → page"  1100,150  @13
 
-# ---- message flows: a bare @K is state K only; the slide's {.flow-step} plays one per press ----
+# ---- message flows: a bare @K is state K only; on a {.flow-step} slide, a plays the next flow, p steps back ----
 # §1: the watcher loads first (dependency order); only after every load succeeded does it send "reload"
 flow save-load @3                     : e-save, e-poll, e-dep, e-def
 flow save-reload @3 lands=page        : e-notify, e-wsreload "reload", e-reloadpage, e-get, e-call, e-html

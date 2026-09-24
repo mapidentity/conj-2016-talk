@@ -19,9 +19,9 @@ Syntax (documented in README.md, "Slides"):
                           |---|---| separator row follows it
   ```diagram NAME K```   state K of the `<!-- diagram NAME · note -->` block
                           (diagram.py, DIAGRAM.md), full size; the fence body
-                          stays empty. A {.flow-step|.flow-auto|.flow-loop|
-                          .flow-off} line before it picks how the state's flows
-                          play; {.pop} pops its new parts
+                          stays empty. A {.flow-keys|.flow-step|.flow-auto|
+                          .flow-loop|.flow-off} line before it picks how the
+                          state's flows play; {.pop} pops its new parts
   ```minimap NAME K ID,…``` state K as a small you-are-here inset with those
                           parts lit, top right beside the heading, out of the
                           flow (one per slide; {.rev} / {.warn} light them green /

@@ -6,11 +6,15 @@
    inset sits and how wide it is: slides-template.html (and the deck's own CSS).
 
    Contrast (WCAG, against the slide background #16141f): lines that carry meaning
-   ≥ 3:1, text ≥ 4.5:1. Luminance order is NEW > BUILT > background, so the delta
-   still reads on a washed-out projector and for colour-blind viewers: new vs built
-   is weight and brightness, amber (a bypass) is always dashed. The two loop
-   directions are hue only — violet page → code, green code → page, the same weight
-   and dash: they stay apart for deuteranopia, protanopia and tritanopia, but not in
+   ≥ 3:1, text ≥ 4.5:1. NEW vs BUILT is a highlighter, not a tint: what a state adds
+   is filled with light ink (#d0c4ff, 11.3:1 on the background) and lettered in the
+   background's own dark (11.3:1 on the ink); what was built earlier stays a dark box
+   with light words. The delta is area luminance (L .60 vs .01) and polarity, so it
+   reads at a glance from the back row, on a washed-out projector, in greyscale and
+   for every colour-vision type. Hue keeps its meaning inside the ink: violet by
+   default, green on a code → page part, amber on a gap. The two loop directions are
+   wires, never filled: violet page → code, green code → page, the same weight and
+   dash; they stay apart for deuteranopia, protanopia and tritanopia, but not in
    greyscale (1.1:1), where the pills' words and the arrowheads carry the direction.
    A dash is kept for meaning (a socket, a bypass, a fallback), not for direction. */
 
@@ -59,40 +63,65 @@ svg.ax .ax-cast.ax-edge .ax-head { fill: #9d94b8; }
 svg.ax .ax-cast .ax-elabel { fill: #d2cce2; }
 svg.ax .ax-cast .ax-cap { fill: #b4acc9; }
 
-/* --- NEW in this state: brighter, heavier, tinted. Lasts exactly one state. */
-svg.ax .ax-new.ax-node > rect { fill: #2d294a; stroke: #b7a5ff; stroke-width: 4.5; }
-svg.ax .ax-new.ax-node .ax-label, svg.ax .ax-new.ax-node .ax-sub { fill: #fff; font-weight: 700; }
-svg.ax .ax-new.ax-cell rect { fill: #2d294a; stroke: #b7a5ff; stroke-width: 3.5; }
-svg.ax .ax-new.ax-row .ax-hit { fill: #2d294a; stroke: #b7a5ff; stroke-width: 3; }
-svg.ax .ax-new.ax-part text { fill: #fff; font-weight: 700; }
-svg.ax .ax-pipe.ax-new path { stroke: #b7a5ff; }
-svg.ax .ax-pipe.ax-new .ax-head { fill: #b7a5ff; }
-svg.ax .ax-new.ax-edge .ax-line { stroke: #b7a5ff; stroke-width: 5; }
-svg.ax .ax-new.ax-edge .ax-head { fill: #b7a5ff; }
-svg.ax .ax-new .ax-elabel { fill: #fff; font-weight: 700; }
-svg.ax .ax-new.ax-pill rect { fill: #2d294a; stroke: #b7a5ff; stroke-width: 3.5; }
-svg.ax .ax-new.ax-pill text { fill: #fff; font-weight: 700; }
-svg.ax .ax-new.ax-pill .ax-tri { fill: #b7a5ff; }
-svg.ax .ax-new.ax-r-band rect { stroke-width: 4; fill-opacity: .1; }
-svg.ax .ax-new.ax-r-band .ax-cap { fill: #fff; }
-svg.ax .ax-new.ax-note, svg.ax .ax-changed.ax-note { fill: #fff; font-weight: 700; }
-svg.ax .ax-new.ax-mark text { fill: #fff; font-weight: 700; }
-/* an existing part whose label changed: the new words are the new mark */
-svg.ax .ax-changed .ax-elabel, svg.ax .ax-changed > .ax-label,
-svg.ax .ax-changed.ax-part text, svg.ax .ax-changed .ax-sub { fill: #fff; font-weight: 700; }
+/* --- NEW in this state: the highlighter. Lasts exactly one state.
+   Boxes, rows, cells, pills and a new zone's caption are filled with the ink and lettered
+   dark and bold (11.3:1); a new wire keeps its dash but is drawn in the ink over a
+   highlighter band (#b7a5ff at .5 ≈ #665d8f: 3.1:1 on the background, the ink line 3.7:1 on
+   the band). Parts inside a new box sit on the ink: dark-outlined cells, dark pipe arrows. */
+svg.ax .ax-new.ax-node > rect { fill: #d0c4ff; stroke: #efeaff; stroke-width: 3; }
+svg.ax .ax-new.ax-node .ax-label, svg.ax .ax-new.ax-node .ax-sub { fill: #16141f; font-weight: 700; }
+svg.ax .ax-new.ax-cell rect { fill: #d0c4ff; stroke: #efeaff; stroke-width: 2.5; }
+svg.ax .ax-new.ax-row .ax-hit { fill: #d0c4ff; stroke: none; }
+svg.ax .ax-new.ax-part text { fill: #16141f; font-weight: 700; }
+svg.ax .ax-new.ax-node .ax-cell rect { fill: #ebe6ff; stroke: #16141f; stroke-width: 2; }   /* 14.6:1 for its words */
+svg.ax .ax-new.ax-node .ax-sep { stroke: #16141f; stroke-opacity: .4; }
+svg.ax .ax-pipe.ax-new path { stroke: #d0c4ff; }
+svg.ax .ax-pipe.ax-new .ax-head { fill: #d0c4ff; }
+svg.ax .ax-new.ax-node .ax-pipe path { stroke: #16141f; }
+svg.ax .ax-new.ax-node .ax-pipe .ax-head { fill: #16141f; }
+svg.ax .ax-edge .ax-glow { display: none; }
+svg.ax .ax-new.ax-edge .ax-glow { display: inline; fill: none; stroke: #b7a5ff; stroke-opacity: .5; stroke-width: 18; stroke-linejoin: round; }
+svg.ax .ax-new.ax-edge .ax-line { stroke: #d0c4ff; stroke-width: 5; }
+svg.ax .ax-new.ax-edge .ax-head { fill: #d0c4ff; }
+svg.ax .ax-new.ax-pill rect { fill: #d0c4ff; stroke: #efeaff; stroke-width: 2.5; }
+svg.ax .ax-new.ax-pill text { fill: #16141f; font-weight: 700; }
+svg.ax .ax-new.ax-pill .ax-tri { fill: #16141f; }
+svg.ax .ax-new.ax-r-band rect { stroke: #d0c4ff; stroke-width: 4; fill-opacity: .12; }
+svg.ax .ax-new.ax-r-band .ax-cap { fill: #16141f; }
+/* free words (a note, a mark's label) sit on a plate that shows only when they are news */
+svg.ax .ax-tbg { fill: none; }
+svg.ax .ax-tbg.ax-note-bg:is(.ax-new, .ax-changed), svg.ax .ax-new.ax-mark .ax-tbg { fill: #d0c4ff; }
+svg.ax .ax-new.ax-note, svg.ax .ax-changed.ax-note, svg.ax .ax-new.ax-mark text { fill: #16141f; font-weight: 700; }
+/* an existing part whose words changed: the new words are highlighted, the wire is not.
+   A changed role that brings its own look (a bypass, a demotion) keeps that look instead. */
+svg.ax .ax-changed.ax-node:not(.ax-warn, .ax-fallback) > rect { fill: #d0c4ff; stroke: #efeaff; stroke-width: 3; }
+svg.ax .ax-changed.ax-node:not(.ax-warn, .ax-fallback) > :is(.ax-label, .ax-sub) { fill: #16141f; font-weight: 700; }
+svg.ax .ax-changed.ax-part:not(.ax-warn, .ax-fallback) .ax-hit { fill: #d0c4ff; stroke: none; }
+svg.ax .ax-changed.ax-cell:not(.ax-warn, .ax-fallback) rect { fill: #d0c4ff; stroke: #efeaff; stroke-width: 2.5; }
+svg.ax .ax-changed.ax-part:not(.ax-warn, .ax-fallback) text { fill: #16141f; font-weight: 700; }
+svg.ax .ax-changed:is(.ax-warn, .ax-fallback) .ax-elabel, svg.ax .ax-changed:is(.ax-warn, .ax-fallback) > .ax-label { font-weight: 700; }
+svg.ax .ax-changed.ax-fallback .ax-elabel { fill: #fff; }
+/* edge words: the label's plate is the ink (the plate is sized for bold words) */
+svg.ax g.ax-elab:is(.ax-new, .ax-changed):not(.ax-warn, .ax-fallback) > .ax-lbg { fill: #d0c4ff; }
 
 /* --- trust boundaries, and the gaps the problem states leave open */
 svg.ax .ax-m-shield .ax-glyph { fill: #2d294a; stroke: #b7a5ff; stroke-width: 3; }
 svg.ax .ax-m-shield .ax-tick { fill: none; stroke: #ece9f1; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 svg.ax .ax-old.ax-m-shield .ax-glyph { fill: #211d30; stroke: #7a72a3; }
 svg.ax .ax-old.ax-m-shield .ax-tick { stroke: #9d94b8; }
+svg.ax .ax-new.ax-m-shield .ax-glyph { fill: #d0c4ff; stroke: #efeaff; }
+svg.ax .ax-new.ax-m-shield .ax-tick { stroke: #16141f; }
 svg.ax .ax-m-cross .ax-glyph, svg.ax .ax-m-q .ax-glyph { fill: #2a2027; stroke: #e0a06a; stroke-width: 3; }
 svg.ax .ax-m-cross .ax-tick { stroke: #e0a06a; stroke-width: 3.5; stroke-linecap: round; }
 svg.ax .ax-m-q .ax-q { fill: #e0a06a; font-weight: 800; }
 svg.ax .ax-m-cross text, svg.ax .ax-m-q text { fill: #f0b27a; }
-/* hue carries meaning, newness only weight: a new gap is a heavier amber gap, never violet */
+/* hue carries meaning, the highlighter newness: a new gap is highlighted in amber, never violet */
+svg.ax .ax-new:is(.ax-m-cross, .ax-m-q) .ax-glyph { fill: #e0a06a; stroke: #ffd5ad; }   /* 8.2:1 */
+svg.ax .ax-new.ax-m-cross .ax-tick { stroke: #16141f; }
+svg.ax .ax-new.ax-m-q .ax-q { fill: #16141f; }
 svg.ax .ax-edge.ax-k-gap .ax-line { stroke: #e0a06a; stroke-width: 3.5; stroke-dasharray: 14 10; }
 svg.ax .ax-edge.ax-k-gap.ax-new .ax-line { stroke-width: 5; }
+svg.ax .ax-edge.ax-k-gap.ax-new .ax-glow { stroke: #e0a06a; }                            /* band 3.0:1 */
 svg.ax .ax-edge.ax-k-gap .ax-head { fill: #e0a06a; }
 svg.ax .ax-edge.ax-k-gap .ax-elabel { fill: #f0b27a; font-weight: 700; }
 /* done by hand (§1): dotted, like footsteps */
@@ -101,6 +130,8 @@ svg.ax .ax-edge.ax-human .ax-line { stroke-dasharray: .1 11; stroke-linecap: rou
 /* --- §10: the second loader (amber = bypass/danger, always dashed) */
 svg.ax .ax-warn.ax-edge .ax-line { stroke: #e0a06a; stroke-width: 5; stroke-dasharray: 14 10; }
 svg.ax .ax-warn.ax-edge .ax-head { fill: #e0a06a; }
+/* a bypass that starts in this state is the state's news: the highlighter band, in amber (3.0:1) */
+svg.ax .ax-warn.ax-edge:is(.ax-new, .ax-changed) .ax-glow { display: inline; fill: none; stroke: #e0a06a; stroke-opacity: .5; stroke-width: 18; stroke-linejoin: round; }
 svg.ax .ax-warn .ax-elabel { fill: #f0b27a; font-weight: 700; }
 svg.ax .ax-warn.ax-row .ax-hit { fill: #2a2027; stroke: #e0a06a; stroke-width: 3; stroke-dasharray: 10 7; }
 svg.ax .ax-warn.ax-row text { fill: #f0b27a; font-weight: 700; text-decoration: line-through; }
@@ -126,10 +157,17 @@ svg.ax .ax-rev .ax-elabel { fill: #a7f3d0; font-weight: 700; }
 svg.ax .ax-rev.ax-pill rect { fill: #173228; stroke: #34d399; stroke-width: 3.5; }
 svg.ax .ax-rev.ax-pill .ax-tri { fill: #34d399; }
 svg.ax .ax-rev.ax-pill text { fill: #fff; font-weight: 700; }
+/* new AND a loop's direction: the highlighter in the loop's hue (state 9's cursor path is green ink) */
+svg.ax .ax-new.ax-rev.ax-edge .ax-glow { stroke: #34d399; }                                /* band 3.2:1 */
+svg.ax .ax-new.ax-rev.ax-pill rect { fill: #34d399; stroke: #a7f3d0; stroke-width: 2.5; }   /* 9.5:1 */
+svg.ax .ax-new.ax-rev.ax-pill text { fill: #16141f; }
+svg.ax .ax-new.ax-rev.ax-pill .ax-tri { fill: #16141f; }
+svg.ax g.ax-elab.ax-new.ax-rev > .ax-lbg { fill: #34d399; }
+svg.ax g.ax-elab.ax-new.ax-k-gap > .ax-lbg { fill: #e0a06a; }
 
 /* --- the key */
 svg.ax .ax-key text { fill: #c3bcd6; }
-svg.ax .ax-key-new .ax-sw { fill: #2d294a; stroke: #b7a5ff; stroke-width: 4; }
+svg.ax .ax-key-new .ax-sw { fill: #d0c4ff; stroke: #efeaff; stroke-width: 2.5; }
 svg.ax .ax-key-fwd .ax-sw { stroke: #b7a5ff; stroke-width: 6; }
 svg.ax .ax-key-rev .ax-sw { stroke: #34d399; stroke-width: 6; }
 svg.ax .ax-key-ws .ax-sw { stroke: #7a72a3; stroke-width: 3; stroke-dasharray: 16 10; }
@@ -142,8 +180,10 @@ svg.ax .ax-elabel { stroke: none; }
 
 /* caption plates last: they must beat every region-rect rule above (fill-opacity included) */
 svg.ax g.ax-region > rect.ax-capbg { fill: #16141f; fill-opacity: 1; stroke: none; }
-/* problem marks stay amber when new: the hue is the meaning */
-svg.ax .ax-new.ax-m-cross text, svg.ax .ax-new.ax-m-q text { fill: #f0b27a; font-weight: 700; }
+svg.ax g.ax-region.ax-new > rect.ax-capbg { fill: #d0c4ff; }
+/* problem marks stay amber when new: the hue is the meaning (amber ink, dark words) */
+svg.ax .ax-new:is(.ax-m-cross, .ax-m-q) .ax-tbg { fill: #e0a06a; }
+svg.ax .ax-new.ax-m-cross text, svg.ax .ax-new.ax-m-q text { fill: #16141f; font-weight: 700; }
 
 /* ===== message flows (`flow` in the DSL; diagram.js moves them) =====================
    At rest, and in the deck, nothing here is visible except (in print) the hop numbers:
@@ -168,6 +208,12 @@ svg.ax g.ax-edge.ax-lit .ax-elabel { fill: #fff; font-weight: 700; }
    near-white current hop, so the path so far survives a projector */
 svg.ax g.ax-edge.ax-trail .ax-line { stroke: var(--ax-fc); stroke-width: 4; }
 svg.ax g.ax-edge.ax-trail .ax-head { fill: var(--ax-fc); }
+svg.ax g.ax-edge.ax-new.ax-trail .ax-line { stroke-width: 5; }
+/* a hop being travelled, or already travelled, drops its highlighter band: the path so far reads
+   as the loop's own wire (plain, in the flow's hue), the hops still to come as banded ink */
+svg.ax g.ax-edge:is(.ax-trail, .ax-lit) .ax-glow { display: none; }
+/* highlighted words stay dark on their ink while their hop is lit (after the lit rule above) */
+svg.ax g.ax-elab:is(.ax-new, .ax-changed):not(.ax-warn, .ax-fallback) .ax-elabel { fill: #16141f; font-weight: 700; }
 /* lands=: where the flow's effect shows lights up in its colour while the path stays lit */
 svg.ax .ax-landed.ax-node > rect { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 5; }
 svg.ax .ax-landed.ax-part .ax-hit { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3.5; }
@@ -193,6 +239,29 @@ svg.ax .ax-hopnum.ax-hopmsg text { fill: #fff; font-weight: 700; font-family: ui
   svg.ax .ax-pill.ax-pill-off { visibility: visible; }
 }
 
+/* ===== the progress line under a map with flows (diagram.js builds it, as DOM in the
+   figure, outside the SVG; slides.html only: the deck runs no script, and print hides it).
+   For the speaker, not the audience: a 1 px hairline along the very bottom of the slide,
+   as wide as the figure (the slide's 4vw side padding), below the "N / 33" counter (whose
+   box ends ~.43em up; the line sits .2em from the edge). One segment per flow, as long as
+   the flow; a 5 px dot between two flows, hollow until reached, then solid with a 1 px
+   ring of the background around it, so a passed boundary still shows on the fill; the
+   fill 3 px, from the left to where the clock is. Fixed-positioned, so it never moves
+   the slide.
+   Contrast on #16141f: track 1.3:1 (the tables' rule colour), fill and reached dots 2.4:1
+   (the counter's own colour), a waiting dot's ring 1.6:1 — quieter than any line of the
+   map; readable to whoever knows where to look. Snapped to whole pixels where round()
+   exists, so the hairline stays one crisp row. */
+.ax-prog { position: fixed; left: 4vw; right: 4vw; bottom: .2em; bottom: round(down, .2em, 1px);
+           height: 5px; pointer-events: none; }
+.ax-prog::before { content: ""; position: absolute; left: 0; right: 0; top: 2px; height: 1px; background: #2c2740; }
+.ax-prog-fill { position: absolute; left: 0; right: 0; top: 1px; height: 3px; background: #565070;
+                transform: scaleX(0); transform-origin: 0 50%; }
+.ax-prog-dot { position: absolute; top: 0; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%;
+               background: #16141f; box-shadow: inset 0 0 0 1px #3b3553; }
+.ax-prog-dot.ax-passed { background: #565070; box-shadow: 0 0 0 1px #16141f; }   /* a background ring: still a dot on the fill */
+@media print { .ax-prog { display: none; } }
+
 /* ===== {.pop}: an optional ≤ 220 ms pop for the parts a state adds (compare with the
    default hard cut). Forward moves only: the template marks the arriving slide .fwd.
    Scale + brightness, never opacity: nothing fades. */
@@ -210,12 +279,13 @@ svg.ax .ax-hopnum.ax-hopmsg text { fill: #fff; font-weight: 700; font-family: ui
 /* ===== ```minimap NAME K ID,…``` : a you-are-here inset of state K (diagram.py mini()).
    The map's own geometry, so it is aligned with the full map (same orientation, same
    places); no words. At ~1/5 scale the map's strokes would vanish, so strokes here are
-   screen pixels (non-scaling). The lit parts are filled in the slides' accent (violet,
-   page → code); {.rev} on the line before the fence lights them green (code → page, the
-   overlay's emerald), {.warn} amber (a bypass). Contrast on #16141f: box outlines 6.4:1,
-   zone borders 3.3:1, the lit fill 5.6:1 (violet), 9.5:1 (green), 8.2:1 (amber). */
+   screen pixels (non-scaling). The lit parts are filled with the map's highlighter ink
+   (violet), so "here" on a code slide looks like "new" on a map slide; {.rev} on the line
+   before the fence lights them green (code → page, the overlay's emerald), {.warn} amber
+   (a bypass). Contrast on #16141f: box outlines 6.4:1, zone borders 3.3:1, the lit fill
+   11.3:1 (violet), 9.5:1 (green), 8.2:1 (amber). */
 svg.axm { display: block; width: 100%; height: auto; overflow: visible;
-          --axm-lit: #8b7ff5; --axm-lit-line: #c9bdff; --axm-s: 1; }   /* --axm-s: stroke scale (the deck's small card sets it) */
+          --axm-lit: #d0c4ff; --axm-lit-line: #efeaff; --axm-s: 1; }   /* --axm-s: stroke scale (the deck's small card sets it) */
 .rev > svg.axm  { --axm-lit: #34d399; --axm-lit-line: #a7f3d0; }
 .warn > svg.axm { --axm-lit: #e0a06a; --axm-lit-line: #ffd5ad; }
 svg.axm * { vector-effect: non-scaling-stroke; }

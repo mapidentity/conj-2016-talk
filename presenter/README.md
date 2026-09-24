@@ -26,7 +26,8 @@ Edit those; never the deck.
   architecture diagram, written once in the run-sheet as a `<!-- diagram NAME · note -->`
   block and shown state by state on slides. `diagram.py` parses the DSL and draws
   each state (and each minimap) as SVG, `diagram.css` is its look, and `diagram.js`
-  plays its message flows in `slides.html`. Both builders inline the CSS, and
+  plays its message flows in `slides.html` (on the `a` / `p` keys) and draws the
+  speaker's progress line under them. Both builders inline the CSS, and
   `build_slides.py` also inlines the JS, even when the run-sheet has no diagram.
   See "Diagrams" below, and **`DIAGRAM.md`** for the DSL reference.
 - **`highlight.py`** — the build-time syntax highlighter (Clojure, JS, bash, HTML
@@ -175,11 +176,12 @@ The classes are the ones `slides-template.html` styles: `sub` (muted),
 `big`, `rule` (left bar, for the talk's assertions), `note` (boxed aside —
 a caption remarking on the block above it), `accent`, `green`, `strike`,
 `steps`. For a ```` ```diagram ```` fence there are also the flow modes
-`flow-step`, `flow-auto`, `flow-loop` and `flow-off`, plus `pop`. For a
+`flow-keys` (alias `flow-step`), `flow-auto`, `flow-loop` and `flow-off`, plus `pop`. For a
 ```` ```minimap ```` fence there are `rev` and `warn`. Add a class
 there when a slide needs a new look; add markdown syntax here only when the
 content cannot be said with the above. `slides.html` still opens standalone in
-a browser tab (arrow keys / click to advance) for the projector. The current
+a browser tab (arrow keys / click to advance; on a map with flows, `a` plays
+the next flow and `p` steps back — see "Flow modes" below) for the projector. The current
 slide is kept in the URL hash (`slides.html#3`), so a reload — e.g. after
 `refresh.sh` rebuilt the file — stays on that slide, and `#N` jumps straight
 to slide N.
@@ -245,17 +247,46 @@ flow save-load @3 : e-save, e-poll, e-dep, e-def
   ````
 
   Both fences also work on one line: ```` ```minimap arch 3 watcher``` ````.
+- **Playing the flows.** Navigation never plays one: → / Space / PageDown / click
+  always go to the next slide, ← / PageUp back, whatever is playing. On a map with
+  flows, two keys do (either case; Ctrl/Cmd/Alt+`a` stay the browser's):
+  - `a` plays the flow at the cursor, or restarts the one playing from its start.
+    Once the token has gone in (the path still lit for 0.9 s), the flow counts as
+    done: `a` then plays the next one. A second `a` within 250 ms is a bounce and is
+    ignored.
+  - `p` steps back one stop: a playing flow stops at its start (nothing lit); idle,
+    the cursor goes back to the start of the flow before (after the last flow: to
+    the start of the last one).
+
+  Every arrival puts the cursor on flow 1 with nothing lit. A finished flow moves it
+  on; after the last one it stays there, so `a` replays it. To show a flow again:
+  `p`, then `a`.
+
+  On stage: the keys reach the slides only while the page has focus — after the
+  address bar, press F6 (a click would also advance). Reduced motion must be off
+  on the presenting machine, or the flows only show as numbers. The line sits in
+  the bottom ~12 px at 1080p: check that the projector does not overscan.
+- **The progress line.** Under a map with flows, a hairline along the very bottom of
+  the slide (below the `N / 33` counter) shows the speaker where the flows are: one
+  segment per flow, as long as the flow; a small dot between two flows; a thicker
+  fill that grows with the animation's own clock and rests at the cursor when idle.
+  It is quiet on purpose (the audience should hardly notice it). Print, the deck and
+  the PDF never show it. Details: `DIAGRAM.md`, "The progress line".
 - **Flow modes** (the class line before a ```` ```diagram ```` fence):
-  - `{.flow-step}` (use this in the talk): → plays the state's next flow; → again
-    goes on to the next flow, or advances once every flow has played. → while a
-    token is still travelling finishes that flow. ← always goes back at once.
-  - `{.flow-auto}` (the default): every flow plays once, 2 s after the cut.
-  - `{.flow-loop}`: plays and repeats. Not for the talk.
-  - `{.flow-off}`: the static picture only.
+  - `{.flow-keys}`, or `{.flow-step}` (the same; the talk uses it): only `a` / `p`
+    play.
+  - `{.flow-auto}` (the default): the first flow plays by itself, 2 s after the cut,
+    as if `a` had been pressed; the rest is `flow-keys`. An `a` or `p` before or
+    during it takes over.
+  - `{.flow-loop}`: plays and repeats; the first `a` or `p` stops the loop. Not for
+    the talk.
+  - `{.flow-off}`: the static picture only; no line, and the keys do nothing.
   - `{.pop}` combines with any of them: the new parts pop on a forward arrival.
 
-  The deck, the PDF and reduced motion show the static picture with numbered hops
-  instead.
+  The deck and the PDF show the static picture with numbered hops instead. Under
+  reduced motion, `a` reveals one flow's numbered hops at a time (and moves the line
+  one segment); `p` hides them again. There `{.flow-auto}` shows flow 1's numbers on
+  arrival, and `{.flow-loop}` all of them.
 - **Build checks.** Errors stop the build:
   - unknown ids;
   - a flow or `lands=` that is not on screen in its state;
