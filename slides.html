@@ -326,6 +326,24 @@ svg.ax g.ax-cell.ax-part.ax-lit rect { stroke: var(--ax-fb); stroke-width: 4.5; 
 svg.ax g.ax-row.ax-part:is(.ax-lit, .ax-trail) .ax-hit { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3.5; }
 svg.ax g.ax-row.ax-part.ax-lit .ax-hit { stroke: var(--ax-fb); stroke-width: 4.5; }
 svg.ax g.ax-part:is(.ax-lit, .ax-trail) text { fill: #fff; font-weight: 700; }
+/* a beat (`+ID…` after a station, `at ID+ID…` on a hop): what lights with it. A row or cell takes the
+   station's look above, an edge the current wire's, then the travelled wire's (diagram.js); a box the
+   landed look, its rim near-white during the beat; a note, and a mark's words, their plate in the flow's
+   colours. A mark pulses where it has room (diagram.js: a transform on its glyph); one without words then
+   keeps a ring in its own hue — violet around a shield, amber around the ✕ and the ? — until the flow
+   ends: 8.5:1 / 8.2:1 on #16141f */
+svg.ax g.ax-node:is(.ax-lit, .ax-trail):not(.ax-landed) > rect { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 5; }
+svg.ax g.ax-node.ax-lit:not(.ax-landed) > rect { stroke: var(--ax-fb); }
+svg.ax g.ax-node:is(.ax-lit, .ax-trail) > :is(.ax-label, .ax-sub) { fill: #fff; font-weight: 700; }
+svg.ax rect.ax-tbg.ax-note-bg:is(.ax-lit, .ax-trail) { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3; }
+svg.ax rect.ax-tbg.ax-note-bg.ax-lit { stroke: var(--ax-fb); }
+svg.ax text.ax-note:is(.ax-lit, .ax-trail) { fill: #fff; font-weight: 700; }
+svg.ax .ax-mark:is(.ax-lit, .ax-trail) .ax-tbg { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3; }
+svg.ax .ax-mark.ax-lit .ax-tbg { stroke: var(--ax-fb); }
+svg.ax .ax-mark:is(.ax-lit, .ax-trail) text:not(.ax-q) { fill: #fff; font-weight: 700; }
+svg.ax .ax-mring { display: none; fill: none; stroke: #b7a5ff; stroke-width: 3.5; stroke-linejoin: round; }
+svg.ax .ax-mark.ax-trail .ax-mring { display: inline; }
+svg.ax :is(.ax-m-cross, .ax-m-q) .ax-mring { stroke: #e0a06a; }
 /* print, the deck, reduced motion: the order as numbered hops (A1 A2 … B1 … when a state has
    several flows), and the messages that have no static pill, where the animation leaves them */
 svg.ax .ax-hopnum rect { fill: var(--ax-fc); stroke: #16141f; stroke-width: 3; }
@@ -466,15 +484,17 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 <!-- 2 · the map, state 1 -->
 <section class="slide">
   <h2>🗺 a webserver, a REPL, an editor</h2>
-  <div class="figure ax-fig"><svg class="ax ax-arch" data-step="1" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 1: a webserver, a REPL, an editor">
+  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="1" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 1: a webserver, a REPL, an editor">
   <g class="ax-region ax-r-lane ax-cast" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-cast" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
   <g class="ax-region ax-r-lane ax-cast" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
   <g class="ax-region ax-r-lane ax-cast" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
+  <g class="ax-flow-under ax-f-fwd" data-flow="request"><path class="ax-hglow" d="M1430.0,82.0 L930.0,82.0"/><path class="ax-hglow" d="M845.0,114.0 L845.0,160.0"/><path class="ax-hglow" d="M990.0,212.0 L1430.0,212.0"/></g>
   <g class="ax-edge  ax-cast" data-ax="e-eval"><path class="ax-glow" d="M160.0,82.0 L414.0,82.0"/><path class="ax-line" d="M160.0,82.0 L414.0,82.0"/><path class="ax-head" d="M430.0,82.0 L411.0,91.5 L411.0,72.5 Z"/></g>
   <g class="ax-edge  ax-cast" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
   <g class="ax-edge  ax-cast" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-cast" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
+  <g class="ax-flow ax-f-fwd" data-flow="request" data-lands="page"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-get" data-pts="1430.0,82.0 930.0,82.0" data-ms="800"></g><g class="ax-hop" data-edge="e-call" data-pts="845.0,114.0 845.0,160.0" data-ms="450"></g><g class="ax-hop" data-edge="e-html" data-pts="990.0,212.0 1430.0,212.0" data-ms="752"></g></g>
   <g class="ax-edge ax-elab  ax-cast" data-ax="e-eval"><rect class="ax-lbg" x="256.1" y="97.0" width="77.7" height="31.9" rx="5"/><text class="ax-elabel" x="295.0" y="120.0" text-anchor="middle" font-size="28">eval</text></g>
   <g class="ax-edge ax-elab  ax-cast" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
   <g class="ax-edge ax-elab  ax-cast" data-ax="e-html"><rect class="ax-lbg" x="1225.0" y="227.0" width="100.2" height="31.9" rx="5"/><text class="ax-elabel" x="1275.1" y="250.0" text-anchor="middle" font-size="28">HTML</text></g>
@@ -485,17 +505,19 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-cast" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
   <g class="ax-node ax-cast" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-cast" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-cast" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
   <g class="ax-node ax-list ax-cast" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text></g>
+  <g class="ax-flow-nums ax-f-fwd" data-flow="request"><g class="ax-hopnum" transform="translate(1104.7 82.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">1</text></g><g class="ax-hopnum" transform="translate(1194.9 212.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">2</text></g></g>
 </svg></div>
 </section>
 
 <!-- 3 · the map, state 2 -->
 <section class="slide">
   <h2>🗺 every change: three hops by hand</h2>
-  <div class="figure ax-fig"><svg class="ax ax-arch" data-step="2" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 2: every change: three hops by hand">
+  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="2" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 2: every change: three hops by hand">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
+  <g class="ax-flow-under ax-f-fwd" data-flow="three-hops"><path class="ax-hglow" d="M150.0,350.0 L240.0,350.0"/><path class="ax-hglow" d="M160.0,82.0 L430.0,82.0"/><path class="ax-hglow" d="M505.0,114.0 L505.0,180.0"/><path class="ax-hglow" d="M640.0,212.0 L710.0,212.0"/><path class="ax-hglow" d="M1560.0,400.0 L1560.0,286.0"/><path class="ax-hglow" d="M1430.0,82.0 L930.0,82.0"/><path class="ax-hglow" d="M845.0,114.0 L845.0,160.0"/><path class="ax-hglow" d="M990.0,212.0 L1430.0,212.0"/></g>
   <g class="ax-edge  ax-old ax-changed ax-human ax-new" data-ax="e-eval"><path class="ax-glow" d="M160.0,82.0 L414.0,82.0"/><path class="ax-line" d="M160.0,82.0 L414.0,82.0"/><path class="ax-head" d="M430.0,82.0 L411.0,91.5 L411.0,72.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
@@ -506,6 +528,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-new" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
   <g class="ax-edge ax-k-human ax-new" data-ax="e-f5"><path class="ax-glow" d="M1560.0,400.0 L1560.0,302.0"/><path class="ax-line" d="M1560.0,400.0 L1560.0,302.0"/><path class="ax-head" d="M1560.0,286.0 L1569.5,305.0 L1550.5,305.0 Z"/></g>
   <g class="ax-edge ax-k-gap ax-new" data-ax="e-gap"><path class="ax-glow" d="M1430.0,176.0 L1006.0,176.0"/><path class="ax-line" d="M1430.0,176.0 L1006.0,176.0"/><path class="ax-head" d="M990.0,176.0 L1009.0,166.5 L1009.0,185.5 Z"/></g>
+  <g class="ax-flow ax-f-fwd" data-flow="three-hops" data-lands="page"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-save" data-pts="150.0,350.0 240.0,350.0" data-ms="450"></g><g class="ax-hop" data-edge="e-eval" data-pts="160.0,82.0 430.0,82.0" data-ms="616" data-leg="1"></g><g class="ax-hop" data-edge="e-repl" data-pts="505.0,114.0 505.0,180.0" data-ms="450"></g><g class="ax-hop" data-edge="e-def" data-pts="640.0,212.0 710.0,212.0" data-ms="450"></g><g class="ax-hop" data-edge="e-f5" data-pts="1560.0,400.0 1560.0,286.0" data-ms="600" data-leg="1"></g><g class="ax-hop" data-edge="e-get" data-pts="1430.0,82.0 930.0,82.0" data-ms="800"></g><g class="ax-hop" data-edge="e-call" data-pts="845.0,114.0 845.0,160.0" data-ms="450"></g><g class="ax-hop" data-edge="e-html" data-pts="990.0,212.0 1430.0,212.0" data-ms="752"></g></g>
   <g class="ax-edge ax-elab  ax-old ax-changed ax-human ax-new" data-ax="e-eval"><rect class="ax-lbg" x="179.4" y="97.0" width="231.2" height="31.9" rx="5"/><text class="ax-elabel ax-mono" x="295.0" y="120.0" text-anchor="middle" font-size="28">(load-file …)</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-html"><rect class="ax-lbg" x="1225.0" y="227.0" width="100.2" height="31.9" rx="5"/><text class="ax-elabel" x="1275.1" y="250.0" text-anchor="middle" font-size="28">HTML</text></g>
@@ -522,6 +545,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-mono ax-new" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
   <g class="ax-node ax-new" data-ax="you"><rect x="1500.0" y="400.0" width="120.0" height="64.0" rx="12"/><text class="ax-label" x="1560.0" y="445.0" text-anchor="middle" font-size="36">you</text></g>
   <g class="ax-mark ax-m-q ax-new" data-ax="m-gap"><circle class="ax-glyph" cx="1250.0" cy="176.0" r="17"/><text class="ax-q" x="1250.0" y="186.1" text-anchor="middle" font-size="28">?</text></g>
+  <g class="ax-flow-nums ax-f-fwd" data-flow="three-hops"><g class="ax-hopnum" transform="translate(195.0 374.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">1</text></g><g class="ax-hopnum" transform="translate(295.0 70.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">2</text></g><g class="ax-hopnum" transform="translate(505.0 147.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">3</text></g><g class="ax-hopnum" transform="translate(675.0 236.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">4</text></g><g class="ax-hopnum" transform="translate(1584.0 343.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">5</text></g><g class="ax-hopnum" transform="translate(1104.7 82.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">6</text></g><g class="ax-hopnum" transform="translate(1194.9 212.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">7</text></g></g>
 </svg></div>
 </section>
 
@@ -641,12 +665,13 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 <!-- 9 · the map, state 4 -->
 <section class="slide">
   <h2>🗺 render deletes the structure</h2>
-  <div class="figure ax-fig"><svg class="ax ax-arch" data-step="4" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 4: render deletes the structure">
+  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="4" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 4: render deletes the structure">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
   <g class="ax-region ax-r-band ax-old" data-ax="dev"><rect x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="ax-capbg" x="620.0" y="279.7" width="198.8" height="29.4"/><text class="ax-cap" x="630.0" y="302.1" text-anchor="start" font-size="28">DEV ONLY</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
+  <g class="ax-flow-under ax-f-fwd" data-flow="just-a-string"><path class="ax-hglow" d="M1430.0,82.0 L930.0,82.0"/><path class="ax-hglow" d="M845.0,114.0 L845.0,160.0"/><path class="ax-hglow" d="M990.0,212.0 L1430.0,212.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-eval"><path class="ax-glow" d="M160.0,82.0 L414.0,82.0"/><path class="ax-line" d="M160.0,82.0 L414.0,82.0"/><path class="ax-head" d="M430.0,82.0 L411.0,91.5 L411.0,72.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
@@ -662,6 +687,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
   <g class="ax-edge  ax-old ax-changed" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-binds"><path class="ax-glow" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-line" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-head" d="M1041.0,228.0 L1050.5,247.0 L1031.5,247.0 Z"/></g>
+  <g class="ax-flow ax-f-fwd" data-flow="just-a-string" data-lands="page.p-el"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-get" data-pts="1430.0,82.0 930.0,82.0" data-ms="800"></g><g class="ax-hop" data-edge="e-call" data-pts="845.0,114.0 845.0,160.0" data-ms="450"></g><g class="ax-hop" data-edge="e-html" data-pts="990.0,212.0 1430.0,212.0" data-ms="752" data-at="160.0" data-with="m-render" data-wms="600"></g></g>
   <g class="ax-pill ax-old" data-ax="p-reload"><rect x="1034.4" y="669.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M1165.6,690.0 L1153.6,683.0 L1153.6,697.0 Z"/><text x="1096.0" y="699.8" text-anchor="middle" font-size="28">reload</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
   <g class="ax-edge ax-elab  ax-old ax-changed" data-ax="e-html"><rect class="ax-lbg" x="1173.4" y="227.0" width="203.4" height="31.9" rx="5"/><text class="ax-elabel" x="1275.1" y="250.0" text-anchor="middle" font-size="28">just a string</text></g>
@@ -681,7 +707,8 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-mono ax-list ax-old" data-ax="devbody"><rect x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><text class="ax-label" x="918.0" y="342.2" font-size="34">dev-body</text><g class="ax-part ax-row ax-mono ax-old" data-ax="devbody.d-script"><rect class="ax-hit" x="909.0" y="359.0" width="202.0" height="38.0" rx="7"/><text x="926.0" y="389.5" text-anchor="start" font-size="32">+&lt;script&gt;</text></g></g>
   <g class="ax-mark ax-m-q ax-old" data-ax="m-gap"><circle class="ax-glyph" cx="1250.0" cy="176.0" r="17"/><text class="ax-q" x="1250.0" y="186.1" text-anchor="middle" font-size="28">?</text></g>
   <text class="ax-note ax-mono ax-old ax-changed" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28"></text>
-  <g class="ax-mark ax-m-cross ax-new" data-ax="m-render"><circle class="ax-glyph" cx="1150.0" cy="212.0" r="17"/><path class="ax-tick" d="M1143.0,205.0 L1157.0,219.0 M1157.0,205.0 L1143.0,219.0"/></g>
+  <g class="ax-mark ax-m-cross ax-new" data-ax="m-render" data-o="1150.0,212.0" data-k="1.25"><circle class="ax-glyph" cx="1150.0" cy="212.0" r="17"/><path class="ax-tick" d="M1143.0,205.0 L1157.0,219.0 M1157.0,205.0 L1143.0,219.0"/><circle class="ax-mring" cx="1150.0" cy="212.0" r="22"/></g>
+  <g class="ax-flow-nums ax-f-fwd" data-flow="just-a-string"><g class="ax-hopnum" transform="translate(1104.7 82.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">1</text></g><g class="ax-hopnum" transform="translate(1092.5 212.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">2</text></g></g>
 </svg></div>
 </section>
 
@@ -802,12 +829,13 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 <!-- 16 · the map, state 6 -->
 <section class="slide">
   <h2>🗺 metadata becomes attributes</h2>
-  <div class="figure ax-fig"><svg class="ax ax-arch" data-step="6" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 6: metadata becomes attributes">
+  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="6" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 6: metadata becomes attributes">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
   <g class="ax-region ax-r-band ax-old" data-ax="dev"><rect x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="ax-capbg" x="620.0" y="279.7" width="198.8" height="29.4"/><text class="ax-cap" x="630.0" y="302.1" text-anchor="start" font-size="28">DEV ONLY</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
+  <g class="ax-flow-under ax-f-fwd" data-flow="tag-render"><path class="ax-hglow" d="M1430.0,82.0 L930.0,82.0"/><path class="ax-hglow" d="M845.0,114.0 L845.0,160.0"/><path class="ax-hglow" d="M990.0,212.0 L1430.0,212.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-eval"><path class="ax-glow" d="M160.0,82.0 L414.0,82.0"/><path class="ax-line" d="M160.0,82.0 L414.0,82.0"/><path class="ax-head" d="M430.0,82.0 L411.0,91.5 L411.0,72.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
@@ -821,6 +849,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-binds"><path class="ax-glow" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-line" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-head" d="M1041.0,228.0 L1050.5,247.0 L1031.5,247.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-views"><path class="ax-glow" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-line" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-head" d="M700.0,470.0 L690.5,451.0 L709.5,451.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-deftr"><path class="ax-glow" d="M860.0,470.0 L860.0,280.0"/><path class="ax-line" d="M860.0,470.0 L860.0,280.0"/><path class="ax-head" d="M860.0,264.0 L869.5,283.0 L850.5,283.0 Z"/></g>
+  <g class="ax-flow ax-f-fwd" data-flow="tag-render" data-lands="page.p-src page.p-name"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-get" data-pts="1430.0,82.0 930.0,82.0" data-ms="800"></g><g class="ax-hop" data-edge="e-call" data-pts="845.0,114.0 845.0,160.0" data-ms="450"></g><g class="ax-hop" data-edge="e-html" data-pts="990.0,212.0 1430.0,212.0" data-ms="752" data-at="51.0" data-with="seam e-binds devbody.d-tag" data-wms="600"></g></g>
   <g class="ax-pill ax-old" data-ax="p-reload"><rect x="1034.4" y="669.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M1165.6,690.0 L1153.6,683.0 L1153.6,697.0 Z"/><text x="1096.0" y="699.8" text-anchor="middle" font-size="28">reload</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-html"><rect class="ax-lbg" x="1225.0" y="227.0" width="100.2" height="31.9" rx="5"/><text class="ax-elabel" x="1275.1" y="250.0" text-anchor="middle" font-size="28">HTML</text></g>
@@ -840,6 +869,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-mono ax-old" data-ax="trload"><rect x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><text class="ax-label" x="638.0" y="508.2" font-size="34">tr-load!</text><g class="ax-pipe"><path d="M734.4,554.0 L966.0,554.0"/><path class="ax-head" d="M975.0,554.0 L964.0,548.0 L964.0,560.0 Z"/></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-read"><rect x="636.0" y="532.0" width="93.4" height="44.0" rx="8"/><text x="682.7" y="564.1" text-anchor="middle" font-size="28">read</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-eval"><rect x="980.0" y="532.0" width="93.4" height="44.0" rx="8"/><text x="1026.8" y="564.1" text-anchor="middle" font-size="28">eval</text></g></g>
   <g class="ax-mark ax-m-q ax-old" data-ax="m-gap"><circle class="ax-glyph" cx="1250.0" cy="176.0" r="17"/><text class="ax-q" x="1250.0" y="186.1" text-anchor="middle" font-size="28">?</text></g>
   <rect class="ax-tbg ax-note-bg ax-old" data-ax="seam-l" x="1054.0" y="227.0" width="79.4" height="31.9" rx="5"/><text class="ax-note ax-mono ax-old" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28">seam</text>
+  <g class="ax-flow-nums ax-f-fwd" data-flow="tag-render"><g class="ax-hopnum" transform="translate(1104.7 82.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">1</text></g><g class="ax-hopnum" transform="translate(1194.9 212.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">2</text></g></g>
 </svg></div>
 </section>
 
@@ -883,7 +913,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-new" data-ax="e-click"><path class="ax-glow" d="M1680.0,286.0 L1680.0,764.0"/><path class="ax-line" d="M1680.0,286.0 L1680.0,764.0"/><path class="ax-head" d="M1680.0,780.0 L1670.5,761.0 L1689.5,761.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-new" data-ax="e-wsinsp"><path class="ax-glow" d="M780.0,812.0 L1430.0,812.0"/><path class="ax-line" d="M780.0,812.0 L1430.0,812.0"/></g>
   <g class="ax-edge  ax-new" data-ax="e-codeg"><path class="ax-glow" d="M560.0,700.0 L82.0,700.0 L82.0,398.0"/><path class="ax-line" d="M560.0,700.0 L82.0,700.0 L82.0,398.0"/><path class="ax-head" d="M82.0,382.0 L91.5,401.0 L72.5,401.0 Z"/></g>
-  <g class="ax-flow ax-f-fwd" data-flow="click-open" data-lands="buffer"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-click" data-pts="1680.0,286.0 1680.0,780.0" data-ms="795"></g><g class="ax-hop" data-edge="e-wsinsp" data-pts="1430.0,812.0 780.0,812.0" data-ms="1200" data-smin="60.0" data-smax="590.0" data-off="0.0,31.0" data-pill="p-open"><g class="ax-mpill"><rect x="-53.1" y="-23.0" width="106.2" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">open</text></g></g><g class="ax-hop" data-edge="e-codeg" data-pts="560.0,700.0 82.0,700.0 82.0,382.0" data-ms="1037"></g></g>
+  <g class="ax-flow ax-f-fwd" data-flow="click-open" data-lands="buffer"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop ax-station" data-part="page.p-src" data-ms="450"/><g class="ax-hop" data-edge="e-click" data-pts="1680.0,286.0 1680.0,780.0" data-ms="795"></g><g class="ax-hop" data-edge="e-wsinsp" data-pts="1430.0,812.0 780.0,812.0" data-ms="1200" data-smin="60.0" data-smax="590.0" data-off="0.0,31.0" data-pill="p-open"><g class="ax-mpill"><rect x="-53.1" y="-23.0" width="106.2" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">open</text></g></g><g class="ax-hop ax-station" data-part="hub.h-disp" data-with="m-resolve" data-ms="450"/><g class="ax-hop" data-edge="e-codeg" data-pts="560.0,700.0 82.0,700.0 82.0,382.0" data-ms="1037"></g></g>
   <g class="ax-pill ax-old" data-ax="p-reload"><rect x="1034.4" y="669.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M1165.6,690.0 L1153.6,683.0 L1153.6,697.0 Z"/><text x="1096.0" y="699.8" text-anchor="middle" font-size="28">reload</text></g>
   <g class="ax-pill ax-new" data-ax="p-open"><rect x="921.3" y="791.0" width="107.4" height="42.0" rx="21.0"/><path class="ax-tri" d="M931.3,812.0 L943.3,805.0 L943.3,819.0 Z"/><text x="984.0" y="821.8" text-anchor="middle" font-size="28">open</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
@@ -935,12 +965,13 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 <!-- 20 · the map, state 8 -->
 <section class="slide">
   <h2>🗺 name what made it</h2>
-  <div class="figure ax-fig"><svg class="ax ax-arch" data-step="8" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 8: name what made it">
+  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="8" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 8: name what made it">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
   <g class="ax-region ax-r-band ax-old" data-ax="dev"><rect x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="ax-capbg" x="620.0" y="279.7" width="198.8" height="29.4"/><text class="ax-cap" x="630.0" y="302.1" text-anchor="start" font-size="28">DEV ONLY</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
+  <g class="ax-flow-under ax-f-fwd" data-flow="wrap-load"><path class="ax-hglow" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="ax-hglow" d="M860.0,470.0 L860.0,264.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-eval"><path class="ax-glow" d="M160.0,82.0 L414.0,82.0"/><path class="ax-line" d="M160.0,82.0 L414.0,82.0"/><path class="ax-head" d="M430.0,82.0 L411.0,91.5 L411.0,72.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
@@ -956,6 +987,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-click"><path class="ax-glow" d="M1680.0,286.0 L1680.0,764.0"/><path class="ax-line" d="M1680.0,286.0 L1680.0,764.0"/><path class="ax-head" d="M1680.0,780.0 L1670.5,761.0 L1689.5,761.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsinsp"><path class="ax-glow" d="M780.0,812.0 L1430.0,812.0"/><path class="ax-line" d="M780.0,812.0 L1430.0,812.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-codeg"><path class="ax-glow" d="M560.0,700.0 L82.0,700.0 L82.0,398.0"/><path class="ax-line" d="M560.0,700.0 L82.0,700.0 L82.0,398.0"/><path class="ax-head" d="M82.0,382.0 L91.5,401.0 L72.5,401.0 Z"/></g>
+  <g class="ax-flow ax-f-fwd" data-flow="wrap-load" data-lands="views"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-views" data-pts="600.0,350.0 700.0,350.0 700.0,470.0" data-ms="600"></g><g class="ax-hop ax-station" data-part="trload.c-read" data-ms="450"/><g class="ax-hop ax-station" data-part="trload.c-eval" data-ms="450"/><g class="ax-hop ax-station" data-part="trload.c-wrap" data-ms="450"/><g class="ax-hop" data-edge="e-deftr" data-pts="860.0,470.0 860.0,264.0" data-ms="1200" data-smin="30.0" data-smax="132.0" data-off="-74.2,0.0"><g class="ax-mpill"><rect x="-62.2" y="-23.0" width="124.3" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">ns/fn</text></g></g></g>
   <g class="ax-pill ax-old" data-ax="p-reload"><rect x="1034.4" y="669.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M1165.6,690.0 L1153.6,683.0 L1153.6,697.0 Z"/><text x="1096.0" y="699.8" text-anchor="middle" font-size="28">reload</text></g>
   <g class="ax-pill ax-old" data-ax="p-open"><rect x="921.3" y="791.0" width="107.4" height="42.0" rx="21.0"/><path class="ax-tri" d="M931.3,812.0 L943.3,805.0 L943.3,819.0 Z"/><text x="984.0" y="821.8" text-anchor="middle" font-size="28">open</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
@@ -980,6 +1012,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <rect class="ax-tbg ax-note-bg ax-old" data-ax="seam-l" x="1054.0" y="227.0" width="79.4" height="31.9" rx="5"/><text class="ax-note ax-mono ax-old" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28">seam</text>
   <g class="ax-mark ax-m-shield ax-old" data-ax="m-origin"><path class="ax-glyph" d="M802.0,709.0 L815.6,714.7 L815.6,727.1 Q815.6,738.5 802.0,744.1 Q788.4,738.5 788.4,727.1 L788.4,714.7 Z"/><path class="ax-tick" d="M796.3,727.1 L800.9,731.7 L808.8,721.5"/><rect class="ax-tbg" x="821.0" y="713.1" width="180.6" height="31.9" rx="5"/><text x="827.0" y="736.1" text-anchor="start" font-size="28">origin-ok?</text></g>
   <g class="ax-mark ax-m-shield ax-old" data-ax="m-resolve"><path class="ax-glyph" d="M802.0,747.0 L815.6,752.7 L815.6,765.1 Q815.6,776.5 802.0,782.1 Q788.4,776.5 788.4,765.1 L788.4,752.7 Z"/><path class="ax-tick" d="M796.3,765.1 L800.9,769.7 L808.8,759.5"/><rect class="ax-tbg" x="821.0" y="751.1" width="197.5" height="31.9" rx="5"/><text x="827.0" y="774.1" text-anchor="start" font-size="28">resolve-src</text></g>
+  <g class="ax-flow-nums ax-f-fwd" data-flow="wrap-load"><g class="ax-hopnum" transform="translate(667.2 350.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">1</text></g><g class="ax-hopnum ax-hopmsg" transform="translate(785.8 338.0)"><rect x="-62.2" y="-23.0" width="124.3" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">ns/fn</text></g><g class="ax-hopnum" transform="translate(860.0 391.2)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">2</text></g></g>
 </svg></div>
 </section>
 
@@ -1079,12 +1112,14 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 <!-- 24 · the map, state 10 -->
 <section class="slide">
   <h2>🗺 which call made it</h2>
-  <div class="figure ax-fig"><svg class="ax ax-arch" data-step="10" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 10: which call made it">
+  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="10" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 10: which call made it">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
   <g class="ax-region ax-r-band ax-old" data-ax="dev"><rect x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="ax-capbg" x="620.0" y="279.7" width="198.8" height="29.4"/><text class="ax-cap" x="630.0" y="302.1" text-anchor="start" font-size="28">DEV ONLY</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
+  <g class="ax-flow-under ax-f-fwd" data-flow="callsite-load"><path class="ax-hglow" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="ax-hglow" d="M860.0,470.0 L860.0,264.0"/></g>
+  <g class="ax-flow-under ax-f-fwd" data-flow="callsite-render"><path class="ax-hglow" d="M1430.0,82.0 L930.0,82.0"/><path class="ax-hglow" d="M845.0,114.0 L845.0,160.0"/><path class="ax-hglow" d="M990.0,212.0 L1430.0,212.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-eval"><path class="ax-glow" d="M160.0,82.0 L414.0,82.0"/><path class="ax-line" d="M160.0,82.0 L414.0,82.0"/><path class="ax-head" d="M430.0,82.0 L411.0,91.5 L411.0,72.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
@@ -1103,6 +1138,8 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsjoy"><path class="ax-glow" d="M178.0,812.0 L560.0,812.0"/><path class="ax-line" d="M178.0,812.0 L560.0,812.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-resolve"><path class="ax-glow" d="M780.0,650.0 L1278.1,650.0 L1278.1,592.0"/><path class="ax-line" d="M780.0,650.0 L1278.1,650.0 L1278.1,592.0"/><path class="ax-head" d="M1278.1,576.0 L1287.6,595.0 L1268.6,595.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-light"><path class="ax-glow" d="M1720.0,780.0 L1720.0,302.0"/><path class="ax-line" d="M1720.0,780.0 L1720.0,302.0"/><path class="ax-head" d="M1720.0,286.0 L1729.5,305.0 L1710.5,305.0 Z"/></g>
+  <g class="ax-flow ax-f-fwd" data-flow="callsite-load" data-lands="views"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-views" data-pts="600.0,350.0 700.0,350.0 700.0,470.0" data-ms="600"></g><g class="ax-hop ax-station" data-part="trload.c-read" data-ms="450"/><g class="ax-hop ax-station" data-part="trload.c-calls" data-ms="450"/><g class="ax-hop ax-station" data-part="trload.c-eval" data-ms="450"/><g class="ax-hop" data-edge="e-deftr" data-pts="860.0,470.0 860.0,264.0" data-ms="600"></g></g>
+  <g class="ax-flow ax-f-fwd" data-flow="callsite-render" data-lands="page.p-call"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-get" data-pts="1430.0,82.0 930.0,82.0" data-ms="800"></g><g class="ax-hop" data-edge="e-call" data-pts="845.0,114.0 845.0,160.0" data-ms="450"></g><g class="ax-hop ax-station" data-part="views.v-main" data-with="views.v-ui" data-ms="450"/><g class="ax-hop" data-edge="e-html" data-pts="990.0,212.0 1430.0,212.0" data-ms="752"></g></g>
   <g class="ax-pill ax-old" data-ax="p-reload"><rect x="1034.4" y="669.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M1165.6,690.0 L1153.6,683.0 L1153.6,697.0 Z"/><text x="1096.0" y="699.8" text-anchor="middle" font-size="28">reload</text></g>
   <g class="ax-pill ax-old" data-ax="p-open"><rect x="921.3" y="791.0" width="107.4" height="42.0" rx="21.0"/><path class="ax-tri" d="M931.3,812.0 L943.3,805.0 L943.3,819.0 Z"/><text x="984.0" y="821.8" text-anchor="middle" font-size="28">open</text></g>
   <g class="ax-pill ax-old" data-ax="p-cursor"><rect x="210.6" y="791.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M341.7,812.0 L329.7,805.0 L329.7,819.0 Z"/><text x="272.1" y="821.8" text-anchor="middle" font-size="28">cursor</text></g>
@@ -1132,6 +1169,8 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <rect class="ax-tbg ax-note-bg ax-old" data-ax="seam-l" x="1054.0" y="227.0" width="79.4" height="31.9" rx="5"/><text class="ax-note ax-mono ax-old" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28">seam</text>
   <g class="ax-mark ax-m-shield ax-old" data-ax="m-origin"><path class="ax-glyph" d="M802.0,709.0 L815.6,714.7 L815.6,727.1 Q815.6,738.5 802.0,744.1 Q788.4,738.5 788.4,727.1 L788.4,714.7 Z"/><path class="ax-tick" d="M796.3,727.1 L800.9,731.7 L808.8,721.5"/></g>
   <g class="ax-mark ax-m-shield ax-old" data-ax="m-resolve"><path class="ax-glyph" d="M802.0,747.0 L815.6,752.7 L815.6,765.1 Q815.6,776.5 802.0,782.1 Q788.4,776.5 788.4,765.1 L788.4,752.7 Z"/><path class="ax-tick" d="M796.3,765.1 L800.9,769.7 L808.8,759.5"/></g>
+  <g class="ax-flow-nums ax-f-fwd" data-flow="callsite-load"><g class="ax-hopnum" transform="translate(700.0 360.0)"><rect x="-27.1" y="-21" width="54.2" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">A1</text></g><g class="ax-hopnum" transform="translate(860.0 367.0)"><rect x="-27.1" y="-21" width="54.2" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">A2</text></g></g>
+  <g class="ax-flow-nums ax-f-fwd" data-flow="callsite-render"><g class="ax-hopnum" transform="translate(1098.7 82.0)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B1</text></g><g class="ax-hopnum" transform="translate(1188.9 212.0)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B2</text></g></g>
 </svg></div>
 </section>
 
@@ -1237,15 +1276,17 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 <!-- 28 · the map, state 12 -->
 <section class="slide">
   <h2>🗺 the inspector doesn't ship</h2>
-  <div class="figure ax-fig"><svg class="ax ax-arch" data-step="12" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 12: the inspector doesn&#x27;t ship">
+  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="12" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 12: the inspector doesn&#x27;t ship">
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
+  <g class="ax-flow-under ax-f-fwd" data-flow="prod-render"><path class="ax-hglow" d="M1430.0,82.0 L930.0,82.0"/><path class="ax-hglow" d="M845.0,114.0 L845.0,160.0"/><path class="ax-hglow" d="M990.0,212.0 L1430.0,212.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
+  <g class="ax-flow ax-f-fwd" data-flow="prod-render" data-lands="page.p-el"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-get" data-pts="1430.0,82.0 930.0,82.0" data-ms="800"></g><g class="ax-hop" data-edge="e-call" data-pts="845.0,114.0 845.0,160.0" data-ms="450"></g><g class="ax-hop" data-edge="e-html" data-pts="990.0,212.0 1430.0,212.0" data-ms="752" data-at="51.0" data-with="seam seam-l" data-wms="600"></g></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-html"><rect class="ax-lbg" x="1225.0" y="227.0" width="100.2" height="31.9" rx="5"/><text class="ax-elabel" x="1275.1" y="250.0" text-anchor="middle" font-size="28">HTML</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="src"><rect x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><text class="ax-label" x="304.0" y="293.2" text-anchor="middle" font-size="34">src/</text></g>
@@ -1255,6 +1296,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-mono ax-old ax-changed" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">require</text></g>
   <g class="ax-node ax-old" data-ax="seam"><rect x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/></g>
   <rect class="ax-tbg ax-note-bg ax-old ax-changed" data-ax="seam-l" x="1054.0" y="227.0" width="146.9" height="31.9" rx="5"/><text class="ax-note ax-mono ax-old ax-changed" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28">identity</text>
+  <g class="ax-flow-nums ax-f-fwd" data-flow="prod-render"><g class="ax-hopnum" transform="translate(1104.7 82.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">1</text></g><g class="ax-hopnum" transform="translate(1351.6 212.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">2</text></g></g>
 </svg></div>
 </section>
 
@@ -1395,7 +1437,12 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
    their source (a dashed one fades in); after it, what rests is the end state. The markup
    itself is that end state (print, the deck, flow-off): the script only adds the "before",
    as a class, and the inline styles of the frames in between. A flow's station (a row or
-   cell as a hop) lights that part for a beat while the token is inside its box.
+   cell as a hop) lights that part for a beat while the token is inside its box; a waypoint
+   (data-at) stops the token on its hop for a beat. What lights in a beat (data-with) keeps
+   the trail look after it; a mark pulses (1 → data-k → 1, where it has room), then keeps
+   its ring, or its lit words (diagram.css). A leg (data-leg on its first hop) is a restart
+   elsewhere: the token goes in at the end of the leg before and comes out LEG ms later at
+   the new leg's first door.
 
    Navigation never plays a flow: → / Space / PageDown / click always go to the next
    slide. On a slide with flows the template passes two keys on (either case, no Ctrl /
@@ -1447,6 +1494,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
       PRE = 260,     // the token waits at the first door
       DWELL = 170,   // … and at every node between hops
       HOLD = 900,    // after the last hop, the whole path stays lit (the token has gone in)
+      LEG = 600,     // between two legs of a flow (`|`): the token has gone in; it comes out elsewhere
       GAP = 600,     // flow-loop: between two flows of one slide
       REST = 2000,   // flow-loop: the static picture between rounds
       BOUNCE = 250;  // a second a this soon after the last is a key bounce or double tap
@@ -1465,18 +1513,38 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   function sel(svg, cls, id) { return svg.querySelector('.' + cls + '[data-flow="' + id + '"]'); }
   function nums(h, a) { return (h.getAttribute(a) || '').split(',').map(Number); }
 
+  function ids(h, a) { return (h.getAttribute(a) || '').split(' ').filter(Boolean); }
+  function byIds(svg, list) {                           // every element of the listed parts (an edge: its line and its words)
+    return list.length ? [].slice.call(svg.querySelectorAll(list.map(function (i) { return '[data-ax="' + i + '"]'; }).join(','))) : [];
+  }
+  // what lights in a beat (a station's part, and data-with): edges take the wire looks; a mark pulses to
+  // data-k about data-o (the generator sizes the pulse and picks the point: it keeps off the neighbours;
+  // no data-k: no room, the mark keeps still), then keeps its ring (a mark with words: they light instead)
+  function beat(svg, list) {
+    var b = { els: [], edges: [], marks: [] };
+    byIds(svg, list).forEach(function (el) {
+      if (el.classList.contains('ax-edge')) { b.edges.push(el); return; }
+      b.els.push(el);
+      if (el.classList.contains('ax-mark') && el.hasAttribute('data-k'))
+        b.marks.push({ el: el, o: nums(el, 'data-o'), k: +el.getAttribute('data-k'), glyphs: [].slice.call(el.querySelectorAll('.ax-glyph, .ax-tick, .ax-q')) });
+    });
+    return b;
+  }
+
   function parseFlow(g) {
     var svg = g.ownerSVGElement, id = g.getAttribute('data-flow');
     var kind = (/ax-f-(\w+)/.exec(g.getAttribute('class')) || [0, 'fwd'])[1];
     var under = sel(svg, 'ax-flow-under', id), glows = under ? under.querySelectorAll('.ax-hglow') : [];
-    var t = PRE, prev = null, gi = 0;
+    var t = PRE, prev = null, last = null, gi = 0;
     var hops = [].map.call(g.querySelectorAll('.ax-hop'), function (h, j) {
-      var part = h.getAttribute('data-part');
+      var part = h.getAttribute('data-part'), leg = j > 0 && h.hasAttribute('data-leg');
+      if (leg) { last.legEnd = true; t += LEG; }        // a new leg: the token went in; it comes out here, LEG later
       if (part) {                                       // a station: a beat inside the box, that part lit
-        var st = { part: svg.querySelector('[data-ax="' + part + '"]'), ms: +h.getAttribute('data-ms'), door: j ? 0 : PRE,
-                   edges: [], pill: null, mp: null, glow: null };
+        var st = { part: part, ms: +h.getAttribute('data-ms'), door: j ? 0 : PRE,
+                   beat: beat(svg, [part].concat(ids(h, 'data-with'))), edges: [], pill: null, mp: null, glow: null };
         st.t0 = t; st.t1 = t + st.ms; t = st.t1;
-        return st;
+        st.b0 = st.t0 - st.door; st.b1 = st.t1;         // its beat: from its door (the first item: the flow's start)
+        return (last = st);
       }
       var pts = h.getAttribute('data-pts').split(' ').map(function (p) { return p.split(',').map(Number); });
       var cum = [0];
@@ -1491,16 +1559,24 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
         off: mp ? nums(h, 'data-off') : [0, 0],
         glow: glows[gi++] || null,                      // a station has no glow of its own
         // the next hop leaves from another side of the box: hide the token while it is "inside"
-        jump: prev ? Math.hypot(pts[0][0] - prev.pts[prev.pts.length - 1][0], pts[0][1] - prev.pts[prev.pts.length - 1][1]) > 30 : false
+        // (a new leg's first door is not a jump: the token comes out there and waits, like at any door)
+        jump: prev && !leg ? Math.hypot(pts[0][0] - prev.pts[prev.pts.length - 1][0], pts[0][1] - prev.pts[prev.pts.length - 1][1]) > 30 : false,
+        at: null, wms: 0
       };
       hop.door = j ? DWELL : PRE;
       if (j) t += DWELL;
-      hop.t0 = t; hop.t1 = t + hop.ms; t = hop.t1; prev = hop;
-      return hop;
+      hop.t0 = t;
+      if (h.hasAttribute('data-at')) {                  // a waypoint: the token stops at arc length `at` while its beat lights
+        hop.at = Math.max(0, Math.min(hop.len, +h.getAttribute('data-at'))); hop.wms = +h.getAttribute('data-wms');
+        hop.m1 = hop.len ? hop.ms * hop.at / hop.len : 0;   // the hop's own time, shared out by distance: its pace is a plain hop's
+        hop.b0 = t + hop.m1; hop.b1 = hop.b0 + hop.wms;
+        hop.beat = beat(svg, ids(h, 'data-with'));
+      }
+      hop.t1 = t + hop.ms + hop.wms; t = hop.t1; prev = hop;
+      return (last = hop);
     });
-    var lands = g.getAttribute('data-lands');
     return { g: g, svg: svg, id: id, kind: kind, hops: hops, token: g.querySelector('.ax-token'),
-             lands: lands ? svg.querySelector('[data-ax="' + lands + '"]') : null,   // where the effect shows
+             lands: byIds(svg, ids(g, 'data-lands')),  // where the effect shows
              nums: sel(svg, 'ax-flow-nums', id), end: t, dur: t + HOLD };
   }
 
@@ -1547,6 +1623,15 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
       }
     }
     return h.pts[h.pts.length - 1];
+  }
+  // how far along its hop the token is at u (≥ h.t0): eased over the hop, or, with a waypoint, eased to
+  // it, still for its beat, eased on (each stretch in its share of the hop's time)
+  function travel(h, u) {
+    if (h.at === null) return ease(Math.min(1, (u - h.t0) / h.ms)) * h.len;
+    if (u < h.b0) return h.m1 > 0 ? ease((u - h.t0) / h.m1) * h.at : h.at;
+    if (u < h.b1) return h.at;
+    var m2 = h.ms - h.m1;
+    return h.at + (m2 > 0 ? ease(Math.min(1, (u - h.b1) / m2)) : 1) * (h.len - h.at);
   }
   // the message beside the wire: in step with the token on its clear stretch, waiting before it, parked after it
   function pillAt(h, s) {
@@ -1599,16 +1684,27 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
         s = 0; hidden = h.jump && u < h.t0 - DWELL / 2;
         where = point(h, 0);
       } else {
-        s = ease(Math.min(1, (u - h.t0) / h.ms)) * h.len; where = point(h, s);
+        s = travel(h, u); where = point(h, s);
       }
+      if (h.legEnd && u >= h.t1) hidden = true;         // the end of a leg: the token has gone in, it restarts elsewhere
       if (u >= f.end) {                                 // delivered: the token has gone into the box …
         hidden = true;
-        if (f.lands) acc.land.push([[f.lands], f.kind]);  // … and what it did lights up there
+        if (f.lands.length) acc.land.push([f.lands, f.kind]);   // … and what it did lights up there
       }
     }
     hops.forEach(function (h, j) {
       var now_ = active && j === cur && u < h.t1, done = active && (j < cur || (j === cur && u >= h.t1));
-      if (h.part) { if (now_ || done) acc.parts.push([h.part, f.kind, now_]); return; }   // lit now, or passed
+      if (h.beat) {                                     // a station's or a waypoint's beat: lit in it, then the trail look
+        var bnow = active && u >= h.b0 && u < h.b1, bdone = active && u >= h.b1;
+        if (bnow || bdone) {
+          h.beat.els.forEach(function (el) { acc.beat.push([el, f.kind, bnow]); });
+          (bnow ? acc.lit : acc.trail).push([h.beat.edges, f.kind]);
+          h.beat.marks.forEach(function (m) {         // a mark pulses over the beat: 1 → k → 1
+            acc.pulse.push([m, bnow ? 1 + (m.k - 1) * Math.sin(Math.PI * (u - h.b0) / (h.b1 - h.b0)) : 1]);
+          });
+        }
+      }
+      if (h.part) return;
       cls(h.glow, 'ax-lit', now_);
       if (now_) acc.lit.push([h.edges, f.kind]); else if (done) acc.trail.push([h.edges, f.kind]);
       if (h.mp) {
@@ -1679,7 +1775,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
   function render(t) {
     if (!S || S.mode === 'off') return;
-    var fr = frame(t), acc = { lit: [], trail: [], off: [], land: [], parts: [] };
+    var fr = frame(t), acc = { lit: [], trail: [], off: [], land: [], beat: [], pulse: [] };
     S.anims.forEach(function (f, j) {
       var u = fr && fr.j === j ? fr.u : null;
       if (!f.swap) paint(f, u, acc);
@@ -1696,12 +1792,20 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     });
     S.pills.forEach(function (p) { cls(p, 'ax-pill-off', acc.off.indexOf(p) >= 0); });   // … and so can a static pill
     S.lands.forEach(function (el) {
-      var k = null; acc.land.forEach(function (l) { if (l[0][0] === el) k = l[1]; });
+      var k = null; acc.land.forEach(function (l) { if (l[0].indexOf(el) >= 0) k = l[1]; });
       cls(el, 'ax-landed', !!k); KINDS.forEach(function (kk) { cls(el, 'ax-lf-' + kk, k === kk); });
     });
-    S.parts.forEach(function (el) {                     // stations: the one the token is in, and the ones it passed
-      var k = null, now_ = false; acc.parts.forEach(function (l) { if (l[0] === el) { k = l[1]; now_ = l[2]; } });
+    S.beats.forEach(function (el) {                     // beats: the one the flow is at, and the ones it passed
+      var k = null, now_ = false; acc.beat.forEach(function (l) { if (l[0] === el) { k = l[1]; now_ = now_ || l[2]; } });
       cls(el, 'ax-lit', !!k && now_); cls(el, 'ax-trail', !!k && !now_); KINDS.forEach(function (kk) { cls(el, 'ax-lf-' + kk, k === kk); });
+    });
+    S.marks.forEach(function (m) {                      // a pulsing mark: its glyph scaled about data-o (1: no transform)
+      var sc = 1; acc.pulse.forEach(function (l) { if (l[0] === m) sc = Math.max(sc, l[1]); });
+      var v = sc === 1 ? null : 'translate(' + m.o[0] + ' ' + m.o[1] + ') scale(' + sc.toFixed(4) + ') translate(' + -m.o[0] + ' ' + -m.o[1] + ')';
+      m.glyphs.forEach(function (gl) {
+        if (v === null) { if (gl.hasAttribute('transform')) gl.removeAttribute('transform'); }
+        else if (gl.getAttribute('transform') !== v) gl.setAttribute('transform', v);
+      });
     });
     paintLine(along(t));
     S.playing = !!fr;
@@ -1770,14 +1874,22 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     if (!flows.length) return null;
     var fig = svgs[0].parentNode, fc = fig.classList;
     var mode = fc.contains('flow-keys') || fc.contains('flow-step') ? 'keys' : fc.contains('flow-loop') ? 'loop' : fc.contains('flow-off') ? 'off' : 'auto';
-    var edges = [], pills = [], lands = [], parts = [];
-    flows.forEach(function (f) { if (f.lands && lands.indexOf(f.lands) < 0) lands.push(f.lands); });
+    var edges = [], pills = [], lands = [], beats = [], marks = [];
+    var add = function (list, x) { if (x && list.indexOf(x) < 0) list.push(x); };
+    flows.forEach(function (f) { if (f.lands) f.lands.forEach(function (el) { add(lands, el); }); });
     flows.forEach(function (f) { f.hops.forEach(function (h) {
-      h.edges.forEach(function (e) { if (edges.indexOf(e) < 0) edges.push(e); });
-      if (h.pill && pills.indexOf(h.pill) < 0) pills.push(h.pill);
-      if (h.part && parts.indexOf(h.part) < 0) parts.push(h.part);
+      h.edges.forEach(function (e) { add(edges, e); });
+      add(pills, h.pill);
+      if (h.beat) {
+        h.beat.edges.forEach(function (e) { add(edges, e); });
+        h.beat.els.forEach(function (el) { add(beats, el); });
+        h.beat.marks.forEach(function (m) {             // one record per mark, whichever beats light it
+          var same = marks.filter(function (x) { return x.el === m.el; })[0];
+          if (same) h.beat.marks[h.beat.marks.indexOf(m)] = same; else marks.push(m);
+        });
+      }
     }); });
-    return { slide: slide, svgs: svgs, anims: flows, edges: edges, pills: pills, lands: lands, parts: parts, mode: mode,
+    return { slide: slide, svgs: svgs, anims: flows, edges: edges, pills: pills, lands: lands, beats: beats, marks: marks, mode: mode,
              line: mode === 'off' ? null : line(fig, flows),
              stop: 0, run: null, auto: false, lastA: -Infinity, shown: -1, playing: false };
   }
@@ -1861,7 +1973,9 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
         line: S.line ? { B: S.line.B, total: S.line.total, at: S.mode === 'off' ? 0 : along(t) / S.line.total } : null,
         swaps: S.anims.filter(function (f) { return f.swap; }).map(function (f) { return { id: f.id, state: f.state }; }),
         flows: S.anims.map(function (f) { return { id: f.id, kind: f.kind, hops: f.hops.length, dur: f.dur, end: f.end,
-          hopTimes: f.hops.map(function (h) { return [h.t0, h.t1]; }) }; }) };   // every animation (a swap: kind 'swap', no hops)
+          hopTimes: f.hops.map(function (h) { return [h.t0, h.t1]; }),
+          beats: f.hops.map(function (h) { return h.beat ? [h.b0, h.b1] : null; }),       // a station's or a waypoint's beat
+          legs: f.hops.map(function (h) { return !!h.legEnd; }) }; }) };   // every animation (a swap: kind 'swap', no hops)
     }
   };
   window.axFlows = api;

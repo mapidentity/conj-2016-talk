@@ -172,12 +172,15 @@ Patrick de Kruif · Clojure/Conj 2026 {.sub}
 <!-- slide 2 · the map, state 1 -->
 ## 🗺 a webserver, a REPL, an editor
 
+{.flow-step}
 ```diagram arch 1
 ```
 <!-- /slide -->
 
 > The cast: the page; one JVM with http-kit, the views and nREPL;
 > Calva talking to nREPL; the files.
+
+> `a` plays request, → next slide.
 
 <!-- page "A very simple app — and nothing to inspect it with" @3:26 [demo]
   shot s01-page "The recipe app: a featured recipe, filters, eight cards, ratings, icons. Server-rendered Hiccup, zero JavaScript. The spicy pills hang crooked." tall
@@ -220,12 +223,15 @@ Patrick de Kruif · Clojure/Conj 2026 {.sub}
 <!-- slide 3 · the map, state 2 -->
 ## 🗺 every change: three hops by hand
 
+{.flow-step}
 ```diagram arch 2
 ```
 <!-- /slide -->
 
 > New: the manual loop — save, a typed `(load-file …)`, F5 by hand —
 > and the amber ? from the page back to the views: no way back.
+
+> `a` plays three-hops, → next slide.
 
 <!-- page "Save, and the page follows" @6:23
   slide 4
@@ -378,12 +384,15 @@ ws.onmessage = function (e) {
 <!-- slide 9 · the map, state 4 -->
 ## 🗺 render deletes the structure
 
+{.flow-step}
 ```diagram arch 4
 ```
 <!-- /slide -->
 
 > New: the page's `span.badge.hot` row, and ✕ on the HTML wire —
 > *just a string*: the structure is gone.
+
+> `a` plays just-a-string, → next slide.
 
 <!-- page "The question — said twice" @10:31
   slide 10
@@ -572,12 +581,15 @@ re-run this at a later step, ask for `(:data-src (second …))` instead.)*
 <!-- slide 16 · the map, state 6 -->
 ## 🗺 metadata becomes attributes
 
+{.flow-step}
 ```diagram arch 6
 ```
 <!-- /slide -->
 
 > New: `tag-tree` in `dev-body` at the seam; the page's `data-src`
 > and `data-name` rows.
+
+> `a` plays tag-render, → next slide.
 
 <!-- page "tag-tree — metadata becomes attributes" @14:34
   slide 17
@@ -741,12 +753,15 @@ What *made* this thing?"
 <!-- slide 20 · the map, state 8 -->
 ## 🗺 name what made it
 
+{.flow-step}
 ```diagram arch 8
 ```
 <!-- /slide -->
 
 > New: the `wrap` cell in `tr-load!`, and its wire into the views: the
 > loader re-defs them wrapped.
+
+> `a` plays wrap-load, → next slide.
 
 <!-- page "instrument-var! — the loader does it all" @20:17
   slide 21
@@ -921,6 +936,7 @@ one*?" **[point at the featured card]**
 <!-- slide 24 · the map, state 10 -->
 ## 🗺 which call made it
 
+{.flow-step}
 ```diagram arch 10
 ```
 <!-- /slide -->
@@ -928,6 +944,8 @@ one*?" **[point at the featured card]**
 > New: the `call sites` cell, between read and eval; the page's
 > `data-callsite` row — on component roots only, so the element row
 > reads `span / article`.
+
+> `a` plays callsite-load, `a` plays callsite-render, → next slide.
 
 <!-- page "Same function, two call sites, told apart" @25:53
   slide 25
@@ -1092,6 +1110,7 @@ load a thing, one of them is wrong."
 <!-- slide 28 · the map, state 12 -->
 ## 🗺 the inspector doesn't ship
 
+{.flow-step}
 ```diagram arch 12
 ```
 <!-- /slide -->
@@ -1099,6 +1118,8 @@ load a thing, one of them is wrong."
 > Prod: DEV ONLY, nREPL, the editor, both scripts and every `data-*`
 > row are gone; the views load by `require` at boot; the seam reads
 > `identity`.
+
+> `a` plays prod-render, → next slide.
 
 <!-- page "The inspector doesn't ship" @32:59
   slide 29
@@ -1491,16 +1512,34 @@ key k-fwd fwd "page → code"  1100,106  @13
 key k-rev rev "code → page"  1100,150  @13
 
 # ---- animations: flows and swaps, a bare @K is state K only; on a {.flow-step} slide, a plays the next one, p steps back ----
+# a hop list: EDGE[<] ["MSG"] · EDGE at ID+ID… (a waypoint: the token stops there, the ids light) ·
+# NODE.PART[+ID…] (a station, and what lights with it) · `|` a new leg (a restart elsewhere)
+# §1: a request goes in, HTML comes out, and it stops at the page
+flow request @1 lands=page            : e-get, e-call, e-html
+# §1: three separate starts by hand (the buffer, Calva, you) before the page shows a change
+flow three-hops @2 lands=page         : e-save | e-eval, e-repl, e-def | e-f5, e-get, e-call, e-html
 # §1: the watcher loads first (dependency order); only after every load succeeded does it send "reload"
 flow save-load @3                     : e-save, e-poll, e-dep, e-def
 flow save-reload @3 lands=page        : e-notify, e-wsreload "reload", e-reloadpage, e-get, e-call, e-html
+# §2: the structure dies where the HTML is stringified (the ✕ fires as the token passes); a bare span lands
+flow just-a-string @4 lands=page.p-el : e-get, e-call, e-html at m-render
 # §4: tr-load! takes over from load-file (state 5 arrives with the old loader still wired), then a save takes the new path
 swap loader-swap @5                   : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-deftr
 flow save-trload @5 lands=views       : e-save, e-poll, e-views, trload.c-read, trload.c-eval, e-deftr ":line"
-flow click-open @7 lands=buffer       : e-click, e-wsinsp< "open", e-codeg
+# §5: at the seam, dev-body's tag-tree turns metadata into attributes; data-src and data-name arrive
+flow tag-render @6 lands=page.p-src,page.p-name : e-get, e-call, e-html at seam+e-binds+devbody.d-tag
+# §6: the click reads data-src; the dispatch resolves it (resolve-src, every open) and runs code -g
+flow click-open @7 lands=buffer       : page.p-src, e-click, e-wsinsp< "open", hub.h-disp+m-resolve, e-codeg
+# §7: after read and eval comes wrap: the views come back holding a wrapper that knows its name
+flow wrap-load @8 lands=views         : e-views, trload.c-read, trload.c-eval, trload.c-wrap, e-deftr "ns/fn"
 flow cursor rev @9 lands=page.p-el    : e-wsjoy "cursor", e-resolve, e-resolve<, e-wsinsp "highlight", e-light
+# §9: call sites are rewritten while loading (between read and eval); at render the rewritten call, in the views, stamps its site
+flow callsite-load @10 lands=views    : e-views, trload.c-read, trload.c-calls, trload.c-eval, e-deftr
+flow callsite-render @10 lands=page.p-call : e-get, e-call, views.v-main+views.v-ui, e-html
 flow calva-load warn @11 lands=views.v-main : e-eval "load-file", e-repl, e-def
 flow by-hand warn @11 lands=page      : e-f5, e-get, e-call, e-html
+# §10: in prod the seam is identity: the HTML passes through untouched, a bare span / article lands
+flow prod-render @12 lands=page.p-el  : e-get, e-call, e-html at seam+seam-l
 flow pixel-paren @13 lands=joyride    : e-click, e-wsinsp< "open", e-wsjoy< "open"
 flow cursor-pixel rev @13 lands=page.p-el : e-wsjoy "cursor", e-resolve, e-resolve<, e-wsinsp "highlight", e-light
 ```

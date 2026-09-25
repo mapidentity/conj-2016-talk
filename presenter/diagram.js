@@ -21,7 +21,12 @@
    their source (a dashed one fades in); after it, what rests is the end state. The markup
    itself is that end state (print, the deck, flow-off): the script only adds the "before",
    as a class, and the inline styles of the frames in between. A flow's station (a row or
-   cell as a hop) lights that part for a beat while the token is inside its box.
+   cell as a hop) lights that part for a beat while the token is inside its box; a waypoint
+   (data-at) stops the token on its hop for a beat. What lights in a beat (data-with) keeps
+   the trail look after it; a mark pulses (1 → data-k → 1, where it has room), then keeps
+   its ring, or its lit words (diagram.css). A leg (data-leg on its first hop) is a restart
+   elsewhere: the token goes in at the end of the leg before and comes out LEG ms later at
+   the new leg's first door.
 
    Navigation never plays a flow: → / Space / PageDown / click always go to the next
    slide. On a slide with flows the template passes two keys on (either case, no Ctrl /
@@ -73,6 +78,7 @@
       PRE = 260,     // the token waits at the first door
       DWELL = 170,   // … and at every node between hops
       HOLD = 900,    // after the last hop, the whole path stays lit (the token has gone in)
+      LEG = 600,     // between two legs of a flow (`|`): the token has gone in; it comes out elsewhere
       GAP = 600,     // flow-loop: between two flows of one slide
       REST = 2000,   // flow-loop: the static picture between rounds
       BOUNCE = 250;  // a second a this soon after the last is a key bounce or double tap
@@ -91,18 +97,38 @@
   function sel(svg, cls, id) { return svg.querySelector('.' + cls + '[data-flow="' + id + '"]'); }
   function nums(h, a) { return (h.getAttribute(a) || '').split(',').map(Number); }
 
+  function ids(h, a) { return (h.getAttribute(a) || '').split(' ').filter(Boolean); }
+  function byIds(svg, list) {                           // every element of the listed parts (an edge: its line and its words)
+    return list.length ? [].slice.call(svg.querySelectorAll(list.map(function (i) { return '[data-ax="' + i + '"]'; }).join(','))) : [];
+  }
+  // what lights in a beat (a station's part, and data-with): edges take the wire looks; a mark pulses to
+  // data-k about data-o (the generator sizes the pulse and picks the point: it keeps off the neighbours;
+  // no data-k: no room, the mark keeps still), then keeps its ring (a mark with words: they light instead)
+  function beat(svg, list) {
+    var b = { els: [], edges: [], marks: [] };
+    byIds(svg, list).forEach(function (el) {
+      if (el.classList.contains('ax-edge')) { b.edges.push(el); return; }
+      b.els.push(el);
+      if (el.classList.contains('ax-mark') && el.hasAttribute('data-k'))
+        b.marks.push({ el: el, o: nums(el, 'data-o'), k: +el.getAttribute('data-k'), glyphs: [].slice.call(el.querySelectorAll('.ax-glyph, .ax-tick, .ax-q')) });
+    });
+    return b;
+  }
+
   function parseFlow(g) {
     var svg = g.ownerSVGElement, id = g.getAttribute('data-flow');
     var kind = (/ax-f-(\w+)/.exec(g.getAttribute('class')) || [0, 'fwd'])[1];
     var under = sel(svg, 'ax-flow-under', id), glows = under ? under.querySelectorAll('.ax-hglow') : [];
-    var t = PRE, prev = null, gi = 0;
+    var t = PRE, prev = null, last = null, gi = 0;
     var hops = [].map.call(g.querySelectorAll('.ax-hop'), function (h, j) {
-      var part = h.getAttribute('data-part');
+      var part = h.getAttribute('data-part'), leg = j > 0 && h.hasAttribute('data-leg');
+      if (leg) { last.legEnd = true; t += LEG; }        // a new leg: the token went in; it comes out here, LEG later
       if (part) {                                       // a station: a beat inside the box, that part lit
-        var st = { part: svg.querySelector('[data-ax="' + part + '"]'), ms: +h.getAttribute('data-ms'), door: j ? 0 : PRE,
-                   edges: [], pill: null, mp: null, glow: null };
+        var st = { part: part, ms: +h.getAttribute('data-ms'), door: j ? 0 : PRE,
+                   beat: beat(svg, [part].concat(ids(h, 'data-with'))), edges: [], pill: null, mp: null, glow: null };
         st.t0 = t; st.t1 = t + st.ms; t = st.t1;
-        return st;
+        st.b0 = st.t0 - st.door; st.b1 = st.t1;         // its beat: from its door (the first item: the flow's start)
+        return (last = st);
       }
       var pts = h.getAttribute('data-pts').split(' ').map(function (p) { return p.split(',').map(Number); });
       var cum = [0];
@@ -117,16 +143,24 @@
         off: mp ? nums(h, 'data-off') : [0, 0],
         glow: glows[gi++] || null,                      // a station has no glow of its own
         // the next hop leaves from another side of the box: hide the token while it is "inside"
-        jump: prev ? Math.hypot(pts[0][0] - prev.pts[prev.pts.length - 1][0], pts[0][1] - prev.pts[prev.pts.length - 1][1]) > 30 : false
+        // (a new leg's first door is not a jump: the token comes out there and waits, like at any door)
+        jump: prev && !leg ? Math.hypot(pts[0][0] - prev.pts[prev.pts.length - 1][0], pts[0][1] - prev.pts[prev.pts.length - 1][1]) > 30 : false,
+        at: null, wms: 0
       };
       hop.door = j ? DWELL : PRE;
       if (j) t += DWELL;
-      hop.t0 = t; hop.t1 = t + hop.ms; t = hop.t1; prev = hop;
-      return hop;
+      hop.t0 = t;
+      if (h.hasAttribute('data-at')) {                  // a waypoint: the token stops at arc length `at` while its beat lights
+        hop.at = Math.max(0, Math.min(hop.len, +h.getAttribute('data-at'))); hop.wms = +h.getAttribute('data-wms');
+        hop.m1 = hop.len ? hop.ms * hop.at / hop.len : 0;   // the hop's own time, shared out by distance: its pace is a plain hop's
+        hop.b0 = t + hop.m1; hop.b1 = hop.b0 + hop.wms;
+        hop.beat = beat(svg, ids(h, 'data-with'));
+      }
+      hop.t1 = t + hop.ms + hop.wms; t = hop.t1; prev = hop;
+      return (last = hop);
     });
-    var lands = g.getAttribute('data-lands');
     return { g: g, svg: svg, id: id, kind: kind, hops: hops, token: g.querySelector('.ax-token'),
-             lands: lands ? svg.querySelector('[data-ax="' + lands + '"]') : null,   // where the effect shows
+             lands: byIds(svg, ids(g, 'data-lands')),  // where the effect shows
              nums: sel(svg, 'ax-flow-nums', id), end: t, dur: t + HOLD };
   }
 
@@ -173,6 +207,15 @@
       }
     }
     return h.pts[h.pts.length - 1];
+  }
+  // how far along its hop the token is at u (≥ h.t0): eased over the hop, or, with a waypoint, eased to
+  // it, still for its beat, eased on (each stretch in its share of the hop's time)
+  function travel(h, u) {
+    if (h.at === null) return ease(Math.min(1, (u - h.t0) / h.ms)) * h.len;
+    if (u < h.b0) return h.m1 > 0 ? ease((u - h.t0) / h.m1) * h.at : h.at;
+    if (u < h.b1) return h.at;
+    var m2 = h.ms - h.m1;
+    return h.at + (m2 > 0 ? ease(Math.min(1, (u - h.b1) / m2)) : 1) * (h.len - h.at);
   }
   // the message beside the wire: in step with the token on its clear stretch, waiting before it, parked after it
   function pillAt(h, s) {
@@ -225,16 +268,27 @@
         s = 0; hidden = h.jump && u < h.t0 - DWELL / 2;
         where = point(h, 0);
       } else {
-        s = ease(Math.min(1, (u - h.t0) / h.ms)) * h.len; where = point(h, s);
+        s = travel(h, u); where = point(h, s);
       }
+      if (h.legEnd && u >= h.t1) hidden = true;         // the end of a leg: the token has gone in, it restarts elsewhere
       if (u >= f.end) {                                 // delivered: the token has gone into the box …
         hidden = true;
-        if (f.lands) acc.land.push([[f.lands], f.kind]);  // … and what it did lights up there
+        if (f.lands.length) acc.land.push([f.lands, f.kind]);   // … and what it did lights up there
       }
     }
     hops.forEach(function (h, j) {
       var now_ = active && j === cur && u < h.t1, done = active && (j < cur || (j === cur && u >= h.t1));
-      if (h.part) { if (now_ || done) acc.parts.push([h.part, f.kind, now_]); return; }   // lit now, or passed
+      if (h.beat) {                                     // a station's or a waypoint's beat: lit in it, then the trail look
+        var bnow = active && u >= h.b0 && u < h.b1, bdone = active && u >= h.b1;
+        if (bnow || bdone) {
+          h.beat.els.forEach(function (el) { acc.beat.push([el, f.kind, bnow]); });
+          (bnow ? acc.lit : acc.trail).push([h.beat.edges, f.kind]);
+          h.beat.marks.forEach(function (m) {         // a mark pulses over the beat: 1 → k → 1
+            acc.pulse.push([m, bnow ? 1 + (m.k - 1) * Math.sin(Math.PI * (u - h.b0) / (h.b1 - h.b0)) : 1]);
+          });
+        }
+      }
+      if (h.part) return;
       cls(h.glow, 'ax-lit', now_);
       if (now_) acc.lit.push([h.edges, f.kind]); else if (done) acc.trail.push([h.edges, f.kind]);
       if (h.mp) {
@@ -305,7 +359,7 @@
 
   function render(t) {
     if (!S || S.mode === 'off') return;
-    var fr = frame(t), acc = { lit: [], trail: [], off: [], land: [], parts: [] };
+    var fr = frame(t), acc = { lit: [], trail: [], off: [], land: [], beat: [], pulse: [] };
     S.anims.forEach(function (f, j) {
       var u = fr && fr.j === j ? fr.u : null;
       if (!f.swap) paint(f, u, acc);
@@ -322,12 +376,20 @@
     });
     S.pills.forEach(function (p) { cls(p, 'ax-pill-off', acc.off.indexOf(p) >= 0); });   // … and so can a static pill
     S.lands.forEach(function (el) {
-      var k = null; acc.land.forEach(function (l) { if (l[0][0] === el) k = l[1]; });
+      var k = null; acc.land.forEach(function (l) { if (l[0].indexOf(el) >= 0) k = l[1]; });
       cls(el, 'ax-landed', !!k); KINDS.forEach(function (kk) { cls(el, 'ax-lf-' + kk, k === kk); });
     });
-    S.parts.forEach(function (el) {                     // stations: the one the token is in, and the ones it passed
-      var k = null, now_ = false; acc.parts.forEach(function (l) { if (l[0] === el) { k = l[1]; now_ = l[2]; } });
+    S.beats.forEach(function (el) {                     // beats: the one the flow is at, and the ones it passed
+      var k = null, now_ = false; acc.beat.forEach(function (l) { if (l[0] === el) { k = l[1]; now_ = now_ || l[2]; } });
       cls(el, 'ax-lit', !!k && now_); cls(el, 'ax-trail', !!k && !now_); KINDS.forEach(function (kk) { cls(el, 'ax-lf-' + kk, k === kk); });
+    });
+    S.marks.forEach(function (m) {                      // a pulsing mark: its glyph scaled about data-o (1: no transform)
+      var sc = 1; acc.pulse.forEach(function (l) { if (l[0] === m) sc = Math.max(sc, l[1]); });
+      var v = sc === 1 ? null : 'translate(' + m.o[0] + ' ' + m.o[1] + ') scale(' + sc.toFixed(4) + ') translate(' + -m.o[0] + ' ' + -m.o[1] + ')';
+      m.glyphs.forEach(function (gl) {
+        if (v === null) { if (gl.hasAttribute('transform')) gl.removeAttribute('transform'); }
+        else if (gl.getAttribute('transform') !== v) gl.setAttribute('transform', v);
+      });
     });
     paintLine(along(t));
     S.playing = !!fr;
@@ -396,14 +458,22 @@
     if (!flows.length) return null;
     var fig = svgs[0].parentNode, fc = fig.classList;
     var mode = fc.contains('flow-keys') || fc.contains('flow-step') ? 'keys' : fc.contains('flow-loop') ? 'loop' : fc.contains('flow-off') ? 'off' : 'auto';
-    var edges = [], pills = [], lands = [], parts = [];
-    flows.forEach(function (f) { if (f.lands && lands.indexOf(f.lands) < 0) lands.push(f.lands); });
+    var edges = [], pills = [], lands = [], beats = [], marks = [];
+    var add = function (list, x) { if (x && list.indexOf(x) < 0) list.push(x); };
+    flows.forEach(function (f) { if (f.lands) f.lands.forEach(function (el) { add(lands, el); }); });
     flows.forEach(function (f) { f.hops.forEach(function (h) {
-      h.edges.forEach(function (e) { if (edges.indexOf(e) < 0) edges.push(e); });
-      if (h.pill && pills.indexOf(h.pill) < 0) pills.push(h.pill);
-      if (h.part && parts.indexOf(h.part) < 0) parts.push(h.part);
+      h.edges.forEach(function (e) { add(edges, e); });
+      add(pills, h.pill);
+      if (h.beat) {
+        h.beat.edges.forEach(function (e) { add(edges, e); });
+        h.beat.els.forEach(function (el) { add(beats, el); });
+        h.beat.marks.forEach(function (m) {             // one record per mark, whichever beats light it
+          var same = marks.filter(function (x) { return x.el === m.el; })[0];
+          if (same) h.beat.marks[h.beat.marks.indexOf(m)] = same; else marks.push(m);
+        });
+      }
     }); });
-    return { slide: slide, svgs: svgs, anims: flows, edges: edges, pills: pills, lands: lands, parts: parts, mode: mode,
+    return { slide: slide, svgs: svgs, anims: flows, edges: edges, pills: pills, lands: lands, beats: beats, marks: marks, mode: mode,
              line: mode === 'off' ? null : line(fig, flows),
              stop: 0, run: null, auto: false, lastA: -Infinity, shown: -1, playing: false };
   }
@@ -487,7 +557,9 @@
         line: S.line ? { B: S.line.B, total: S.line.total, at: S.mode === 'off' ? 0 : along(t) / S.line.total } : null,
         swaps: S.anims.filter(function (f) { return f.swap; }).map(function (f) { return { id: f.id, state: f.state }; }),
         flows: S.anims.map(function (f) { return { id: f.id, kind: f.kind, hops: f.hops.length, dur: f.dur, end: f.end,
-          hopTimes: f.hops.map(function (h) { return [h.t0, h.t1]; }) }; }) };   // every animation (a swap: kind 'swap', no hops)
+          hopTimes: f.hops.map(function (h) { return [h.t0, h.t1]; }),
+          beats: f.hops.map(function (h) { return h.beat ? [h.b0, h.b1] : null; }),       // a station's or a waypoint's beat
+          legs: f.hops.map(function (h) { return !!h.legEnd; }) }; }) };   // every animation (a swap: kind 'swap', no hops)
     }
   };
   window.axFlows = api;

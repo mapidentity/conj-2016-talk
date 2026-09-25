@@ -42,7 +42,8 @@ DSL — one statement per line, `#` starts a comment:
   mark ID shield|cross|q "TEXT" X,Y [anchor=start|middle|end] [lbl=below|above] [lxy=X,Y]
         lxy= puts the label's baseline at X,Y (e.g. a shield in a tight door, its words beside it)
   key  ID new|fwd|rev|ws|warn "TEXT" X,Y
-  flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], NODE.PART, EDGE[<] ["MSG"], …
+  flow ID [fwd|rev|warn] @S[-E] [lands=ID[,ID…]] : ITEM, ITEM, … [| ITEM, …]
+    ITEM = EDGE[<] ["MSG"]  |  EDGE[<] at ID[+ID…]  |  NODE.PART[+ID…]
         a message travelling hop by hop over existing edges, in order. `<` runs
         a hop against the edge's drawn direction (B → A). "MSG" rides along as a
         pill beside the wire, on a side and stretch clear of boxes and words; a
@@ -51,13 +52,21 @@ DSL — one statement per line, `#` starts a comment:
         the pill stays where it arrived until the flow ends, and print shows it
         there. A row or cell in the list (NODE.PART) is a station: the token is
         inside that box, and the part lights for a beat (STATION_MS), in order.
+        `+ID…` after it is a beat: those rows, cells, nodes, notes, marks or edges
+        light with it (a mark pulses where it has room, then its words stay lit, or,
+        without words, it keeps a ring: _pulse). `EDGE at ID+ID…` is a waypoint: the token
+        stops on the hop where it passes the first id (a mark or a box within
+        WAYPOINT_NEAR of the route), the ids light for WAYPOINT_MS, then it goes on.
+        `|` starts a leg: a deliberate restart elsewhere (the token goes in, and
+        comes out a moment later (diagram.js: LEG) at the next leg's first door; no jump warning).
         fwd (default) = violet, page → code and the dev machinery · rev =
         green, code → page · warn = amber, a bypass. Unlike a part, a bare @S
         means state S ONLY (a flow is a moment); S- is from S on. Print numbers
         the hops (A1, A2 … B1 … when a state has several flows); a door-to-door
-        hop too short to hold a number beside it is not numbered, nor is a station.
-        lands= names the box or row where the flow's effect shows (the highlighted
-        span, the opened buffer): it lights up in the flow's colour while the path stays lit.
+        hop too short to hold a number beside it is not numbered, nor is a station
+        or a waypoint. lands= names the boxes or rows where the flow's effect shows
+        (the highlighted span, the opened buffer): they light up in the flow's colour
+        while the path stays lit.
   swap ID @K : out ID,ID… ; in ID,ID…
         an animated replacement in state K (one state): the out parts (on screen in
         the state before K, gone in K by their own range) are still there when K
@@ -119,12 +128,20 @@ PAD, TITLE_H, CELL_H, CELL_GAP, PILL_H, HEAD_L, HEAD_W = 14, 52, 44, 28, 42, 19,
 MPILL_H, HOPNUM_R = 46, 21                           # the moving message pill; the print-only hop number
 MARK_R = 17                                          # a mark's glyph (shield, cross, ?)
 NUM_MSG_GAP = 56                                     # a hop number keeps this far (centre to box) from another message's pill
+NUM_MARK_GAP = 10                                    # … and this much further from a mark's glyph than from words: "2 ✕" must not read as one
 FLOW_KINDS = ("fwd", "rev", "warn")
 # One hop's travel time. Speed stays within ~25 px per 60 Hz frame at the peak of the cosine
 # ease (longer hops take longer, up to 1.8 s); a hop too short to show motion (the 20 px
 # dispatch) is a 450 ms beat; a hop that carries a message lasts ≥ 1.2 s, so it can be read.
 MSG_MIN_MS = 1200
 STATION_MS = 450                                     # a flow's station: the part lights for this beat, the token inside the box
+WAYPOINT_MS = 600                                    # a waypoint's beat: longer, the token stands still on the wire meanwhile
+WAYPOINT_NEAR = 24                                   # a waypoint's first id lies this close to its hop's route, or the build stops
+BEAT_KINDS = ("row", "cell", "node", "mark", "note", "edge")   # what may light with a station or a waypoint
+PULSE, PULSE_MIN = 1.25, 1.1                        # a mark in a beat pulses up to 1.25×; below 1.1 it would not read: it keeps still
+PULSE_CLEAR = 4                                      # what a pulse or a ring keeps from anything else drawn, strokes included
+RING_GAP, RING_MIN, RING_W = 8, 5, 3.5               # a mark without words keeps a ring 8 units out, or as far as room allows, down to 5
+GLYPH_INK = dict(shield=1.8, cross=1.5, q=1.5)       # how far a glyph's stroke reaches past its outline (a shield: its mitred corners)
 SWAP_MS = 1800                                       # a swap: strike, retire, draw in (the phases: diagram.js)
 SWAP_KINDS = ("node", "row", "edge", "pill", "note", "mark")
 def hop_ms(length, msg=False):
@@ -134,7 +151,33 @@ def boxes_hit(a, b):
     """Do two (x, y, w, h) boxes overlap?"""
     return a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
 def grow(b, m): return (b[0] - m, b[1] - m, b[2] + 2 * m, b[3] + 2 * m)
-_HOP = re.compile(r"""\s*([A-Za-z][\w-]*(?:\.[\w-]+)?)(<?)\s*(?:"([^"]*)"|'([^']*)')?\s*(,|\#.*$|$)""")
+def _box_gap(a, b):
+    """The clear distance between two (x, y, w, h) boxes; overlapping: minus how deep."""
+    dx = max(b[0] - a[0] - a[2], a[0] - b[0] - b[2]); dy = max(b[1] - a[1] - a[3], a[1] - b[1] - b[3])
+    return math.hypot(max(dx, 0), max(dy, 0)) if dx > 0 or dy > 0 else max(dx, dy)
+def _box_dist_pt(b, p):
+    """The distance from point p to box b (0 inside it)."""
+    return math.hypot(max(b[0] - p[0], 0, p[0] - b[0] - b[2]), max(b[1] - p[1], 0, p[1] - b[1] - b[3]))
+def _seg_dist(p, a, b):
+    """The distance from point p to the segment a–b."""
+    L2 = (b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2
+    t = max(0.0, min(1.0, ((p[0] - a[0]) * (b[0] - a[0]) + (p[1] - a[1]) * (b[1] - a[1])) / (L2 or 1)))
+    return math.dist(p, (a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])))
+_ID = r"[A-Za-z][\w-]*(?:\.[\w-]+)?"
+# one item of a flow's hop list: ID[+ID…][<] ["MSG"] [at ID[+ID…]], then `,`, `|` (a new leg) or the end
+_HOP = re.compile(rf"""\s*({_ID})((?:\s*\+\s*{_ID})*)(<?)\s*(?:"([^"]*)"|'([^']*)')?\s*(?:\bat\s+({_ID}(?:\s*\+\s*{_ID})*))?\s*(,|\||\#.*$|$)""")
+_ids = lambda s: [i for i in re.split(r"\s*\+\s*", s or "") if i]
+
+class Item:
+    """One item of a flow: a hop over edge `eid` (rev: against its direction; msg: its message; at: a
+    waypoint's ids), or a station `eid` (a row or cell; plus: what lights with it). leg: its leg (`|`)."""
+    __slots__ = ("eid", "rev", "msg", "plus", "at", "leg")
+    def __init__(self, eid, rev, msg, plus, at, leg):
+        self.eid, self.rev, self.msg, self.plus, self.at, self.leg = eid, rev, msg, plus, at, leg
+    def ids(self):
+        """Every id this item names: its edge or part, and what lights with it."""
+        return [self.eid] + self.plus + self.at
+    def __repr__(self): return f"{self.eid}{'<' if self.rev else ''}"
 
 def polylen(pts): return sum(math.dist(a, b) for a, b in zip(pts, pts[1:]))
 def at_len(pts, s):
@@ -296,27 +339,38 @@ class Diagram:
 
     def _flow(self, raw):
         m = re.fullmatch(r"\s*flow\s+([\w-]+)((?:\s+[^\s:]+)*)\s+:\s*(.*?)\s*", raw)
-        if not m: raise ValueError('flow ID [fwd|rev|warn] @S[-E] : EDGE[<] ["MSG"], …')
-        el = El("flow", m[1]); el.fkind, el.vis, el.hops, el.lands = "fwd", None, [], None
+        if not m: raise ValueError('flow ID [fwd|rev|warn] @S[-E] [lands=ID[,ID…]] : EDGE[<] ["MSG"], …')
+        el = El("flow", m[1]); el.fkind, el.vis, el.hops, el.lands = "fwd", None, [], []
         for t in m[2].split():
             if t in FLOW_KINDS: el.fkind = t
-            elif t.startswith("lands="): el.lands = t[6:]
+            elif t.startswith("lands="):
+                el.lands = t[6:].split(",")
+                if not all(el.lands): raise ValueError(f"flow {el.id}: lands={t[6:]}: an empty id (lands=ID[,ID…], no spaces)")
             elif t.startswith("@"):
                 el.vis = []
                 for p in t[1:].split(","):                # a bare S is S only: a flow is a moment, not a part
                     r = re.fullmatch(r"(\d+)(-(\d*))?", p)
                     if not r: raise ValueError(f"flow {el.id}: bad range {t!r}")
                     a = int(r[1]); el.vis.append((a, a if not r[2] else (int(r[3]) if r[3] else None)))
-            else: raise ValueError(f"flow {el.id}: unknown {t!r} (fwd|rev|warn, @S[-E], lands=ID)")
+            else: raise ValueError(f"flow {el.id}: unknown {t!r} (fwd|rev|warn, @S[-E], lands=ID[,ID…])")
         if el.vis is None: raise ValueError(f"flow {el.id}: which state? add @S")
-        body, pos = m[3], 0
+        body, pos, leg = m[3], 0, 0
         while pos < len(body):
             h = _HOP.match(body, pos)
             if not h or h.end() == pos: raise ValueError(f"flow {el.id}: can't read a hop at {body[pos:]!r}")
-            el.hops.append((h[1], h[2] == "<", h[3] if h[3] is not None else h[4]))
+            msg = h[4] if h[4] is not None else h[5]
+            if msg is not None and h[6]:
+                raise ValueError(f"flow {el.id}: {h[1]} has a message and a waypoint: a hop with `at` takes no message")
+            el.hops.append(Item(h[1], h[3] == "<", msg, _ids(h[2]), _ids(h[6]), leg))
             pos = h.end()
-            if h[5] != ",": break
-        if body[pos:].strip(): raise ValueError(f"flow {el.id}: left over {body[pos:]!r} (hops are separated by commas)")
+            if h[7] == "|":                               # a new leg: a deliberate restart elsewhere
+                leg += 1
+                if not body[pos:].strip() or body[pos:].lstrip().startswith(("|", ",", "#")):
+                    raise ValueError(f"flow {el.id}: an empty leg after `|` (ITEM, … | ITEM, …)")
+            elif h[7] != ",": break
+            elif not body[pos:].strip() or body[pos:].lstrip().startswith(("|", ",", "#")):
+                raise ValueError(f"flow {el.id}: nothing after a `,` (hops are separated by commas)")
+        if body[pos:].strip(): raise ValueError(f"flow {el.id}: left over {body[pos:]!r} (hops are separated by commas, legs by `|`)")
         if not el.hops: raise ValueError(f"flow {el.id}: no hops")
         self._add(el)
 
@@ -391,35 +445,86 @@ class Diagram:
                 if i not in self.els: raise SystemExit(f"diagram {self.name}: step {k} names unknown {i!r}")
         self._check_swaps()
         for f in (e for e in self.order if e.kind == "flow"):
-            for eid, rev, msg in f.hops:
-                el = self.els.get(eid)
+            name = f"diagram {self.name}: flow {f.id}"
+            for it in f.hops:
+                el = self.els.get(it.eid)
+                named = it.ids()
+                if len(set(named)) < len(named):               # a beat lights each id once (as lands= does)
+                    raise SystemExit(f"{name}: {it.eid}: {next(i for i in named if named.count(i) > 1)} named twice in one item")
+                for i in it.plus + it.at:                      # what lights with a station or a waypoint
+                    b = self.els.get(i)
+                    if not b or b.kind not in BEAT_KINDS:
+                        raise SystemExit(f"{name}: {it.eid}: {i!r} can't light in a beat (a {', '.join(BEAT_KINDS)})")
                 if el and el.kind in ("row", "cell"):          # a station: the token is inside that box
-                    if rev or msg: raise SystemExit(f"diagram {self.name}: flow {f.id}: station {eid} takes no `<` and no message")
+                    if it.rev or it.msg or it.at: raise SystemExit(f"{name}: station {it.eid} takes no `<`, no message and no `at`")
                     continue
-                if not el or el.kind != "edge": raise SystemExit(f"diagram {self.name}: flow {f.id}: {eid!r} is not an edge (nor a row or cell: a station)")
+                if not el or el.kind != "edge": raise SystemExit(f"{name}: {it.eid!r} is not an edge (nor a row or cell: a station)")
+                if it.plus:
+                    raise SystemExit(f"{name}: {it.eid}+{'+'.join(it.plus)}: `+` joins what lights with a station (NODE.PART+ID…); "
+                                     f"on a hop, name a waypoint: {it.eid} at {'+'.join(it.plus)}")
+                if it.at:
+                    w = self.els[it.at[0]]
+                    if w.kind not in ("mark", "node", "row", "cell", "note"):
+                        raise SystemExit(f"{name}: {it.eid} at {it.at[0]}: a waypoint is a mark or a box the token passes, not a {w.kind}")
             states = [s for s in self.steps if f.on(s)]
-            if not states: print(f"  warning: diagram {self.name}: flow {f.id} plays in no state")
-            if f.lands and (f.lands not in self.els or self.els[f.lands].kind not in ("node", "row", "cell")):
-                raise SystemExit(f"diagram {self.name}: flow {f.id}: lands={f.lands} is not a box or a row")
+            if not states: print(f"  warning: {name} plays in no state")
+            for i in f.lands:
+                if i not in self.els or self.els[i].kind not in ("node", "row", "cell"):
+                    raise SystemExit(f"{name}: lands={i} is not a box or a row")
+            if len(set(f.lands)) < len(f.lands): raise SystemExit(f"{name}: lands= names an id twice")
             for s in states:
                 hid, seq = self.hidden(s), self.anims(s)
                 pos = seq.index(f)
                 why = lambda i: next((f" (swap {a.id}, which plays {'after' if j > pos else 'before'} it, "
                                       f"{'brings it in' if i in a.in_all else 'retires it'})"
                                       for j, a in enumerate(seq) if a.kind == "swap" and i in a.out_all + a.in_all), "")
-                if f.lands and not self.on_at(self.els[f.lands], s, pos, hid):
-                    raise SystemExit(f"diagram {self.name}: flow {f.id} plays at state {s}, but lands={f.lands} is not on screen there{why(f.lands)}")
-                for eid, _, _ in f.hops:
-                    if not self.on_at(self.els[eid], s, pos, hid):
-                        raise SystemExit(f"diagram {self.name}: flow {f.id} plays at state {s}, but its {'station' if '.' in eid else 'edge'} {eid} is not on screen there{why(eid)}")
+                for i in f.lands:
+                    if not self.on_at(self.els[i], s, pos, hid):
+                        raise SystemExit(f"{name} plays at state {s}, but lands={i} is not on screen there{why(i)}")
+                for it in f.hops:
+                    if not self.on_at(self.els[it.eid], s, pos, hid):
+                        raise SystemExit(f"{name} plays at state {s}, but its {'station' if '.' in it.eid else 'edge'} {it.eid} is not on screen there{why(it.eid)}")
+                    for i in it.plus + it.at:
+                        if not self.on_at(self.els[i], s, pos, hid):
+                            raise SystemExit(f"{name} plays at state {s}, but {i} (in the beat of {it.eid}) is not on screen there{why(i)}")
+                    if it.at:                                   # the waypoint lies on the route: the token stops where it passes it
+                        d, _ = self.waypoint(it, s)
+                        if d > WAYPOINT_NEAR:
+                            raise SystemExit(f"{name}: {it.eid} at {it.at[0]}: in state {s}, {it.at[0]} is {d:.0f} units from the "
+                                             f"hop's route (at most {WAYPOINT_NEAR}): a waypoint is something the token passes")
                 for a in seq[pos + 1:]:
-                    if a.kind == "swap" and (gone := [e for e, _, _ in f.hops if e in a.out_all]):
-                        print(f"  warning: diagram {self.name}: flow {f.id} plays at state {s} before swap {a.id} and uses what it retires "
+                    if a.kind == "swap" and (gone := [i for it in f.hops for i in it.ids() if i in a.out_all]):
+                        print(f"  warning: {name} plays at state {s} before swap {a.id} and uses what it retires "
                               f"({', '.join(gone)}); print draws the end state, so those hops are numbered beside wires it does not draw")
-            for (e1, r1, _), (e2, r2, _) in zip(f.hops, f.hops[1:]):
-                if self.hop_ends(e1, r1)[1] != self.hop_ends(e2, r2)[0]:
-                    print(f"  warning: diagram {self.name}: flow {f.id}: {e1}{'<' if r1 else ''} ends at {self.hop_ends(e1, r1)[1]}, "
-                          f"but {e2}{'<' if r2 else ''} leaves from {self.hop_ends(e2, r2)[0]} (the token jumps)")
+            for a, b in zip(f.hops, f.hops[1:]):
+                if b.leg != a.leg: continue                     # a new leg is a restart elsewhere: no jump
+                if self.hop_ends(a.eid, a.rev)[1] != self.hop_ends(b.eid, b.rev)[0]:
+                    print(f"  warning: {name}: {a!r} ends at {self.hop_ends(a.eid, a.rev)[1]}, "
+                          f"but {b!r} leaves from {self.hop_ends(b.eid, b.rev)[0]} (the token jumps; `|` if it restarts on purpose)")
+
+    def centre(self, el, k):
+        """Where an element is, as one point: a box's centre, a mark's glyph, a note's words."""
+        if el.kind == "mark": return el.x, el.y
+        if el.kind == "note":
+            fs = int(el.opts.get("size", FS["note"])); tw = text_w(el.text(k), fs, el.mono, bold=True)
+            anc = el.opts.get("anchor", "start")
+            x0 = el.x - tw / 2 if anc == "middle" else el.x - tw if anc == "end" else el.x
+            return x0 + tw / 2, el.y - fs * .3
+        return el.x + el.w / 2, el.y + el.h / 2
+
+    def waypoint(self, it, k):
+        """A hop's waypoint → (distance of its first id from the route, arc length where the token stops: the
+        route's point nearest to it)."""
+        pts = self.route(self.els[it.eid]); pts = pts[::-1] if it.rev else pts
+        c = self.centre(self.els[it.at[0]], k)
+        best, acc = None, 0.0
+        for a, b in zip(pts, pts[1:]):
+            L = math.dist(a, b)
+            t = max(0.0, min(1.0, ((c[0] - a[0]) * (b[0] - a[0]) + (c[1] - a[1]) * (b[1] - a[1])) / (L * L or 1)))
+            d = math.dist((a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])), c)
+            if best is None or d < best[0] - 1e-9: best = (d, acc + t * L)
+            acc += L
+        return best
 
     # ------------------------------------------------------------- swaps ---
     def anims(self, k):
@@ -736,13 +841,16 @@ class Diagram:
             words += [(b, a.id) for a in seq[:pos] if a.kind == "swap" for b in self._cue_boxes(a, k)]
             pills = [p for p in self.order if p.kind == "pill" and vis(p)]
             hops = []
-            for eid, rev, msg in f.hops:
+            for n, it in enumerate(f.hops):
+                eid, rev, msg = it.eid, it.rev, it.msg
                 e = self.els[eid]
+                leg = n > 0 and it.leg != f.hops[n - 1].leg      # the first item of a new leg
                 if e.kind in ("row", "cell"):          # a station: no route, a beat inside the box
-                    hops.append(dict(eid=eid, station=True, ms=STATION_MS, msg=None)); continue
+                    hops.append(dict(eid=eid, station=True, ms=STATION_MS, msg=None, plus=it.plus, leg=leg)); continue
                 pts = self.route(e)[::-1] if rev else self.route(e)
                 L = polylen(pts)
-                hop = dict(eid=eid, pts=pts, L=L, msg=msg, ms=hop_ms(L, bool(msg)), twin=None, track=None)
+                hop = dict(eid=eid, pts=pts, L=L, msg=msg, ms=hop_ms(L, bool(msg)), twin=None, track=None, leg=leg,
+                           at=(self.waypoint(it, k)[1], it.at) if it.at else None)
                 if msg:
                     twin = next((p for p in pills if p.on_edge == eid and p.text(k) == msg and p.dir == (-1 if rev else 1)), None)
                     pw = text_w(msg, FS["mpill"], True, bold=True) + 34
@@ -756,23 +864,28 @@ class Diagram:
                         hop["park"] = (c[0] + tr[2], c[1] + tr[3])
                         parked.append((hop["park"][0] - pw / 2, hop["park"][1] - MPILL_H / 2, pw, MPILL_H))
                 hops.append(hop)
-            plan.append((f, hops, nodes, words, pills))
+            halos = [grow(self._glyph_box(m, pad=GLYPH_INK[m.mkind]), NUM_MARK_GAP) for m in self.order if m.kind == "mark" and vis(m)]
+            plan.append((f, hops, nodes, words, pills, halos))
         glows, movers, nums = [], [], []
         taken = list(parked)
         parked_msgs = [(b, h["msg"]) for h, b in zip((h for p in plan for h in p[1] if "park" in h), parked)]
         for a in seq:
             if a.kind == "swap": movers.append(self._swap_marker(a))
-        for fi, (f, hops, nodes, words, pills) in enumerate(plan):
+        for fi, (f, hops, nodes, words, pills, halos) in enumerate(plan):
             # every message on screen when it plays, by its words: the static pills, and the parked ones
             msgs = [(self._pill_box(p, k), p.text(k)) for p in pills] + parked_msgs
             g, mv, nm, n = [], [], [], 0
             for hop in hops:
+                leg = ' data-leg="1"' if hop["leg"] else ""
                 if hop.get("station"):
-                    mv.append(f'<g class="ax-hop ax-station" data-part="{hop["eid"]}" data-ms="{hop["ms"]}"/>'); continue
+                    w = f' data-with="{" ".join(hop["plus"])}"' if hop["plus"] else ""
+                    mv.append(f'<g class="ax-hop ax-station" data-part="{hop["eid"]}"{w}{leg} data-ms="{hop["ms"]}"/>'); continue
                 pts, msg = hop["pts"], hop["msg"]
                 d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts)
                 g.append(f'<path class="ax-hglow" d="{d}"/>')
-                attrs = f'data-edge="{hop["eid"]}" data-pts="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts)}" data-ms="{hop["ms"]}"'
+                attrs = f'data-edge="{hop["eid"]}" data-pts="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts)}" data-ms="{hop["ms"]}"' + leg
+                if hop["at"]:                          # a waypoint: the token stops at arc length data-at while the ids light
+                    attrs += f' data-at="{hop["at"][0]:.1f}" data-with="{" ".join(hop["at"][1])}" data-wms="{WAYPOINT_MS}"'
                 body = ""
                 if msg:
                     s1, s2, dx, dy = hop["track"]; w = hop["pw"]
@@ -792,7 +905,7 @@ class Diagram:
                 if hop["twin"]:
                     tb = self._pill_box(hop["twin"], k); tc = (tb[0] + tb[2] / 2, tb[1] + tb[3] / 2)
                     focus = min((hop["L"] * i / 200 for i in range(201)), key=lambda s: math.dist(at_len(pts, s), tc))
-                (x, y), tier = self._place_num(pts, w, nodes, [b for b, _ in words], taken, foreign, focus)
+                (x, y), tier = self._place_num(pts, w, nodes, [b for b, _ in words] + halos, taken, foreign, focus)
                 b = (x - w / 2, y - HOPNUM_R, w, 2 * HOPNUM_R)
                 taken.append(b)
                 hit = [i for o, i in words if boxes_hit(b, o)] + [f"box {j}" for j, o in enumerate(nodes) if boxes_hit(b, o)]
@@ -804,7 +917,7 @@ class Diagram:
             head = f'class="{{}} ax-f-{f.fkind}" data-flow="{f.id}"'
             glows.append(f'<g {head.format("ax-flow-under")}>' + "".join(g) + "</g>")
             # the token first, the pills after: a message's words ride above its own token
-            movers.append(f'<g {head.format("ax-flow")}' + (f' data-lands="{f.lands}"' if f.lands else "") + '>'
+            movers.append(f'<g {head.format("ax-flow")}' + (f' data-lands="{" ".join(f.lands)}"' if f.lands else "") + '>'
                           '<g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g>'
                           + "".join(mv) + "</g>")
             nums.append(f'<g {head.format("ax-flow-nums")}>' + "".join(nm) + "</g>")
@@ -1115,12 +1228,115 @@ class Diagram:
         return (plate + f'<text class="ax-note{" ax-mono" if el.mono else ""} {st}" data-ax="{el.id}" x="{el.x:.1f}" y="{el.y:.1f}" '
                 f'text-anchor="{anc}" font-size="{fs}">{esc(t)}</text>')
 
+    @staticmethod
+    def _shield(x, y, r):
+        """A shield's outline of radius r (the glyph: MARK_R) → path d."""
+        q = r / 15
+        return (f"M{x:.1f},{y - 15 * q:.1f} L{x + 12 * q:.1f},{y - 10 * q:.1f} L{x + 12 * q:.1f},{y + q:.1f} "
+                f"Q{x + 12 * q:.1f},{y + 11 * q:.1f} {x:.1f},{y + 16 * q:.1f} Q{x - 12 * q:.1f},{y + 11 * q:.1f} {x - 12 * q:.1f},{y + q:.1f} L{x - 12 * q:.1f},{y - 10 * q:.1f} Z")
+
+    @staticmethod
+    def _glyph_box(el, r=MARK_R, pad=0.0):
+        """A mark's glyph of radius r → its box (x, y, w, h), grown by pad."""
+        if el.mkind == "shield":
+            q = r / 15; b = (el.x - 12 * q, el.y - 15 * q, 24 * q, 31 * q)
+        else: b = (el.x - r, el.y - r, 2 * r, 2 * r)
+        return grow(b, pad)
+
+    def beat_marks(self, k):
+        """The marks a flow of state k lights in a beat (they pulse where they have room, then keep a ring, or their words lit)."""
+        return {i for f in self.anims(k) if f.kind == "flow" for it in f.hops for i in it.plus + it.at if self.els[i].kind == "mark"}
+
+    def _ink(self, k, skip):
+        """Everything drawn at state k but the mark `skip` and the wires it sits on → [(box, id)], each box
+        with its stroke (the widest it takes: a landed box's rim, a lit plate's): what that mark's pulse and
+        ring keep clear of. A wire is a box per segment, as wide as its line (a new one: its highlighter band)."""
+        hid, out = self.hidden(k), []
+        me = self.els[skip]
+        for el in self.order:
+            if el.kind in ("row", "cell", "flow", "swap") or el is me or not self.visible(el, k, hid): continue
+            if el.kind == "node": out.append((grow((el.x, el.y, el.w, el.h), 2.5), el.id))
+            elif el.kind == "edge":
+                lab = self._elabel(el, k)
+                if lab:
+                    _, tx, ty, anc, fs, mono, tw, bx = lab
+                    out.append(((bx - 6, ty - fs * .82, tw + 12, fs * 1.14), el.id))
+                pts = self.route(el)
+                if any(_seg_dist((me.x, me.y), a, b) < MARK_R for a, b in zip(pts, pts[1:])): continue   # the wire it sits on
+                hw = 9 if "ax-new" in self.state(el, k).split() else 3
+                out += [((min(a[0], b[0]) - hw, min(a[1], b[1]) - hw, abs(a[0] - b[0]) + 2 * hw, abs(a[1] - b[1]) + 2 * hw), el.id)
+                        for a, b in zip(pts, pts[1:])]
+            elif el.kind == "pill": out.append((grow(self._pill_box(el, k), 1.5), el.id))
+            elif el.kind == "mark":
+                out.append((self._glyph_box(el, pad=GLYPH_INK[el.mkind]), el.id))
+                ml = self._mark_label(el, k)
+                if ml: out.append((grow(self._mark_plate(ml), 1.5), el.id))
+            elif el.kind == "note" and el.text(k):
+                fs = int(el.opts.get("size", FS["note"])); tw = text_w(el.text(k), fs, el.mono, bold=True)
+                anc = el.opts.get("anchor", "start")
+                x0 = el.x - tw / 2 if anc == "middle" else el.x - tw if anc == "end" else el.x
+                out.append((grow((x0 - 6, el.y - fs * .82, tw + 12, fs * 1.14), 1.5), el.id))
+            elif el.kind == "key": out.append(((el.x, el.y - FS["key"] * .6, 48 + text_w(el.text(k), FS["key"]), FS["key"] * 1.2), el.id))
+            elif el.kind == "region":
+                out.append((self._cap_box(el, k), el.id))
+                x, y, w, h, hw = el.x, el.y, el.w, el.h, 2
+                out += [((x - hw, y - hw, w + 2 * hw, 2 * hw), el.id), ((x - hw, y + h - hw, w + 2 * hw, 2 * hw), el.id),
+                        ((x - hw, y - hw, 2 * hw, h + 2 * hw), el.id), ((x + w - hw, y - hw, 2 * hw, h + 2 * hw), el.id)]
+        return out
+
+    @staticmethod
+    def _mark_plate(ml):
+        """A mark's words (_mark_label) → the plate under them (x, y, w, h), as _mark draws it."""
+        return (ml[4][0] - 6, ml[2] - FS["mark"] * .82, ml[4][2] + 12, FS["mark"] * 1.14)
+
+    def _pulse(self, el, k):
+        """A mark that lights in a beat of state k → ((origin x, y), scale, ring radius or None).
+        The pulse scales the glyph about a point of its own — its centre, the middle of an edge, a corner — up
+        to PULSE×, as far as keeps PULSE_CLEAR from everything else drawn, strokes included (_ink), or, from
+        what is closer than that already at rest, no closer than it is. The point that allows the largest
+        pulse wins (the centre on a tie); below PULSE_MIN the mark keeps still. A mark without words keeps a
+        ring after its beat, in the glyph's shape: RING_GAP units out, or as far as keeps PULSE_CLEAR, down to
+        RING_MIN (closer, it would merge with the glyph: no ring). A mark with words lights them instead
+        (diagram.css), and a mark with neither room nor words is a warning: nothing would show it fire."""
+        ink = [b for b, _ in self._ink(k, el.id)]
+        ml = self._mark_label(el, k)
+        if ml: ink.append(grow(self._mark_plate(ml), 1.5))       # its own words: their plate, lit in the beat
+        round_ = el.mkind != "shield"
+        g = self._glyph_box(el, pad=GLYPH_INK[el.mkind])        # the glyph with its stroke
+        R0 = MARK_R + GLYPH_INK[el.mkind]
+        def gap(o, k_, org):                                     # how far the glyph scaled k_ about org is from box o
+            if round_:
+                cx, cy = org[0] + (el.x - org[0]) * k_, org[1] + (el.y - org[1]) * k_
+                return _box_dist_pt(o, (cx, cy)) - R0 * k_
+            return _box_gap(o, (org[0] + (g[0] - org[0]) * k_, org[1] + (g[1] - org[1]) * k_, g[2] * k_, g[3] * k_))
+        rest = [gap(o, 1, (el.x, el.y)) for o in ink]
+        need = [min(PULSE_CLEAR, d) - 1e-6 for d in rest]
+        cx, cy = (el.x, el.y) if round_ else (g[0] + g[2] / 2, g[1] + g[3] / 2)
+        xs, ys = (g[0], cx, g[0] + g[2]), (g[1], cy, g[1] + g[3])
+        origins = [(cx, cy)] + [(x, y) for y in ys for x in xs if (x, y) != (cx, cy)]
+        best = ((cx, cy), 1.0)
+        for org in origins:
+            for step in range(int(round((PULSE - 1) * 100)), 0, -1):
+                k_ = 1 + step / 100
+                if k_ <= best[1]: break
+                if all(gap(o, k_, org) >= n for o, n in zip(ink, need)): best = (org, k_); break
+        org, sc = best if best[1] >= PULSE_MIN else ((cx, cy), 1.0)
+        ring = None
+        if not ml:
+            for r in range(MARK_R + RING_GAP, MARK_R + RING_MIN - 1, -1):
+                if round_: ok = all(_box_dist_pt(o, (el.x, el.y)) - (r + RING_W / 2) >= PULSE_CLEAR - 1e-6 for o in ink)
+                else: ok = all(_box_gap(o, self._glyph_box(el, r, RING_W / 2 + .3)) >= PULSE_CLEAR - 1e-6 for o in ink)   # +.3: its mitres
+                if ok: ring = r; break
+        if sc == 1 and ring is None and not ml:
+            print(f"  warning: diagram {self.name}: state {k}: {el.id} lights in a beat, but has no room to pulse or to keep a ring, "
+                  f"and no words to light: nothing shows it fire")
+        return org, sc, ring
+
     def _mark(self, el, k):
         x, y = el.x, el.y
         if el.mkind == "shield":
             q = MARK_R / 15
-            g = (f'<path class="ax-glyph" d="M{x:.1f},{y - 15 * q:.1f} L{x + 12 * q:.1f},{y - 10 * q:.1f} L{x + 12 * q:.1f},{y + q:.1f} '
-                 f'Q{x + 12 * q:.1f},{y + 11 * q:.1f} {x:.1f},{y + 16 * q:.1f} Q{x - 12 * q:.1f},{y + 11 * q:.1f} {x - 12 * q:.1f},{y + q:.1f} L{x - 12 * q:.1f},{y - 10 * q:.1f} Z"/>'
+            g = (f'<path class="ax-glyph" d="{self._shield(x, y, MARK_R)}"/>'
                  f'<path class="ax-tick" d="M{x - 5 * q:.1f},{y + q:.1f} L{x - q:.1f},{y + 5 * q:.1f} L{x + 6 * q:.1f},{y - 4 * q:.1f}"/>')
         elif el.mkind == "cross":
             g = (f'<circle class="ax-glyph" cx="{x:.1f}" cy="{y:.1f}" r="{MARK_R}"/>'
@@ -1128,10 +1344,18 @@ class Diagram:
         else:
             g = (f'<circle class="ax-glyph" cx="{x:.1f}" cy="{y:.1f}" r="{MARK_R}"/>'
                  f'<text class="ax-q" x="{x:.1f}" y="{y + FS["mark"] * .36:.1f}" text-anchor="middle" font-size="{FS["mark"]}">?</text>')
-        ml = self._mark_label(el, k)
-        lbl = (f'<rect class="ax-tbg" x="{ml[4][0] - 6:.1f}" y="{ml[2] - FS["mark"] * .82:.1f}" width="{ml[4][2] + 12:.1f}" height="{FS["mark"] * 1.14:.1f}" rx="5"/>'
-               f'<text x="{ml[1]:.1f}" y="{ml[2]:.1f}" text-anchor="{ml[3]}" font-size="{FS["mark"]}">{esc(ml[0])}</text>') if ml else ""
-        return f'<g class="ax-mark ax-m-{el.mkind} {self.state(el, k)}" data-ax="{el.id}">{g}{lbl}</g>'
+        ml, lbl = self._mark_label(el, k), ""
+        if ml:
+            px, py, pw, ph = self._mark_plate(ml)
+            lbl = (f'<rect class="ax-tbg" x="{px:.1f}" y="{py:.1f}" width="{pw:.1f}" height="{ph:.1f}" rx="5"/>'
+                   f'<text x="{ml[1]:.1f}" y="{ml[2]:.1f}" text-anchor="{ml[3]}" font-size="{FS["mark"]}">{esc(ml[0])}</text>')
+        pulse = ""
+        if el.id in self.beat_marks(k):                    # a flow lights it: its pulse (origin, scale) and the ring it keeps (diagram.js)
+            (ox, oy), sc, r = self._pulse(el, k)
+            if sc > 1: pulse = f' data-o="{ox:.1f},{oy:.1f}" data-k="{sc:.2f}"'
+            if r: g += (f'<path class="ax-mring" d="{self._shield(x, y, r)}"/>' if el.mkind == "shield"
+                        else f'<circle class="ax-mring" cx="{x:.1f}" cy="{y:.1f}" r="{r}"/>')
+        return f'<g class="ax-mark ax-m-{el.mkind} {self.state(el, k)}" data-ax="{el.id}"{pulse}>{g}{lbl}</g>'
 
     def _mark_label(self, el, k):
         """A mark's words → (text, x, y, anchor, box), or None."""

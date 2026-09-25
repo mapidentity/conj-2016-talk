@@ -132,7 +132,8 @@ edge ID A -> B ["LABEL"] [via …] [ws|gap|human] [seg=N] [t=F] [below|left|over
 pill ID on EDGE "TEXT" >|< [t=F] [seg=N] [dy=N]
 mark ID shield|cross|q "TEXT" X,Y [anchor=…] [lbl=below|above] [lxy=X,Y]
 key  ID new|fwd|rev|ws|warn "TEXT" X,Y
-flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], NODE.PART, EDGE[<] ["MSG"], …
+flow ID [fwd|rev|warn] @S[-E] [lands=ID[,ID…]] : ITEM, ITEM, … [| ITEM, …]
+  ITEM = EDGE[<] ["MSG"]  |  EDGE[<] at ID[+ID…]  |  NODE.PART[+ID…]
 swap ID @K : out ID,ID… ; in ID,ID…
 ```
 
@@ -264,7 +265,10 @@ A flow is a message that travels the map hop by hop. What moves, and in which
 state, is content, so it is written in the block:
 
 ```text
-flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
+flow ID [fwd|rev|warn] @S[-E] [lands=ID[,ID…]] : ITEM, ITEM, … [| ITEM, …]
+  ITEM = EDGE[<] ["MSG"]          # a hop
+       | EDGE[<] at ID[+ID…]      # a hop with a waypoint beat on it (no message)
+       | NODE.PART[+ID…]          # a beat inside the box: a station, plus what lights with it
 ```
 
 - **Hops** are existing edge ids, taken in order. Each hop follows the edge's
@@ -277,7 +281,50 @@ flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
   like a travelled wire, until the flow ends. Stations follow each other without a
   pause, and the hop after them waits at its door as usual. State 5 passes through
   tr-load!'s cells: `e-views, trload.c-read, trload.c-eval, e-deftr ":line"`. A station
-  takes no `<` and no message, and print does not number it.
+  takes no `<`, no message and no `at`, and print does not number it. A station can
+  also be the first item: state 7's click starts on the row it reads,
+  `page.p-src, e-click, …`.
+- **`+ID…` after a station** makes it a **beat**: the listed ids light for the same
+  450 ms, wherever they are. They may be rows, cells, boxes, marks, notes or edges:
+  - a row or a cell takes the station's look;
+  - a box takes the `lands=` look (its rim near-white during the beat);
+  - an edge takes the look of the wire being travelled;
+  - a note's words get a plate in the flow's colours;
+  - a **mark pulses** in its own hue: its glyph scales up to 1.25× and back over the
+    beat, about its centre, an edge's middle or a corner, whichever lets it grow
+    most. The generator sizes the pulse to the room around the mark: it keeps 4
+    units, strokes included, from every other mark, word, box, lane border and wire
+    (the wire the mark sits on aside), or, from what is closer than that already at
+    rest, no closer than it is. Where that leaves less than 1.1×, the mark keeps still.
+  - a mark **with words** lights them too, like a note's: their plate in the flow's
+    colours, white words (state 7's resolve-src has no room to pulse, between the
+    hub, origin-ok? and its own words: its words carry the beat). A mark **without
+    words** keeps a **ring** after its beat until the flow ends, in the glyph's shape
+    and its own hue: violet around a shield, amber around the ✕ and the ?. The ring
+    sits 8 units out, or as far as keeps the same 4 units from everything else, down
+    to 5 (closer, it would merge with the glyph: then there is no ring). State 4's ✕
+    pulses about its centre and keeps its ring 5 units out, clear of *just a string*
+    below.
+
+  After the beat, what lit keeps the trail look, as a passed station does, until the
+  flow ends. State 7's dispatch resolves the click: `hub.h-disp+m-resolve`; state 10's
+  rewritten calls stamp their call site in the views: `views.v-main+views.v-ui`.
+- **`EDGE at ID[+ID…]`** puts a **waypoint** on a hop: the token stops where the hop
+  passes the first id (the route's nearest point to it), the ids light for a beat of
+  600 ms (longer than a station's: the token stands still on the wire), and the token
+  finishes the hop. The first id is a mark, a box, a row, a cell or a note, and lies
+  within 24 units of the route; the others may be anything a beat lights. The hop
+  keeps a plain hop's pace: its time is shared out by distance before and after the
+  stop. One `at` per hop, and a hop with `at` takes no message. Print does not number
+  a waypoint. State 4: `e-html at m-render` (the ✕ fires as the token passes);
+  states 6 and 12 stop in the seam: `e-html at seam+e-binds+devbody.d-tag` (dev-body
+  tags the tree) and `e-html at seam+seam-l` (the seam reads `identity`).
+- **`|`** starts a new **leg**: a deliberate restart elsewhere, from somewhere the
+  token has not been (state 2's three hand starts: the buffer, Calva, you). The
+  token goes in at the end of a leg, comes out 0.6 s later at the next leg's first
+  door, and waits there as at any door. Every leg's trail stays lit, print numbers
+  keep counting (1, 2, 3 …), and the flow is one segment of the progress line. There
+  is no jump warning across `|`.
 - **`"MSG"`** is a message that rides beside the wire as a pill, never on it.
   - The generator picks the side and the stretch where the pill covers no box and
     no word, and there the pill keeps pace with the token.
@@ -289,9 +336,10 @@ flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
   is amber.
 - **`@S`** means state S **only**: a flow is a moment, not a part. Use `@S-E` for
   a range and `@S-` for "from S on".
-- **`lands=ID`** names the box or row where the flow's effect shows: the
-  highlighted span, the opened buffer, the reloaded page. It lights up in the
-  flow's colour when the token arrives.
+- **`lands=ID[,ID…]`** names the boxes or rows where the flow's effect shows: the
+  highlighted span, the opened buffer, the reloaded page, state 6's two new
+  attributes (`lands=page.p-src,page.p-name`). They light up in the flow's colour
+  when the token arrives.
 - **Several flows in one state** play in the order they are written, one per press
   of `a`. Split a story where the speaker wants to pause. A state's swaps take their
   turn among its flows, in the same order (see "Swaps"): together they are the
@@ -349,6 +397,10 @@ not the audience:
 - a longer hop takes 400 + 0.8·L ms, kept between 600 and 1800 ms;
 - a hop that carries a message takes at least 1200 ms;
 - the token waits 0.26 s at the first door and 0.17 s at each box after that;
+- a station's beat lasts 450 ms, a waypoint's 600 ms (`STATION_MS`, `WAYPOINT_MS`); a
+  station that is a flow's first item lights from the press, through the first door's
+  wait: 710 ms (0.26 s + 450 ms), the token hidden meanwhile;
+- between two legs the token is gone for 0.6 s (`LEG` in `diagram.js`);
 - the path stays lit for 0.9 s after arrival.
 
 **Reduced motion, print, and the deck:** nothing moves.
@@ -358,7 +410,9 @@ not the audience:
   to hold its number beside it (under 63 px, like src/ → watcher) is not numbered.
   A number keeps 56 units (centre to pill) from every pill of a different message,
   static or parked, so on a wire that carries several messages (`/dev/ws` →
-  `inspector.js`: open and highlight) it never sits beside the wrong one.
+  `inspector.js`: open and highlight) it never sits beside the wrong one. It also
+  keeps 10 units more from a mark's glyph than from words (`NUM_MARK_GAP`), so state
+  4's hop number 2 sits clear of the ✕ instead of reading as "2✕".
 - Under reduced motion, `a` reveals the cursor flow's numbered hops instead, and
   moves the progress line one whole segment on; `p` hides them and steps back one
   stop. A swap is applied at once instead. `flow-auto` shows flow 1's numbers on
@@ -455,10 +509,16 @@ imports it. So `refresh.sh` runs them in either mode.
 - `chip` or `branch=`: the map is keyed to talk sections now.
 - An edge end, pill edge, `hide:` or `+CLS:` id that doesn't exist. An edge `via`
   that turns the wrong way.
-- A flow hop that is not an edge, a row or a cell; a station with `<` or a message; a
-  flow that plays in a state where one of its edges, stations or its `lands=` box is
-  not on screen at its place among the state's animations (a swap before it has
-  played, one after it has not); `lands=` that is not a box or a row.
+- A flow hop that is not an edge, a row or a cell; a station with `<`, a message or
+  `at`; a flow that plays in a state where one of its edges, stations, beat ids,
+  waypoints or `lands=` boxes is not on screen at its place among the state's
+  animations (a swap before it has played, one after it has not); a `lands=` id that
+  is not a box or a row, or one named twice.
+- A beat id that is not a row, cell, box, mark, note or edge; `+` on a hop (a hop
+  takes `at`); a waypoint whose first id is not a mark or a box (row, cell, note), or
+  lies more than 24 units from the hop's route in a state where the flow plays; a hop
+  with both `at` and a message; an id named twice in one item
+  (`hub.h-disp+hub.h-disp`); an empty leg (`| |`, a trailing `|` or `,`).
 - A swap that breaks one of its rules (see "Swaps").
 - On a slide:
   - a ` ```diagram ``` ` or ` ```minimap ``` ` fence with a diagram name that has
@@ -476,7 +536,10 @@ imports it. So `refresh.sh` runs them in either mode.
 - A node or row label wider than its box; cells overflowing their node.
 - An edge that is on screen in a state where one of its ends is not.
 - A flow that plays in no state; a hop that ends at a different box from the one
-  the next hop leaves (the token would jump).
+  the next hop leaves (the token would jump), within a leg (`|` is a restart on
+  purpose).
+- A mark that lights in a beat but has no room to pulse, no room for a ring and no
+  words to light: nothing would show it fire.
 - A flow that plays before a swap and uses what it retires (print numbers it on the
   end state).
 - A wire of a box a swap retires that ends with the state before and is not in the

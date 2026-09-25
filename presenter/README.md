@@ -274,8 +274,11 @@ swap loader-swap @5 : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-d
   rewinds). Arriving back from a later slide shows its end state. Print, the deck and
   minimaps show the end state too; print and the deck keep the retired box's label,
   struck through, where it was. A flow can also pass through a
-  box's rows or cells (`trload.c-read`): each lights for a beat. Details: `DIAGRAM.md`,
-  "Flows" and "Swaps".
+  box's rows or cells (`trload.c-read`): each lights for a beat, and `+ID` lights more
+  with it (`hub.h-disp+m-resolve`: resolve-src's words light; a mark pulses where it
+  has room). `EDGE at ID` stops the token on a hop for a beat (`e-html at m-render`),
+  `|` starts a new leg elsewhere (state 2's three hand starts), and `lands=` takes a
+  list. Details: `DIAGRAM.md`, "Flows" and "Swaps".
 
   On stage: the keys reach the slides only while the page has focus — after the
   address bar, press F6 (a click would also advance). Reduced motion must be off

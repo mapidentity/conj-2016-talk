@@ -237,6 +237,24 @@ svg.ax g.ax-cell.ax-part.ax-lit rect { stroke: var(--ax-fb); stroke-width: 4.5; 
 svg.ax g.ax-row.ax-part:is(.ax-lit, .ax-trail) .ax-hit { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3.5; }
 svg.ax g.ax-row.ax-part.ax-lit .ax-hit { stroke: var(--ax-fb); stroke-width: 4.5; }
 svg.ax g.ax-part:is(.ax-lit, .ax-trail) text { fill: #fff; font-weight: 700; }
+/* a beat (`+ID…` after a station, `at ID+ID…` on a hop): what lights with it. A row or cell takes the
+   station's look above, an edge the current wire's, then the travelled wire's (diagram.js); a box the
+   landed look, its rim near-white during the beat; a note, and a mark's words, their plate in the flow's
+   colours. A mark pulses where it has room (diagram.js: a transform on its glyph); one without words then
+   keeps a ring in its own hue — violet around a shield, amber around the ✕ and the ? — until the flow
+   ends: 8.5:1 / 8.2:1 on #16141f */
+svg.ax g.ax-node:is(.ax-lit, .ax-trail):not(.ax-landed) > rect { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 5; }
+svg.ax g.ax-node.ax-lit:not(.ax-landed) > rect { stroke: var(--ax-fb); }
+svg.ax g.ax-node:is(.ax-lit, .ax-trail) > :is(.ax-label, .ax-sub) { fill: #fff; font-weight: 700; }
+svg.ax rect.ax-tbg.ax-note-bg:is(.ax-lit, .ax-trail) { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3; }
+svg.ax rect.ax-tbg.ax-note-bg.ax-lit { stroke: var(--ax-fb); }
+svg.ax text.ax-note:is(.ax-lit, .ax-trail) { fill: #fff; font-weight: 700; }
+svg.ax .ax-mark:is(.ax-lit, .ax-trail) .ax-tbg { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3; }
+svg.ax .ax-mark.ax-lit .ax-tbg { stroke: var(--ax-fb); }
+svg.ax .ax-mark:is(.ax-lit, .ax-trail) text:not(.ax-q) { fill: #fff; font-weight: 700; }
+svg.ax .ax-mring { display: none; fill: none; stroke: #b7a5ff; stroke-width: 3.5; stroke-linejoin: round; }
+svg.ax .ax-mark.ax-trail .ax-mring { display: inline; }
+svg.ax :is(.ax-m-cross, .ax-m-q) .ax-mring { stroke: #e0a06a; }
 /* print, the deck, reduced motion: the order as numbered hops (A1 A2 … B1 … when a state has
    several flows), and the messages that have no static pill, where the animation leaves them */
 svg.ax .ax-hopnum rect { fill: var(--ax-fc); stroke: #16141f; stroke-width: 3; }
