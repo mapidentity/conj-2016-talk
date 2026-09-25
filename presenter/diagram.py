@@ -42,20 +42,31 @@ DSL — one statement per line, `#` starts a comment:
   mark ID shield|cross|q "TEXT" X,Y [anchor=start|middle|end] [lbl=below|above] [lxy=X,Y]
         lxy= puts the label's baseline at X,Y (e.g. a shield in a tight door, its words beside it)
   key  ID new|fwd|rev|ws|warn "TEXT" X,Y
-  flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
+  flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], NODE.PART, EDGE[<] ["MSG"], …
         a message travelling hop by hop over existing edges, in order. `<` runs
         a hop against the edge's drawn direction (B → A). "MSG" rides along as a
         pill beside the wire, on a side and stretch clear of boxes and words; a
         static pill on that edge with the same text and direction (its twin)
         steps aside while that hop runs and is back when it ends. Without a twin
         the pill stays where it arrived until the flow ends, and print shows it
-        there. fwd (default) = violet, page → code and the dev machinery · rev =
+        there. A row or cell in the list (NODE.PART) is a station: the token is
+        inside that box, and the part lights for a beat (STATION_MS), in order.
+        fwd (default) = violet, page → code and the dev machinery · rev =
         green, code → page · warn = amber, a bypass. Unlike a part, a bare @S
         means state S ONLY (a flow is a moment); S- is from S on. Print numbers
         the hops (A1, A2 … B1 … when a state has several flows); a door-to-door
-        hop too short to hold a number beside it is not numbered. lands= names
-        the box or row where the flow's effect shows (the highlighted span, the opened buffer): it lights
-        up in the flow's colour while the path stays lit.
+        hop too short to hold a number beside it is not numbered, nor is a station.
+        lands= names the box or row where the flow's effect shows (the highlighted
+        span, the opened buffer): it lights up in the flow's colour while the path stays lit.
+  swap ID @K : out ID,ID… ; in ID,ID…
+        an animated replacement in state K (one state): the out parts (on screen in
+        the state before K, gone in K by their own range) are still there when K
+        arrives and retire when the swap plays; the in parts (on screen in K, not in
+        the state before) appear only then. Nodes, rows, edges, pills, notes, marks;
+        either list may be left out. Flows and swaps are a state's animations: they
+        play in the order written, one per `a`, on one progress line. The static
+        picture (print, the deck, a minimap) is the END state; an out node's label
+        stays there as a struck-through cue.
         How a slide plays them is the slide's business: {.flow-auto} (default),
         {.flow-keys} (= {.flow-step}: only the a / p keys), {.flow-loop},
         {.flow-off} on the line before the fence (diagram.js, DIAGRAM.md).
@@ -68,6 +79,8 @@ DSL — one statement per line, `#` starts a comment:
 State classes of an element at state K: ax-cast (K is the first state),
 ax-new (first visible at K), ax-old (visible before K), ax-changed (a label range
 or a class starts at K), plus the rule classes above. A `summary` step marks no deltas.
+In a state with a swap, its parts also carry ax-swap-out / ax-swap-in (diagram.js drives them;
+without the script they show the swap's end state).
 """
 import html, math, re, shlex
 from pathlib import Path
@@ -111,6 +124,9 @@ FLOW_KINDS = ("fwd", "rev", "warn")
 # ease (longer hops take longer, up to 1.8 s); a hop too short to show motion (the 20 px
 # dispatch) is a 450 ms beat; a hop that carries a message lasts ≥ 1.2 s, so it can be read.
 MSG_MIN_MS = 1200
+STATION_MS = 450                                     # a flow's station: the part lights for this beat, the token inside the box
+SWAP_MS = 1800                                       # a swap: strike, retire, draw in (the phases: diagram.js)
+SWAP_KINDS = ("node", "row", "edge", "pill", "note", "mark")
 def hop_ms(length, msg=False):
     ms = 450 if length < 100 else min(1800, max(600, 400 + 0.8 * length))
     return round(max(ms, MSG_MIN_MS) if msg else ms)
@@ -118,7 +134,7 @@ def boxes_hit(a, b):
     """Do two (x, y, w, h) boxes overlap?"""
     return a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
 def grow(b, m): return (b[0] - m, b[1] - m, b[2] + 2 * m, b[3] + 2 * m)
-_HOP = re.compile(r"""\s*([A-Za-z][\w-]*)(<?)\s*(?:"([^"]*)"|'([^']*)')?\s*(,|\#.*$|$)""")
+_HOP = re.compile(r"""\s*([A-Za-z][\w-]*(?:\.[\w-]+)?)(<?)\s*(?:"([^"]*)"|'([^']*)')?\s*(,|\#.*$|$)""")
 
 def polylen(pts): return sum(math.dist(a, b) for a, b in zip(pts, pts[1:]))
 def at_len(pts, s):
@@ -165,6 +181,8 @@ class Diagram:
             try:
                 if re.match(r"\s*flow\s", raw):         # hops are a comma list: parsed on the raw line
                     self._flow(raw); continue
+                if re.match(r"\s*swap\s", raw):         # so are a swap's parts
+                    self._swap(raw); continue
                 toks = shlex.split(raw, comments=True)
                 if toks: last = self._stmt(toks, last)
             except Exception as e:
@@ -302,9 +320,28 @@ class Diagram:
         if not el.hops: raise ValueError(f"flow {el.id}: no hops")
         self._add(el)
 
+    def _swap(self, raw):
+        """swap ID @K : out ID,ID… ; in ID,ID…  (either list may be left out)"""
+        usage = "swap ID @K : out ID,ID… ; in ID,ID…"
+        m = re.fullmatch(r"\s*swap\s+([\w-]+)\s+@(\S+)\s*:\s*(.*?)\s*", raw.split("#", 1)[0])
+        if not m: raise ValueError(f"want {usage}")
+        if not re.fullmatch(r"\d+", m[2]): raise ValueError(f"swap {m[1]}: @{m[2]}: a swap is one moment of one state, @K")
+        el = El("swap", m[1]); el.k = int(m[2]); el.vis = [(el.k, el.k)]; el.out, el.inn = [], []
+        seen = set()
+        for chunk in m[3].split(";"):
+            c = re.fullmatch(r"\s*(out|in)\s+([\w.,\s-]+?)\s*", chunk)
+            if not c: raise ValueError(f"swap {el.id}: can't read {chunk.strip()!r} (want {usage})")
+            if c[1] in seen: raise ValueError(f"swap {el.id}: `{c[1]}` twice")
+            seen.add(c[1])
+            ids = [i for i in re.split(r"[,\s]+", c[2]) if i]
+            (el.out if c[1] == "out" else el.inn).extend(ids)
+        if not el.out and not el.inn: raise ValueError(f"swap {el.id}: nothing to swap (want {usage})")
+        self._add(el)
+
     def hop_ends(self, eid, rev):
-        """→ (from node, to node) of a hop, as base node ids."""
+        """→ (from node, to node) of a hop, as base node ids (a station: its node, twice)."""
         e = self.els[eid]
+        if e.kind in ("row", "cell"): return e.parent.id, e.parent.id
         a, b = (e.b, e.a) if rev else (e.a, e.b)
         base = lambda s: s.split(":")[0].split(".")[0]
         return base(a), base(b)
@@ -352,24 +389,124 @@ class Diagram:
         for k, ids in list(self.hides.items()) + [(k, [i for _, l in r for i in l]) for k, r in self.rules.items()]:
             for i in ids:
                 if i not in self.els: raise SystemExit(f"diagram {self.name}: step {k} names unknown {i!r}")
+        self._check_swaps()
         for f in (e for e in self.order if e.kind == "flow"):
-            for eid, rev, _ in f.hops:
-                if eid not in self.els or self.els[eid].kind != "edge": raise SystemExit(f"diagram {self.name}: flow {f.id}: {eid!r} is not an edge")
+            for eid, rev, msg in f.hops:
+                el = self.els.get(eid)
+                if el and el.kind in ("row", "cell"):          # a station: the token is inside that box
+                    if rev or msg: raise SystemExit(f"diagram {self.name}: flow {f.id}: station {eid} takes no `<` and no message")
+                    continue
+                if not el or el.kind != "edge": raise SystemExit(f"diagram {self.name}: flow {f.id}: {eid!r} is not an edge (nor a row or cell: a station)")
             states = [s for s in self.steps if f.on(s)]
             if not states: print(f"  warning: diagram {self.name}: flow {f.id} plays in no state")
             if f.lands and (f.lands not in self.els or self.els[f.lands].kind not in ("node", "row", "cell")):
                 raise SystemExit(f"diagram {self.name}: flow {f.id}: lands={f.lands} is not a box or a row")
             for s in states:
-                hid = self.hidden(s)
-                if f.lands and not self.visible(self.els[f.lands], s, hid):
-                    raise SystemExit(f"diagram {self.name}: flow {f.id} plays at state {s}, but lands={f.lands} is not on screen there")
+                hid, seq = self.hidden(s), self.anims(s)
+                pos = seq.index(f)
+                why = lambda i: next((f" (swap {a.id}, which plays {'after' if j > pos else 'before'} it, "
+                                      f"{'brings it in' if i in a.in_all else 'retires it'})"
+                                      for j, a in enumerate(seq) if a.kind == "swap" and i in a.out_all + a.in_all), "")
+                if f.lands and not self.on_at(self.els[f.lands], s, pos, hid):
+                    raise SystemExit(f"diagram {self.name}: flow {f.id} plays at state {s}, but lands={f.lands} is not on screen there{why(f.lands)}")
                 for eid, _, _ in f.hops:
-                    if not self.visible(self.els[eid], s, hid):
-                        raise SystemExit(f"diagram {self.name}: flow {f.id} plays at state {s}, but its edge {eid} is not on screen there")
+                    if not self.on_at(self.els[eid], s, pos, hid):
+                        raise SystemExit(f"diagram {self.name}: flow {f.id} plays at state {s}, but its {'station' if '.' in eid else 'edge'} {eid} is not on screen there{why(eid)}")
+                for a in seq[pos + 1:]:
+                    if a.kind == "swap" and (gone := [e for e, _, _ in f.hops if e in a.out_all]):
+                        print(f"  warning: diagram {self.name}: flow {f.id} plays at state {s} before swap {a.id} and uses what it retires "
+                              f"({', '.join(gone)}); print draws the end state, so those hops are numbered beside wires it does not draw")
             for (e1, r1, _), (e2, r2, _) in zip(f.hops, f.hops[1:]):
                 if self.hop_ends(e1, r1)[1] != self.hop_ends(e2, r2)[0]:
                     print(f"  warning: diagram {self.name}: flow {f.id}: {e1}{'<' if r1 else ''} ends at {self.hop_ends(e1, r1)[1]}, "
                           f"but {e2}{'<' if r2 else ''} leaves from {self.hop_ends(e2, r2)[0]} (the token jumps)")
+
+    # ------------------------------------------------------------- swaps ---
+    def anims(self, k):
+        """State k's animations, its flows and swaps, in the order written: one per `a`."""
+        return [e for e in self.order if e.kind in ("flow", "swap") and e.on(k)]
+
+    def on_at(self, el, k, pos, hid):
+        """Is el on screen in state k when the state's animation number pos starts (pos past
+        the last: at rest after them all)? A swap from pos on has not played yet: its out parts
+        are still there, its in parts not yet. Otherwise el's own range decides."""
+        for a in self.anims(k)[pos:]:
+            if a.kind == "swap":
+                if el.id in a.out_all: return True
+                if el.id in a.in_all: return False
+        return self.visible(el, k, hid)
+
+    def _closure(self, ids, k, hid):
+        """ids plus what goes with them in state k: a node's rows, an edge's pills."""
+        out = []
+        for i in ids:
+            el = self.els[i]; out.append(i)
+            if el.kind == "node": out += [p.id for p in el.parts if self.visible(p, k, hid)]
+            if el.kind == "edge": out += [p.id for p in self.order if p.kind == "pill" and p.on_edge == i and self.visible(p, k, hid)]
+        return list(dict.fromkeys(out))
+
+    def _check_swaps(self):
+        """A swap's parts, and the pictures before and after it → sw.prev, sw.out_all, sw.in_all
+        (the parts with their rows and pills), sw.keep (an out edge's end that stays: its line
+        retracts into it; '-': both ends go, it fades), self.roles[K] (ax-swap-out / ax-swap-in)."""
+        self.roles = {}
+        base = lambda s: s.split(":")[0].split(".")[0]
+        for sw in (e for e in self.order if e.kind == "swap"):
+            K, name = sw.k, f"diagram {self.name}: swap {sw.id} @{sw.k}"
+            if K not in self.steps: raise SystemExit(f"{name}: no state {K} (states: {sorted(self.steps)})")
+            prev = max((s for s in self.steps if s < K), default=None)
+            if prev is None: raise SystemExit(f"{name}: state {K} is the first one; a swap starts from the state before it")
+            hk, hp = self.hidden(K), self.hidden(prev)
+            ids = sw.out + sw.inn
+            for i in ids:
+                el = self.els.get(i)
+                if not el or el.kind not in SWAP_KINDS: raise SystemExit(f"{name}: {i!r} is not a {', '.join(SWAP_KINDS)}")
+                if ids.count(i) > 1: raise SystemExit(f"{name}: {i} is listed twice")
+            for i in sw.out:
+                if not self.visible(self.els[i], prev, hp):
+                    raise SystemExit(f"{name}: out {i} is not on screen in state {prev}: a swap retires parts that are built already")
+                if self.visible(self.els[i], K, hk):
+                    raise SystemExit(f"{name}: out {i} is still on screen in state {K} by its own range: end it at {prev} (the swap is what removes it)")
+            for i in sw.inn:
+                if not self.visible(self.els[i], K, hk): raise SystemExit(f"{name}: in {i} is not on screen in state {K}")
+                if self.visible(self.els[i], prev, hp):
+                    raise SystemExit(f"{name}: in {i} is on screen already in state {prev}: a swap brings in only what state {K} adds")
+            sw.prev, sw.out_all, sw.in_all = prev, self._closure(sw.out, prev, hp), self._closure(sw.inn, K, hk)
+            for i in sw.out_all:
+                if self.visible(self.els[i], K, hk): raise SystemExit(f"{name}: {i} goes with out {self.els[i].on_edge if self.els[i].kind == 'pill' else ''}, but is on screen in state {K} by its own range: end it at {prev}")
+            for i in sw.in_all:
+                if self.visible(self.els[i], prev, hp): raise SystemExit(f"{name}: {i} comes with the in parts, but is on screen already in state {prev}")
+            for i in sw.out_all:                      # the before picture draws an out part with state K's words and classes
+                el = self.els[i]
+                if el.text(prev) != el.text(K):       # its words would change on the cut, just before it retires
+                    raise SystemExit(f"{name}: out {i} says {el.text(prev)!r} in state {prev} but {el.text(K)!r} in the "
+                                     f"before picture of state {K}: extend its label range to {K}")
+                if (c0 := sorted(self.classes(el, prev))) != (c1 := sorted(self.classes(el, K))):   # maybe on purpose
+                    print(f"  warning: {name}: out {i} has classes {' '.join(c0) or 'none'} in state {prev} but "
+                          f"{' '.join(c1) or 'none'} in the before picture of state {K}: its look changes on the cut")
+            roles = self.roles.setdefault(K, {})
+            for i, r in [(i, "out") for i in sw.out_all] + [(i, "in") for i in sw.in_all]:
+                if i in roles: raise SystemExit(f"{name}: {i} is in another swap of state {K} already")
+                roles[i] = r
+            gone = lambda s: s.split(":")[0] in sw.out_all or base(s) in sw.out_all
+            sw.keep = {i: "-" if gone(e.a) and gone(e.b) else "b" if gone(e.a) else "a"
+                       for i in sw.out_all if (e := self.els[i]).kind == "edge"}
+            for e in self.order:                      # a wire of a retiring box that ends with the state before: it would vanish on the cut
+                if (e.kind == "edge" and e.id not in sw.out_all and (gone(e.a) or gone(e.b))
+                        and self.visible(e, prev, hp) and not self.visible(e, K, hk)):
+                    print(f"  warning: {name}: edge {e.id} to what it retires is on screen in state {prev}, but not when state {K} arrives: "
+                          f"it vanishes on the cut instead of retiring with the swap (add it to out)")
+        for K in self.roles:                          # no wire hangs from nothing, before or after any swap
+            hid, seq = self.hidden(K), self.anims(K)
+            for pos in range(len(seq) + 1):
+                on = lambda el: self.on_at(el, K, pos, hid)
+                when = f"after {seq[pos - 1].kind} {seq[pos - 1].id}" if pos else "as it arrives"
+                for e in (e for e in self.order if e.kind == "edge" and on(e)):
+                    for end in (e.a, e.b):
+                        nd = self.els[end.split(":")[0]]
+                        if nd.kind != "region" and not on(nd):
+                            raise SystemExit(f"diagram {self.name}: state {K}, {when}: edge {e.id} hangs from {nd.id}, which is not on screen "
+                                             f"(swap the edge together with its end)")
 
     # ------------------------------------------------------------ routing ---
     def anchor(self, spec, other):
@@ -459,6 +596,8 @@ class Diagram:
         f = self.first_seen(el)
         summary = self.steps[k].get("summary")
         c = ["ax-cast" if k == self.first else "ax-new" if f == k and not summary else "ax-old"]
+        role = self.roles.get(k, {}).get(el.id)
+        if role: c.append(f"ax-swap-{role}")                # a swap's part: diagram.js drives it
         if k != self.first and f != k and not summary:
             # changed = its words or its role differ from the last state it was on screen
             prev = max((s for s in self.steps if s < k and self.visible(el, s, self.hidden(s))), default=None)
@@ -580,19 +719,27 @@ class Diagram:
             if (not best or cost + 45 < best[0]) and free((x, y), cores + words): best = (cost + 45, (x, y), 2)
         return (best[1], best[2]) if best else (at_len(pts, L / 2), 3)
 
-    def _flows(self, k, vis):
-        """→ (glow layer, moving layer, print layer) for the flows that play in state k.
+    def _flows(self, k, hid):
+        """→ (glow layer, moving layer, print layer) for the animations of state k: its flows,
+        and its swaps as markers in the same order (diagram.js drives the swapped parts).
         Everything here is hidden until diagram.js runs a flow; the print layer (numbered
-        hops, and the messages that have no static pill) shows in print and reduced motion."""
-        flows = [f for f in self.order if f.kind == "flow" and f.on(k)]
-        if not flows: return [], [], []
-        nodes, words = self._obstacles(k, vis)
-        pills = [p for p in self.order if p.kind == "pill" and vis(p)]
+        hops, and the messages that have no static pill) shows in print and reduced motion.
+        Each flow is placed against what is on screen when it plays (a swap before it has
+        played, one after it has not)."""
+        seq = self.anims(k)
+        if not seq: return [], [], []
         plan, parked = [], []                  # parked: boxes of messages without a twin (they stay, and print)
-        for f in flows:
+        for f in (a for a in seq if a.kind == "flow"):
+            pos = seq.index(f)
+            vis = lambda el, pos=pos: self.on_at(el, k, pos, hid)
+            nodes, words = self._obstacles(k, vis)
+            words += [(b, a.id) for a in seq[:pos] if a.kind == "swap" for b in self._cue_boxes(a, k)]
+            pills = [p for p in self.order if p.kind == "pill" and vis(p)]
             hops = []
             for eid, rev, msg in f.hops:
                 e = self.els[eid]
+                if e.kind in ("row", "cell"):          # a station: no route, a beat inside the box
+                    hops.append(dict(eid=eid, station=True, ms=STATION_MS, msg=None)); continue
                 pts = self.route(e)[::-1] if rev else self.route(e)
                 L = polylen(pts)
                 hop = dict(eid=eid, pts=pts, L=L, msg=msg, ms=hop_ms(L, bool(msg)), twin=None, track=None)
@@ -609,15 +756,19 @@ class Diagram:
                         hop["park"] = (c[0] + tr[2], c[1] + tr[3])
                         parked.append((hop["park"][0] - pw / 2, hop["park"][1] - MPILL_H / 2, pw, MPILL_H))
                 hops.append(hop)
-            plan.append((f, hops))
+            plan.append((f, hops, nodes, words, pills))
         glows, movers, nums = [], [], []
         taken = list(parked)
-        # every message on screen, by its words: the static pills, and the parked ones
-        msgs = [(self._pill_box(p, k), p.text(k)) for p in pills]
-        msgs += [(b, h["msg"]) for h, b in zip((h for _, hs in plan for h in hs if "park" in h), parked)]
-        for fi, (f, hops) in enumerate(plan):
+        parked_msgs = [(b, h["msg"]) for h, b in zip((h for p in plan for h in p[1] if "park" in h), parked)]
+        for a in seq:
+            if a.kind == "swap": movers.append(self._swap_marker(a))
+        for fi, (f, hops, nodes, words, pills) in enumerate(plan):
+            # every message on screen when it plays, by its words: the static pills, and the parked ones
+            msgs = [(self._pill_box(p, k), p.text(k)) for p in pills] + parked_msgs
             g, mv, nm, n = [], [], [], 0
             for hop in hops:
+                if hop.get("station"):
+                    mv.append(f'<g class="ax-hop ax-station" data-part="{hop["eid"]}" data-ms="{hop["ms"]}"/>'); continue
                 pts, msg = hop["pts"], hop["msg"]
                 d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts)
                 g.append(f'<path class="ax-hglow" d="{d}"/>')
@@ -657,7 +808,56 @@ class Diagram:
                           '<g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g>'
                           + "".join(mv) + "</g>")
             nums.append(f'<g {head.format("ax-flow-nums")}>' + "".join(nm) + "</g>")
+        # the moving layer in the order written: diagram.js reads the sequence from it
+        order = {a.id: j for j, a in enumerate(seq)}
+        movers.sort(key=lambda m: order[re.search(r'data-(?:flow|swap)="([^"]+)"', m)[1]])
         return glows, movers, nums
+
+    def _swap_marker(self, sw):
+        """A swap for diagram.js: its time, its parts (an out edge with the end its line retracts
+        into: a, b, or - when both ends go and it fades)."""
+        out = " ".join(f"{i}:{sw.keep[i]}" if i in sw.keep else i for i in sw.out_all)
+        return (f'<g class="ax-swap" data-swap="{sw.id}" data-ms="{SWAP_MS}" data-out="{out}" '
+                f'data-in="{" ".join(sw.in_all)}"/>')
+
+    def _label_at(self, el, k):
+        """A node's label → (text, x, baseline y, anchor, font size, mono), or None: where _node draws it."""
+        lbl = el.text(k)
+        if not lbl: return None
+        x, y, w, h = el.x, el.y, el.w, el.h
+        fs = FS["mono" if el.mono else "node"]
+        if el.parts:
+            if el.parts[0].kind == "cell" or el.list: return lbl, x + PAD + 4, y + TITLE_H / 2 + fs * .36, "start", fs, el.mono
+            return lbl, x + w / 2, y + TITLE_H / 2 + fs * .36, "middle", fs, el.mono
+        if el.opts.get("sub"): return lbl, x + w / 2, y + h / 2 - 2, "middle", fs, el.mono
+        ty = y + TITLE_H / 2 + fs * .36 if el.opts.get("valign") == "top" else y + h / 2 + fs * .36
+        return lbl, x + w / 2, ty, "middle", fs, el.mono
+
+    def _strike(self, el, k):
+        """A line through a node's label → (path d, the words' box), or None."""
+        la = self._label_at(el, k)
+        if not la: return None
+        lbl, tx, ty, anc, fs, mono = la
+        tw = text_w(lbl, fs, mono)
+        x0 = tx - tw / 2 if anc == "middle" else tx - tw if anc == "end" else tx
+        sy = ty - fs * .3
+        return f"M{x0 - 8:.1f},{sy:.1f} L{x0 + tw + 8:.1f},{sy:.1f}", (x0 - 10, ty - fs * .82, tw + 20, fs * 1.14)
+
+    def _cue_boxes(self, sw, k):
+        return [st[1] for i in sw.out if self.els[i].kind == "node" and (st := self._strike(self.els[i], k))]
+
+    def _cues(self, sw, k):
+        """The static cue of a swap (print, the deck: its end state): an out node's label, struck
+        through, where the node was. Hidden on the projector (diagram.css)."""
+        out = []
+        for i in sw.out:
+            el = self.els[i]
+            st = self._strike(el, k) if el.kind == "node" else None
+            if not st: continue
+            lbl, tx, ty, anc, fs, mono = self._label_at(el, k)
+            out.append(f'<g class="ax-swap-cue" data-swap="{sw.id}"><text class="ax-swap-cue-t{" ax-mono" if mono else ""}" x="{tx:.1f}" y="{ty:.1f}" '
+                       f'text-anchor="{anc}" font-size="{fs}">{esc(lbl)}</text><path class="ax-swap-strike" d="{st[0]}"/></g>')
+        return out
 
     @staticmethod
     def _msg_pill(cls, msg, w, extra=""):
@@ -668,12 +868,15 @@ class Diagram:
     def svg(self, k):
         if k not in self.steps: raise SystemExit(f"diagram {self.name}: no state {k} (states: {sorted(self.steps)})")
         hid, out = self.hidden(k), []
-        vis = lambda el: self.visible(el, k, hid)
+        swaps = [a for a in self.anims(k) if a.kind == "swap"]
+        outs = {i for a in swaps for i in a.out_all}
+        # on screen in state k: its own parts, and what its swaps retire (there until they play)
+        vis = lambda el: self.visible(el, k, hid) or el.id in outs
         # z-order: regions, flow glows, edge lines, travelling tokens and message pills,
-        # static pills, edge labels, nodes (+parts), notes, marks, keys, print-only hop
-        # numbers. A token passes UNDER the boxes (a message goes in) and under every
-        # word (a label or a pill it crosses stays readable).
-        glows, movers, nums = self._flows(k, vis)
+        # static pills, edge labels, nodes (+parts), notes, marks, keys, print-only swap
+        # cues and hop numbers. A token passes UNDER the boxes (a message goes in) and under
+        # every word (a label or a pill it crosses stays readable).
+        glows, movers, nums = self._flows(k, hid)
         for el in self.order:
             if el.kind == "region" and vis(el): out.append(self._region(el, k))
         out += glows
@@ -690,6 +893,7 @@ class Diagram:
             if el.kind == "note" and vis(el): out.append(self._note(el, k))
             if el.kind == "mark" and vis(el): out.append(self._mark(el, k))
             if el.kind == "key" and vis(el): out.append(self._key(el, k))
+        for a in swaps: out += self._cues(a, k)
         out += nums
         aria = esc(f"{self.name}, state {k}: {self.steps[k]['caption']}")
         return (f'<svg class="ax ax-{self.name}" data-step="{k}" viewBox="0 0 {self.W} {self.H}" '
@@ -795,6 +999,8 @@ class Diagram:
             elif lbl:
                 ty = y + TITLE_H / 2 + fs * .36 if el.opts.get("valign") == "top" else y + h / 2 + fs * .36
                 s.append(f'<text class="ax-label" x="{x + w / 2:.1f}" y="{ty:.1f}" text-anchor="middle" font-size="{fs}">{esc(lbl)}</text>')
+        if self.roles.get(k, {}).get(el.id) == "out" and (st := self._strike(el, k)):
+            s.append(f'<path class="ax-swap-strike" d="{st[0]}"/>')     # drawn while it retires (diagram.js)
         s.append("</g>")
         return "".join(s)
 

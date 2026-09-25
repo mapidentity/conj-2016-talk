@@ -14,7 +14,7 @@ Who holds what:
 | `../livecode-talk.md` | the content: the `<!-- diagram … -->` block (geometry, labels, states, flows) and the slides that show it |
 | `diagram.py` | structure and metrics: parsing, routing, font sizes, and the build checks |
 | `diagram.css` | the look of `svg.ax` (the map) and `svg.axm` (the minimap): colours, weights and dashes |
-| `diagram.js` | playing the flows in `slides.html` on the `a` / `p` keys, and the progress line under them (the deck never runs it) |
+| `diagram.js` | playing the flows and swaps in `slides.html` on the `a` / `p` keys, and the progress line under them (the deck never runs it) |
 | `slides-template.html` | where a map or minimap sits on a projector slide, and how big it is |
 | `build_presenter.py` | the same for the deck's slide cards |
 
@@ -75,6 +75,7 @@ looks like "new" on a map slide.
 - **The IDs** name regions (zones), nodes, rows, cells (`node.part`) or edges, and
   each must be on screen in state K. They are separated by commas, and spaces
   after the commas are fine.
+- **A state with a swap** is drawn as its end state (see "Swaps").
 - **Colour:** `{.rev}` on the line before the fence lights the parts green (code →
   page, the overlay's emerald). `{.warn}` lights them amber (a bypass). Without
   either, they are violet.
@@ -131,7 +132,8 @@ edge ID A -> B ["LABEL"] [via …] [ws|gap|human] [seg=N] [t=F] [below|left|over
 pill ID on EDGE "TEXT" >|< [t=F] [seg=N] [dy=N]
 mark ID shield|cross|q "TEXT" X,Y [anchor=…] [lbl=below|above] [lxy=X,Y]
 key  ID new|fwd|rev|ws|warn "TEXT" X,Y
-flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
+flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], NODE.PART, EDGE[<] ["MSG"], …
+swap ID @K : out ID,ID… ; in ID,ID…
 ```
 
 ### The statements
@@ -199,6 +201,7 @@ flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
 - **`key`**: a legend entry with a swatch: `new`, `fwd` (violet), `rev` (green),
   `ws` or `warn`.
 - **`flow`**: a message that travels. See "Flows" below.
+- **`swap`**: parts that replace others, on a key press. See "Swaps" below.
 
 ### What every element also takes
 
@@ -213,7 +216,8 @@ flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
 | `S:TEXT` | the label from S on |
 | `S-E:TEXT` | the label in S through E, e.g. `11-11:'Load buffer'` |
 
-**Classes the look defines:** `warn` (amber, dashed: a bypass), `ghost` (an
+**Classes the look defines:** `warn` (amber, dashed: a bypass; on a box, an amber
+dashed outline and amber words, like the second loader in state 11), `ghost` (an
 outline: not built yet), `fallback` (dashed and thinner), `human`, `new`, `fwd`
 (violet) and `rev` (green). `fwd` and `rev` colour a loop's direction: in the final
 view, and in any state whose new parts run code → page (state 9 gives its cursor
@@ -233,6 +237,8 @@ highlighted in green ink: hue is the meaning, the highlighter is the newness.
   you and F5 in state 11, the typed `(load-file …)` in state 2, and the
   tr-load! → views wire in state 8).
 - `ax-old`: on screen in an earlier state.
+- `ax-swap-out` / `ax-swap-in`: the parts a swap of this state retires or brings in.
+  `diagram.js` drives them; without it they show the swap's end state (see "Swaps").
 - `ax-changed`: a label range or a class starts in this state. Only additions
   count. The new words are highlighted (the box, row or label plate takes the
   ink), the wire is not; a changed role with a look of its own (`warn`,
@@ -265,6 +271,13 @@ flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
   routed path.
 - **`EDGE<`** runs a hop against the edge's drawn direction, B → A. Use it for
   `--` socket wires, and for the way back from a lookup (`e-resolve, e-resolve<`).
+- **`NODE.PART`**, a row or a cell in the list, is a **station**: the token is inside
+  that box, and the part lights up for a beat (450 ms), in the flow's colours, with the
+  near-white rim of a wire being travelled; after its beat it keeps the flow's hue,
+  like a travelled wire, until the flow ends. Stations follow each other without a
+  pause, and the hop after them waits at its door as usual. State 5 passes through
+  tr-load!'s cells: `e-views, trload.c-read, trload.c-eval, e-deftr ":line"`. A station
+  takes no `<` and no message, and print does not number it.
 - **`"MSG"`** is a message that rides beside the wire as a pill, never on it.
   - The generator picks the side and the stretch where the pill covers no box and
     no word, and there the pill keeps pace with the token.
@@ -280,7 +293,9 @@ flow ID [fwd|rev|warn] @S[-E] [lands=ID] : EDGE[<] ["MSG"], EDGE[<] ["MSG"], …
   highlighted span, the opened buffer, the reloaded page. It lights up in the
   flow's colour when the token arrives.
 - **Several flows in one state** play in the order they are written, one per press
-  of `a`. Split a story where the speaker wants to pause.
+  of `a`. Split a story where the speaker wants to pause. A state's swaps take their
+  turn among its flows, in the same order (see "Swaps"): together they are the
+  state's **animations**, and "flow" in the key and line rules below means either.
 
 ### How a slide plays them
 
@@ -291,12 +306,13 @@ browser's, and a held key does not repeat):
 
 | key | behaviour |
 | --- | --- |
-| `a` | Nothing playing: plays the flow at the cursor.<br>Playing: restarts that flow from its start, while its token travels. In the 0.9 s hold after the token has gone in, the flow looks done and counts as done: `a` plays the next flow (after the last one: replays it).<br>A second `a` within 250 ms of the last one is a key bounce or double tap and is ignored. |
+| `a` | Nothing playing: plays the flow at the cursor.<br>Playing: restarts that flow from its start, while its token travels. In the 0.9 s hold after the token has gone in, the flow looks done and counts as done: `a` plays the next flow (after the last one: replays it).<br>A swap never rewinds: `a` while it plays finishes it at once (see "Swaps").<br>A second `a` within 250 ms of the last one is a key bounce or double tap and is ignored. |
 | `p` | One stop back.<br>Playing: stops, back to the start of that flow (nothing lit).<br>Idle at the start of flow k > 1: to the start of flow k−1.<br>Idle after the last flow: to the start of the last one.<br>At the start of flow 1: nothing.<br>It also clears the bounce guard, so the `a` right after it always counts. |
 
 The stops are the start of each flow, plus "after the last". Arriving on a slide
 (by →, ←, `#N` or a reload) puts the cursor on flow 1 with nothing playing and
-nothing lit; leaving stops everything. When a flow finishes, the cursor moves on to
+nothing lit — except arriving back on a slide with a swap from a later one (see
+"Swaps"); leaving stops everything. When a flow finishes, the cursor moves on to
 the next flow; after the last one it stays on the last, so `a` replays it. To show a
 flow again: `p`, then `a`.
 
@@ -315,7 +331,7 @@ The class line before the ` ```diagram ``` ` fence decides what happens without 
 Under a map with flows, a hairline runs along the very bottom of the projector
 slide, as wide as the figure and below the `N / 33` counter. It is for the speaker,
 not the audience:
-- One segment per flow, each as long as that flow takes (its 0.9 s hold included).
+- One segment per flow or swap, each as long as it takes (a flow's 0.9 s hold included).
   When the state has two or more flows, a small dot marks each boundary; a dot is
   hollow until the line reaches it, then solid, with a thin ring of the background
   that keeps it apart from the fill.
@@ -345,9 +361,87 @@ not the audience:
   `inspector.js`: open and highlight) it never sits beside the wrong one.
 - Under reduced motion, `a` reveals the cursor flow's numbered hops instead, and
   moves the progress line one whole segment on; `p` hides them and steps back one
-  stop. `flow-auto` shows flow 1's numbers on arrival (its autoplay, the line one
-  segment on). `flow-loop` shows every flow's numbers at once (the line full); its
-  first `a` starts over at flow 1, its first `p` hides them and steps back one stop.
+  stop. A swap is applied at once instead. `flow-auto` shows flow 1's numbers on
+  arrival (its autoplay, the line one segment on). `flow-loop` shows every flow's
+  numbers at once (the line full); its first `a` starts over at flow 1, its first `p`
+  hides them and steps back one stop.
+
+## Swaps
+
+A swap replaces parts of the map in front of the audience: the old parts go, the new
+ones come, on a key press. State 5 uses it for tr-load! taking over from load-file.
+
+```text
+swap ID @K : out ID,ID… ; in ID,ID…
+```
+
+- **`@K`**: the one state it plays in. A swap is a moment, like a flow, and it takes
+  no range.
+- **`out`**: the parts it retires. Each one is on screen in the state before K and not
+  in K, by its own range: the range tells the truth about the map, and the swap only
+  adds the moment in between. State 5 ends load-file at 4 (`@2-4,11,12`) and names it
+  here.
+- **`in`**: the parts it brings in. Each one is on screen in K and not in the state
+  before it.
+- Nodes, rows, edges, pills, notes and marks can be swapped, not cells or regions. A
+  node goes with its rows, an edge with its pills. Either list may be left out: a
+  swap with only `out` retires parts, one with only `in` draws new ones on a key press.
+
+**On the projector:**
+- **Arrival** (by →, `#N` or a reload) shows the picture *before* the swap: the out
+  parts are still there, as built parts, the in parts are not yet. Everything else is
+  state K, highlighter included. So the cut from state K−1 adds K's news, and the swap
+  comes after it.
+- **Arriving back** from a later slide (←, or a `#N` jump back) shows the end state
+  instead: the talk has moved past the swap. The cursor is after the state's last
+  swap, nothing plays by itself (not even under `flow-auto`), and `p` puts the before
+  picture back for a replay. `flow-loop` ignores this: its rounds always start from
+  the before picture.
+- **Playing it** (`a`) takes 1.8 s, eased, and nothing moves:
+  - an amber strike draws through an out box's label (0–0.32 s) and stands whole
+    until the box starts to fade, so it reads from the back of the hall;
+  - the out wires, if solid, retract into the end that stays, so the wire from the
+    watcher to load-file shrinks back into the watcher (0.54–1.22 s); their
+    arrowheads go first, all together, whichever end stays;
+  - the out boxes fade (0.68–1.3 s);
+  - the in wires draw from their source (0.9–1.67 s), their arrowheads and words
+    last; in state 5 they are the state's news, so they draw in the highlighter's ink.
+
+  A dashed wire, or one that loses both its ends, fades instead of retracting.
+  Out and in overlap: it reads as one part replacing the other.
+- **After it**, the resting picture is the end state: state K as its ranges say.
+- **The keys and the line** treat it like a flow: it is one stop and one segment of
+  the progress line, and `p` while it plays, or from the stop after it, puts the
+  before picture back. But a swap never rewinds: `a` while it plays finishes it at
+  once (the end state, the cursor after it), so an `a` pressed a little early for the
+  next flow never shows the old parts snapping back; the next `a` plays on. It has no
+  hold: the moment it ends, it is done. Leaving the slide mid-swap stops it; coming
+  back by → or a reload starts from the before picture, by ← from the end state.
+- **Under reduced motion**, `a` applies it at once (the end state, no frame in
+  between) and `p` puts the before picture back.
+- **`flow-auto`** plays it by itself if it comes first; **`flow-loop`** rests on the
+  end state and starts each round from the before picture; **`flow-off`** shows the
+  end state.
+
+**Print, the deck and a minimap** show the end state, the state as its ranges say.
+The deck and print add one quiet cue: an out box's label stays where the box was,
+struck through in amber, with no box and no wires. On the projector the cue never
+shows. A flow that plays after the swap is numbered on the end state; one that plays
+before it and uses its out parts would be numbered beside wires print does not draw,
+and the build warns.
+
+**Build checks** (errors): an unknown id, or one that can't be swapped; an out part
+that is not on screen in the state before K, or still is in K; an in part that is not
+on screen in K, or already is in the state before; a part in two swaps of one state;
+any wire that would hang from a box that is not there, before or after any of the
+state's animations; and an out part whose words in state K differ from the state
+before (the before picture draws it with K's words, so they would change on the cut
+just before it retires: extend its label range to K). A flow must find its edges and
+stations on screen where it plays in the order: before the swap, the out parts are
+there and the in parts are not. A wire of a retired box that ends with the state
+before, but is not in `out`, gets a warning: it would vanish on the cut instead of
+retiring with the box. So does an out part whose classes differ between the two
+states (its look changes on the cut; that may be on purpose).
 
 ## Build checks
 
@@ -361,8 +455,11 @@ imports it. So `refresh.sh` runs them in either mode.
 - `chip` or `branch=`: the map is keyed to talk sections now.
 - An edge end, pill edge, `hide:` or `+CLS:` id that doesn't exist. An edge `via`
   that turns the wrong way.
-- A flow hop that is not an edge; a flow that plays in a state where one of its
-  edges or its `lands=` box is not on screen; `lands=` that is not a box or a row.
+- A flow hop that is not an edge, a row or a cell; a station with `<` or a message; a
+  flow that plays in a state where one of its edges, stations or its `lands=` box is
+  not on screen at its place among the state's animations (a swap before it has
+  played, one after it has not); `lands=` that is not a box or a row.
+- A swap that breaks one of its rules (see "Swaps").
 - On a slide:
   - a ` ```diagram ``` ` or ` ```minimap ``` ` fence with a diagram name that has
     no block;
@@ -380,6 +477,12 @@ imports it. So `refresh.sh` runs them in either mode.
 - An edge that is on screen in a state where one of its ends is not.
 - A flow that plays in no state; a hop that ends at a different box from the one
   the next hop leaves (the token would jump).
+- A flow that plays before a swap and uses what it retires (print numbers it on the
+  end state).
+- A wire of a box a swap retires that ends with the state before and is not in the
+  swap's `out`: it would vanish on the cut instead of retiring with the box.
+- An out part whose classes differ between the state before the swap and its state
+  (its look changes on the cut).
 - A message that finds no clear stretch (it then rides on the wire); a hop number
   that finds no clear spot.
 - A minimap on a slide that doesn't start with a heading; a minimap with no room

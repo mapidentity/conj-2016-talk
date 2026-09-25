@@ -134,6 +134,9 @@ svg.ax .ax-warn.ax-edge .ax-head { fill: #e0a06a; }
 svg.ax .ax-warn.ax-edge:is(.ax-new, .ax-changed) .ax-glow { display: inline; fill: none; stroke: #e0a06a; stroke-opacity: .5; stroke-width: 18; stroke-linejoin: round; }
 svg.ax .ax-warn .ax-elabel { fill: #f0b27a; font-weight: 700; }
 svg.ax .ax-warn.ax-row .ax-hit { fill: #2a2027; stroke: #e0a06a; stroke-width: 3; stroke-dasharray: 10 7; }
+/* a box in the bypass (§10: load-file, the second loader, back behind nREPL): the warn row's look, unstruck */
+svg.ax .ax-warn.ax-node > rect { fill: #2a2027; stroke: #e0a06a; stroke-width: 3; stroke-dasharray: 10 7; }
+svg.ax .ax-warn.ax-node > .ax-label { fill: #f0b27a; font-weight: 700; }                       /* 8.5:1 on its fill */
 svg.ax .ax-warn.ax-row text { fill: #f0b27a; font-weight: 700; text-decoration: line-through; }
 /* not built (yet): an outline, never a filled box */
 svg.ax .ax-ghost.ax-node > rect { fill: none; stroke: #9d94b8; stroke-dasharray: 10 8; }
@@ -226,6 +229,14 @@ svg.ax .ax-tdot   { fill: #fff; stroke: var(--ax-fc); stroke-width: 3; }
 svg.ax .ax-mpill rect { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3.5; }
 svg.ax .ax-mpill text { fill: #fff; font-weight: 700; font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; }
 svg.ax .ax-pill.ax-pill-off { visibility: hidden; }
+/* a station (a row or cell the flow passes through, the token inside its box): lit in the flow's
+   colours while the token is there (the near-white rim of the current wire), then kept in the
+   flow's hue, like a travelled wire, until the flow ends. White words on the dark fill: 13:1+ */
+svg.ax g.ax-cell.ax-part:is(.ax-lit, .ax-trail) rect { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3.5; }
+svg.ax g.ax-cell.ax-part.ax-lit rect { stroke: var(--ax-fb); stroke-width: 4.5; }
+svg.ax g.ax-row.ax-part:is(.ax-lit, .ax-trail) .ax-hit { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3.5; }
+svg.ax g.ax-row.ax-part.ax-lit .ax-hit { stroke: var(--ax-fb); stroke-width: 4.5; }
+svg.ax g.ax-part:is(.ax-lit, .ax-trail) text { fill: #fff; font-weight: 700; }
 /* print, the deck, reduced motion: the order as numbered hops (A1 A2 … B1 … when a state has
    several flows), and the messages that have no static pill, where the animation leaves them */
 svg.ax .ax-hopnum rect { fill: var(--ax-fc); stroke: #16141f; stroke-width: 3; }
@@ -237,6 +248,32 @@ svg.ax .ax-hopnum.ax-hopmsg text { fill: #fff; font-weight: 700; font-family: ui
 @media (prefers-reduced-motion: reduce) {
   svg.ax .ax-token, svg.ax .ax-mpill { display: none !important; }
   svg.ax .ax-pill.ax-pill-off { visibility: visible; }
+}
+
+/* ===== swaps (`swap` in the DSL; diagram.js plays them) ================================
+   The markup is the swap's END state, and that is what print, the deck, a minimap and
+   {.flow-off} show. The out parts are on screen only before it plays (ax-swap-pre: the script
+   sets it on arrival, and p puts it back) and while it plays (ax-swap-run, with the frame's
+   inline opacity and dash); the in parts are hidden before it. */
+svg.ax .ax-swap-out { display: none; }
+svg.ax .ax-swap-out:is(.ax-swap-pre, .ax-swap-run) { display: inline; }
+svg.ax .ax-swap-in.ax-swap-pre { display: none; }
+/* the strike through a retiring box's label, drawn left to right as it starts to go: amber, the
+   map's colour for what no longer holds (the stripped row's line-through, the bypass) */
+svg.ax .ax-swap-strike { display: none; fill: none; stroke: #e0a06a; stroke-width: 6; stroke-linecap: round; }
+svg.ax .ax-swap-run > .ax-swap-strike { display: inline; }
+/* the static cue: in print and the deck, the retired box's label stays where it was, struck
+   through and quiet (no box, no wires: it is not part of the state) — 5.3:1, the strike 8.2:1 */
+svg.ax .ax-swap-cue { display: none; }
+svg.ax .ax-swap-cue text { fill: #8d86a4; }
+svg.ax .ax-swap-cue .ax-swap-strike { display: inline; stroke-width: 3; }
+.pg svg.ax .ax-swap-cue { display: inline; }
+@media print {
+  svg.ax .ax-swap-cue { display: inline; }
+  svg.ax .ax-swap-out { display: none !important; }                  /* print is the end state, whatever the script did */
+  svg.ax .ax-swap-in { display: inline !important; opacity: 1 !important; }
+  svg.ax .ax-swap-in path { stroke-dashoffset: 0 !important; }
+  svg.ax .ax-swap-in .ax-head { opacity: 1 !important; }
 }
 
 /* ===== the progress line under a map with flows (diagram.js builds it, as DOM in the

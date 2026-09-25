@@ -129,7 +129,7 @@
     slides.forEach(function (s, j) { s.classList.toggle('on', j === i); });
     if (!(i !== n && i === from)) {                      // → on the last slide, ← on the first: stay put, don't restart
       slides[i].classList.toggle('fwd', from >= 0 && i === from + 1);   // {.pop} plays on forward moves only
-      if (window.axFlows) axFlows.enter(slides[i]);      // a map's flows reset on every arrival
+      if (window.axFlows) axFlows.enter(slides[i], from > i);   // a map's flows reset on every arrival (back: its swaps seen)
     }
     document.getElementById('num').textContent = (i + 1) + ' / ' + slides.length;
     if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));

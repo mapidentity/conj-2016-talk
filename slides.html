@@ -223,6 +223,9 @@ svg.ax .ax-warn.ax-edge .ax-head { fill: #e0a06a; }
 svg.ax .ax-warn.ax-edge:is(.ax-new, .ax-changed) .ax-glow { display: inline; fill: none; stroke: #e0a06a; stroke-opacity: .5; stroke-width: 18; stroke-linejoin: round; }
 svg.ax .ax-warn .ax-elabel { fill: #f0b27a; font-weight: 700; }
 svg.ax .ax-warn.ax-row .ax-hit { fill: #2a2027; stroke: #e0a06a; stroke-width: 3; stroke-dasharray: 10 7; }
+/* a box in the bypass (§10: load-file, the second loader, back behind nREPL): the warn row's look, unstruck */
+svg.ax .ax-warn.ax-node > rect { fill: #2a2027; stroke: #e0a06a; stroke-width: 3; stroke-dasharray: 10 7; }
+svg.ax .ax-warn.ax-node > .ax-label { fill: #f0b27a; font-weight: 700; }                       /* 8.5:1 on its fill */
 svg.ax .ax-warn.ax-row text { fill: #f0b27a; font-weight: 700; text-decoration: line-through; }
 /* not built (yet): an outline, never a filled box */
 svg.ax .ax-ghost.ax-node > rect { fill: none; stroke: #9d94b8; stroke-dasharray: 10 8; }
@@ -315,6 +318,14 @@ svg.ax .ax-tdot   { fill: #fff; stroke: var(--ax-fc); stroke-width: 3; }
 svg.ax .ax-mpill rect { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3.5; }
 svg.ax .ax-mpill text { fill: #fff; font-weight: 700; font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; }
 svg.ax .ax-pill.ax-pill-off { visibility: hidden; }
+/* a station (a row or cell the flow passes through, the token inside its box): lit in the flow's
+   colours while the token is there (the near-white rim of the current wire), then kept in the
+   flow's hue, like a travelled wire, until the flow ends. White words on the dark fill: 13:1+ */
+svg.ax g.ax-cell.ax-part:is(.ax-lit, .ax-trail) rect { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3.5; }
+svg.ax g.ax-cell.ax-part.ax-lit rect { stroke: var(--ax-fb); stroke-width: 4.5; }
+svg.ax g.ax-row.ax-part:is(.ax-lit, .ax-trail) .ax-hit { fill: var(--ax-fd); stroke: var(--ax-fc); stroke-width: 3.5; }
+svg.ax g.ax-row.ax-part.ax-lit .ax-hit { stroke: var(--ax-fb); stroke-width: 4.5; }
+svg.ax g.ax-part:is(.ax-lit, .ax-trail) text { fill: #fff; font-weight: 700; }
 /* print, the deck, reduced motion: the order as numbered hops (A1 A2 … B1 … when a state has
    several flows), and the messages that have no static pill, where the animation leaves them */
 svg.ax .ax-hopnum rect { fill: var(--ax-fc); stroke: #16141f; stroke-width: 3; }
@@ -326,6 +337,32 @@ svg.ax .ax-hopnum.ax-hopmsg text { fill: #fff; font-weight: 700; font-family: ui
 @media (prefers-reduced-motion: reduce) {
   svg.ax .ax-token, svg.ax .ax-mpill { display: none !important; }
   svg.ax .ax-pill.ax-pill-off { visibility: visible; }
+}
+
+/* ===== swaps (`swap` in the DSL; diagram.js plays them) ================================
+   The markup is the swap's END state, and that is what print, the deck, a minimap and
+   {.flow-off} show. The out parts are on screen only before it plays (ax-swap-pre: the script
+   sets it on arrival, and p puts it back) and while it plays (ax-swap-run, with the frame's
+   inline opacity and dash); the in parts are hidden before it. */
+svg.ax .ax-swap-out { display: none; }
+svg.ax .ax-swap-out:is(.ax-swap-pre, .ax-swap-run) { display: inline; }
+svg.ax .ax-swap-in.ax-swap-pre { display: none; }
+/* the strike through a retiring box's label, drawn left to right as it starts to go: amber, the
+   map's colour for what no longer holds (the stripped row's line-through, the bypass) */
+svg.ax .ax-swap-strike { display: none; fill: none; stroke: #e0a06a; stroke-width: 6; stroke-linecap: round; }
+svg.ax .ax-swap-run > .ax-swap-strike { display: inline; }
+/* the static cue: in print and the deck, the retired box's label stays where it was, struck
+   through and quiet (no box, no wires: it is not part of the state) — 5.3:1, the strike 8.2:1 */
+svg.ax .ax-swap-cue { display: none; }
+svg.ax .ax-swap-cue text { fill: #8d86a4; }
+svg.ax .ax-swap-cue .ax-swap-strike { display: inline; stroke-width: 3; }
+.pg svg.ax .ax-swap-cue { display: inline; }
+@media print {
+  svg.ax .ax-swap-cue { display: inline; }
+  svg.ax .ax-swap-out { display: none !important; }                  /* print is the end state, whatever the script did */
+  svg.ax .ax-swap-in { display: inline !important; opacity: 1 !important; }
+  svg.ax .ax-swap-in path { stroke-dashoffset: 0 !important; }
+  svg.ax .ax-swap-in .ax-head { opacity: 1 !important; }
 }
 
 /* ===== the progress line under a map with flows (diagram.js builds it, as DOM in the
@@ -650,7 +687,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 10 · the question -->
 <section class="slide">
-  <h1>🖝 What do we need to point at a pixel<br>and ask <span class="accent">which Clojure made it</span>?</h1>
+  <h1>🖝 What do we need to point at a pixel<br>and ask <span class="accent">which Clojure form made it</span>?</h1>
   <pre><code>&lt;<span class="bi">span</span> <span class="at">class</span>=<span class="st">"badge hot"</span>&gt;🌶 spicy&lt;/<span class="bi">span</span>&gt;</code></pre>
 </section>
 
@@ -696,29 +733,32 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 <!-- 14 · the map, state 5 -->
 <section class="slide">
   <h2>🗺 tr-load! keeps the lines</h2>
-  <div class="figure ax-fig"><svg class="ax ax-arch" data-step="5" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 5: tr-load! keeps the lines">
+  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="5" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 5: tr-load! keeps the lines">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
   <g class="ax-region ax-r-band ax-old" data-ax="dev"><rect x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="ax-capbg" x="620.0" y="279.7" width="198.8" height="29.4"/><text class="ax-cap" x="630.0" y="302.1" text-anchor="start" font-size="28">DEV ONLY</text></g>
   <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
+  <g class="ax-flow-under ax-f-fwd" data-flow="save-trload"><path class="ax-hglow" d="M150.0,350.0 L240.0,350.0"/><path class="ax-hglow" d="M368.0,350.0 L420.0,350.0"/><path class="ax-hglow" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="ax-hglow" d="M860.0,470.0 L860.0,264.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-eval"><path class="ax-glow" d="M160.0,82.0 L414.0,82.0"/><path class="ax-line" d="M160.0,82.0 L414.0,82.0"/><path class="ax-head" d="M430.0,82.0 L411.0,91.5 L411.0,72.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
+  <g class="ax-edge  ax-old ax-swap-out" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
+  <g class="ax-edge  ax-old ax-swap-out" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
+  <g class="ax-edge  ax-old ax-swap-out" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
   <g class="ax-edge ax-k-gap ax-old" data-ax="e-gap"><path class="ax-glow" d="M1430.0,176.0 L1006.0,176.0"/><path class="ax-line" d="M1430.0,176.0 L1006.0,176.0"/><path class="ax-head" d="M990.0,176.0 L1009.0,166.5 L1009.0,185.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-dep"><path class="ax-glow" d="M510.0,318.0 L510.0,260.0"/><path class="ax-line" d="M510.0,318.0 L510.0,260.0"/><path class="ax-head" d="M510.0,244.0 L519.5,263.0 L500.5,263.0 Z"/></g>
+  <g class="ax-edge  ax-old ax-swap-out" data-ax="e-dep"><path class="ax-glow" d="M510.0,318.0 L510.0,260.0"/><path class="ax-line" d="M510.0,318.0 L510.0,260.0"/><path class="ax-head" d="M510.0,244.0 L519.5,263.0 L500.5,263.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-binds"><path class="ax-glow" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-line" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-head" d="M1041.0,228.0 L1050.5,247.0 L1031.5,247.0 Z"/></g>
-  <g class="ax-edge  ax-new" data-ax="e-views"><path class="ax-glow" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-line" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-head" d="M700.0,470.0 L690.5,451.0 L709.5,451.0 Z"/></g>
-  <g class="ax-edge  ax-new" data-ax="e-deftr"><path class="ax-glow" d="M860.0,470.0 L860.0,280.0"/><path class="ax-line" d="M860.0,470.0 L860.0,280.0"/><path class="ax-head" d="M860.0,264.0 L869.5,283.0 L850.5,283.0 Z"/></g>
+  <g class="ax-edge  ax-new ax-swap-in" data-ax="e-views"><path class="ax-glow" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-line" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-head" d="M700.0,470.0 L690.5,451.0 L709.5,451.0 Z"/></g>
+  <g class="ax-edge  ax-new ax-swap-in" data-ax="e-deftr"><path class="ax-glow" d="M860.0,470.0 L860.0,280.0"/><path class="ax-line" d="M860.0,470.0 L860.0,280.0"/><path class="ax-head" d="M860.0,264.0 L869.5,283.0 L850.5,283.0 Z"/></g>
+  <g class="ax-swap" data-swap="loader-swap" data-ms="1800" data-out="loader e-read:a e-dep:a e-repl:a e-def:b" data-in="e-views e-deftr"/>
+  <g class="ax-flow ax-f-fwd" data-flow="save-trload" data-lands="views"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-save" data-pts="150.0,350.0 240.0,350.0" data-ms="450"></g><g class="ax-hop" data-edge="e-poll" data-pts="368.0,350.0 420.0,350.0" data-ms="450"></g><g class="ax-hop" data-edge="e-views" data-pts="600.0,350.0 700.0,350.0 700.0,470.0" data-ms="600"></g><g class="ax-hop ax-station" data-part="trload.c-read" data-ms="450"/><g class="ax-hop ax-station" data-part="trload.c-eval" data-ms="450"/><g class="ax-hop" data-edge="e-deftr" data-pts="860.0,470.0 860.0,264.0" data-ms="1200" data-smin="30.0" data-smax="132.0" data-off="-74.2,0.0"><g class="ax-mpill"><rect x="-62.2" y="-23.0" width="124.3" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">:line</text></g></g></g>
   <g class="ax-pill ax-old" data-ax="p-reload"><rect x="1034.4" y="669.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M1165.6,690.0 L1153.6,683.0 L1153.6,697.0 Z"/><text x="1096.0" y="699.8" text-anchor="middle" font-size="28">reload</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
   <g class="ax-edge ax-elab  ax-old" data-ax="e-html"><rect class="ax-lbg" x="1173.4" y="227.0" width="203.4" height="31.9" rx="5"/><text class="ax-elabel" x="1275.1" y="250.0" text-anchor="middle" font-size="28">just a string</text></g>
@@ -730,7 +770,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
   <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
   <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span.badge.hot</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
+  <g class="ax-node ax-mono ax-old ax-swap-out" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text><path class="ax-swap-strike" d="M429.9,214.0 L630.1,214.0"/></g>
   <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="reloadjs"><rect x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><text class="ax-label" x="1535.0" y="702.2" text-anchor="middle" font-size="34">reload.js</text></g>
@@ -740,6 +780,8 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-mark ax-m-q ax-old" data-ax="m-gap"><circle class="ax-glyph" cx="1250.0" cy="176.0" r="17"/><text class="ax-q" x="1250.0" y="186.1" text-anchor="middle" font-size="28">?</text></g>
   <text class="ax-note ax-mono ax-old" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28"></text>
   <g class="ax-mark ax-m-cross ax-old" data-ax="m-render"><circle class="ax-glyph" cx="1150.0" cy="212.0" r="17"/><path class="ax-tick" d="M1143.0,205.0 L1157.0,219.0 M1157.0,205.0 L1143.0,219.0"/></g>
+  <g class="ax-swap-cue" data-swap="loader-swap"><text class="ax-swap-cue-t ax-mono" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text><path class="ax-swap-strike" d="M429.9,214.0 L630.1,214.0"/></g>
+  <g class="ax-flow-nums ax-f-fwd" data-flow="save-trload"><g class="ax-hopnum" transform="translate(195.0 374.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">1</text></g><g class="ax-hopnum" transform="translate(667.2 350.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">2</text></g><g class="ax-hopnum ax-hopmsg" transform="translate(785.8 338.0)"><rect x="-62.2" y="-23.0" width="124.3" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">:line</text></g><g class="ax-hopnum" transform="translate(860.0 391.2)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">3</text></g></g>
 </svg></div>
 </section>
 
@@ -771,12 +813,8 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
   <g class="ax-edge ax-k-gap ax-old" data-ax="e-gap"><path class="ax-glow" d="M1430.0,176.0 L1006.0,176.0"/><path class="ax-line" d="M1430.0,176.0 L1006.0,176.0"/><path class="ax-head" d="M990.0,176.0 L1009.0,166.5 L1009.0,185.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-dep"><path class="ax-glow" d="M510.0,318.0 L510.0,260.0"/><path class="ax-line" d="M510.0,318.0 L510.0,260.0"/><path class="ax-head" d="M510.0,244.0 L519.5,263.0 L500.5,263.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
@@ -794,7 +832,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
   <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
   <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span.badge.hot</text></g><g class="ax-part ax-row ax-mono ax-new" data-ax="page.p-src"><rect class="ax-hit" x="1439.0" y="149.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="179.5" text-anchor="start" font-size="32">data-src</text></g><g class="ax-part ax-row ax-mono ax-new" data-ax="page.p-name"><rect class="ax-hit" x="1439.0" y="193.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="223.5" text-anchor="start" font-size="32">data-name</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
   <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="reloadjs"><rect x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><text class="ax-label" x="1535.0" y="702.2" text-anchor="middle" font-size="34">reload.js</text></g>
@@ -808,7 +845,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 17 · metadata becomes attributes -->
 <section class="slide">
-  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="6" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 6: metadata becomes attributes (here: dev-body tag-tree, seam, page data-src, page data-name)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-gap" d="M1430.0,176.0 L990.0,176.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-src" x="1436.0" y="146.0" width="302.0" height="44.0" rx="7"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-name" x="1436.0" y="190.0" width="302.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="devbody.d-tag" x="906.0" y="400.0" width="208.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/></svg></div>
+  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="6" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 6: metadata becomes attributes (here: dev-body tag-tree, seam, page data-src, page data-name)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-gap" d="M1430.0,176.0 L990.0,176.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-src" x="1436.0" y="146.0" width="302.0" height="44.0" rx="7"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-name" x="1436.0" y="190.0" width="302.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="devbody.d-tag" x="906.0" y="400.0" width="208.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/></svg></div>
   <h1>🏷 metadata → attributes</h1>
   <pre><code><span class="cm">;; tag-tree walks the assembled page; for every element that carries</span>
 <span class="cm">;; reader metadata, it rebuilds the vector with two attributes added:</span>
@@ -836,11 +873,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-dep"><path class="ax-glow" d="M510.0,318.0 L510.0,260.0"/><path class="ax-line" d="M510.0,318.0 L510.0,260.0"/><path class="ax-head" d="M510.0,244.0 L519.5,263.0 L500.5,263.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
@@ -865,7 +898,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
   <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
   <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span.badge.hot</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-src"><rect class="ax-hit" x="1439.0" y="149.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="179.5" text-anchor="start" font-size="32">data-src</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-name"><rect class="ax-hit" x="1439.0" y="193.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="223.5" text-anchor="start" font-size="32">data-name</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
   <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text><g class="ax-part ax-row ax-new" data-ax="hub.h-disp"><rect class="ax-hit" x="569.0" y="675.0" width="202.0" height="146.0" rx="7"/><text x="670.0" y="759.5" text-anchor="middle" font-size="32">dispatch</text></g></g>
   <g class="ax-node ax-mono ax-old" data-ax="reloadjs"><rect x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><text class="ax-label" x="1535.0" y="702.2" text-anchor="middle" font-size="34">reload.js</text></g>
@@ -882,7 +914,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 19 · a click that travels -->
 <section class="slide">
-  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="7" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 7: a click that travels (here: inspector.js, /dev/ws → inspector.js, /dev/ws dispatch, code -g)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge axm-lit" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge axm-lit" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="hub.h-disp" x="566.0" y="672.0" width="208.0" height="152.0" rx="7"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-node axm-lit" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/></svg></div>
+  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="7" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 7: a click that travels (here: inspector.js, /dev/ws → inspector.js, /dev/ws dispatch, code -g)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge axm-lit" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge axm-lit" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="hub.h-disp" x="566.0" y="672.0" width="208.0" height="152.0" rx="7"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-node axm-lit" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/></svg></div>
   <h1>🖱 a click that travels</h1>
   <pre><code><span class="bi">function</span> sendOpen(src) {                  <span class="cm">// src is "file:line:col"</span>
   <span class="bi">var</span> p = src.split(<span class="st">':'</span>), col = +p.pop(), line = +p.pop();
@@ -914,11 +946,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-dep"><path class="ax-glow" d="M510.0,318.0 L510.0,260.0"/><path class="ax-line" d="M510.0,318.0 L510.0,260.0"/><path class="ax-head" d="M510.0,244.0 L519.5,263.0 L500.5,263.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
@@ -942,7 +970,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
   <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
   <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span.badge.hot</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-src"><rect class="ax-hit" x="1439.0" y="149.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="179.5" text-anchor="start" font-size="32">data-src</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-name"><rect class="ax-hit" x="1439.0" y="193.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="223.5" text-anchor="start" font-size="32">data-name</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
   <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text><g class="ax-part ax-row ax-old" data-ax="hub.h-disp"><rect class="ax-hit" x="569.0" y="675.0" width="202.0" height="146.0" rx="7"/><text x="670.0" y="759.5" text-anchor="middle" font-size="32">dispatch</text></g></g>
   <g class="ax-node ax-mono ax-old" data-ax="reloadjs"><rect x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><text class="ax-label" x="1535.0" y="702.2" text-anchor="middle" font-size="34">reload.js</text></g>
@@ -958,7 +985,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 21 · what made this -->
 <section class="slide">
-  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="8" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 8: name what made it (here: tr-load! wrap, demo.views)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-wrap" x="1101.5" y="532.0" width="93.4" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/></svg></div>
+  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="8" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 8: name what made it (here: tr-load! wrap, demo.views)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-wrap" x="1101.5" y="532.0" width="93.4" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/></svg></div>
   <h1>🧩 name what made it</h1>
   <pre><code>(<span class="bi">defn</span> instrument-var! [v]                 <span class="cm">; v is a plain view defn</span>
   (<span class="bi">let</span> [orig (or (<span class="kw">::orig</span> (<span class="bi">meta</span> @v)) @v)   <span class="cm">; idempotent across reloads</span>
@@ -988,11 +1015,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-dep"><path class="ax-glow" d="M510.0,318.0 L510.0,260.0"/><path class="ax-line" d="M510.0,318.0 L510.0,260.0"/><path class="ax-head" d="M510.0,244.0 L519.5,263.0 L500.5,263.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
@@ -1024,7 +1047,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
   <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
   <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span.badge.hot</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-src"><rect class="ax-hit" x="1439.0" y="149.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="179.5" text-anchor="start" font-size="32">data-src</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-name"><rect class="ax-hit" x="1439.0" y="193.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="223.5" text-anchor="start" font-size="32">data-name</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
   <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text><g class="ax-part ax-row ax-old" data-ax="hub.h-disp"><rect class="ax-hit" x="569.0" y="675.0" width="202.0" height="146.0" rx="7"/><text x="670.0" y="759.5" text-anchor="middle" font-size="32">dispatch</text></g></g>
   <g class="ax-node ax-mono ax-old" data-ax="reloadjs"><rect x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><text class="ax-label" x="1535.0" y="702.2" text-anchor="middle" font-size="34">reload.js</text></g>
@@ -1042,7 +1064,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 23 · the other direction -->
 <section class="slide">
-  <div class="ax-mini rev" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="9" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 9: your cursor drives the browser (here: tr-load! index, resolve-cursor, Joyride, Joyride → /dev/ws)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><path class="axm-edge" data-ax="e-light" d="M1720.0,780.0 L1720.0,286.0"/><path class="axm-edge axm-lit" data-ax="e-wsjoy" d="M178.0,812.0 L560.0,812.0"/><path class="axm-edge axm-lit" data-ax="e-resolve" d="M780.0,650.0 L1278.1,650.0 L1278.1,576.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-index" x="1222.9" y="532.0" width="110.3" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="joyride" x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/></svg></div>
+  <div class="ax-mini rev" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="9" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 9: your cursor drives the browser (here: tr-load! index, resolve-cursor, Joyride, Joyride → /dev/ws)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><path class="axm-edge" data-ax="e-light" d="M1720.0,780.0 L1720.0,286.0"/><path class="axm-edge axm-lit" data-ax="e-wsjoy" d="M178.0,812.0 L560.0,812.0"/><path class="axm-edge axm-lit" data-ax="e-resolve" d="M780.0,650.0 L1278.1,650.0 L1278.1,576.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-index" x="1222.9" y="532.0" width="110.3" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="joyride" x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/></svg></div>
   <h1>↩ the other direction</h1>
   <pre><code>(<span class="bi">defn</span> resolve-cursor [file line col]      <span class="cm">; → the SAME strings the DOM has</span>
   (<span class="bi">when-let</span> [{<span class="kw">:keys</span> [defns elements]} (<span class="bi">get</span> @view-index file)]
@@ -1068,11 +1090,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-dep"><path class="ax-glow" d="M510.0,318.0 L510.0,260.0"/><path class="ax-line" d="M510.0,318.0 L510.0,260.0"/><path class="ax-head" d="M510.0,244.0 L519.5,263.0 L500.5,263.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
@@ -1103,7 +1121,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
   <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
   <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old ax-changed" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span / article</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-src"><rect class="ax-hit" x="1439.0" y="149.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="179.5" text-anchor="start" font-size="32">data-src</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-name"><rect class="ax-hit" x="1439.0" y="193.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="223.5" text-anchor="start" font-size="32">data-name</text></g><g class="ax-part ax-row ax-mono ax-new" data-ax="page.p-call"><rect class="ax-hit" x="1439.0" y="237.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="267.5" text-anchor="start" font-size="32">data-callsite</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
   <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text><g class="ax-part ax-row ax-old" data-ax="hub.h-disp"><rect class="ax-hit" x="569.0" y="675.0" width="202.0" height="146.0" rx="7"/><text x="670.0" y="759.5" text-anchor="middle" font-size="32">dispatch</text></g></g>
   <g class="ax-node ax-mono ax-old" data-ax="reloadjs"><rect x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><text class="ax-label" x="1535.0" y="702.2" text-anchor="middle" font-size="34">reload.js</text></g>
@@ -1120,7 +1137,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 25 · which call made it -->
 <section class="slide">
-  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="10" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 10: which call made it (here: tr-load! call sites, page data-callsite)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><path class="axm-edge" data-ax="e-wsjoy" d="M178.0,812.0 L560.0,812.0"/><path class="axm-edge" data-ax="e-resolve" d="M780.0,650.0 L1278.1,650.0 L1278.1,576.0"/><path class="axm-edge" data-ax="e-light" d="M1720.0,780.0 L1720.0,286.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-call" x="1436.0" y="234.0" width="302.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-calls" x="757.4" y="532.0" width="194.6" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="joyride" x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/></svg></div>
+  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="10" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 10: which call made it (here: tr-load! call sites, page data-callsite)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><path class="axm-edge" data-ax="e-wsjoy" d="M178.0,812.0 L560.0,812.0"/><path class="axm-edge" data-ax="e-resolve" d="M780.0,650.0 L1278.1,650.0 L1278.1,576.0"/><path class="axm-edge" data-ax="e-light" d="M1720.0,780.0 L1720.0,286.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-call" x="1436.0" y="234.0" width="302.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-calls" x="757.4" y="532.0" width="194.6" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="joyride" x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/></svg></div>
   <h1>🎯 which call made it</h1>
   <pre><code><span class="cm">;; during the load, each call to a view fn is rewritten:</span>
 (recipe-card r)  →  (tag-callsite <span class="st">"demo/views.clj:81:9"</span> (recipe-card r))</code></pre>
@@ -1151,12 +1168,10 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old ax-changed ax-warn" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
   <g class="ax-edge  ax-old ax-changed ax-warn" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
   <g class="ax-edge ax-k-human ax-old ax-changed ax-new" data-ax="e-f5"><path class="ax-glow" d="M1560.0,400.0 L1560.0,302.0"/><path class="ax-line" d="M1560.0,400.0 L1560.0,302.0"/><path class="ax-head" d="M1560.0,286.0 L1569.5,305.0 L1550.5,305.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-dep"><path class="ax-glow" d="M510.0,318.0 L510.0,260.0"/><path class="ax-line" d="M510.0,318.0 L510.0,260.0"/><path class="ax-head" d="M510.0,244.0 L519.5,263.0 L500.5,263.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
@@ -1192,7 +1207,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
   <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old ax-changed ax-warn" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
   <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span / article</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-src"><rect class="ax-hit" x="1439.0" y="149.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="179.5" text-anchor="start" font-size="32">data-src</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-name"><rect class="ax-hit" x="1439.0" y="193.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="223.5" text-anchor="start" font-size="32">data-name</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-call"><rect class="ax-hit" x="1439.0" y="237.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="267.5" text-anchor="start" font-size="32">data-callsite</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
+  <g class="ax-node ax-mono ax-old ax-changed ax-warn" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
   <g class="ax-node ax-old ax-changed ax-new" data-ax="you"><rect x="1500.0" y="400.0" width="120.0" height="64.0" rx="12"/><text class="ax-label" x="1560.0" y="445.0" text-anchor="middle" font-size="36">you</text></g>
   <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text><g class="ax-part ax-row ax-old" data-ax="hub.h-disp"><rect class="ax-hit" x="569.0" y="675.0" width="202.0" height="146.0" rx="7"/><text x="670.0" y="759.5" text-anchor="middle" font-size="32">dispatch</text></g></g>
@@ -1272,11 +1287,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-dep"><path class="ax-glow" d="M510.0,318.0 L510.0,260.0"/><path class="ax-line" d="M510.0,318.0 L510.0,260.0"/><path class="ax-head" d="M510.0,244.0 L519.5,263.0 L500.5,263.0 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
   <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
@@ -1309,7 +1320,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
   <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
   <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span / article</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-src"><rect class="ax-hit" x="1439.0" y="149.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="179.5" text-anchor="start" font-size="32">data-src</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-name"><rect class="ax-hit" x="1439.0" y="193.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="223.5" text-anchor="start" font-size="32">data-name</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-call"><rect class="ax-hit" x="1439.0" y="237.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="267.5" text-anchor="start" font-size="32">data-callsite</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
   <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
   <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text><g class="ax-part ax-row ax-old" data-ax="hub.h-disp"><rect class="ax-hit" x="569.0" y="675.0" width="202.0" height="146.0" rx="7"/><text x="670.0" y="759.5" text-anchor="middle" font-size="32">dispatch</text></g></g>
   <g class="ax-node ax-mono ax-old" data-ax="reloadjs"><rect x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><text class="ax-label" x="1535.0" y="702.2" text-anchor="middle" font-size="34">reload.js</text></g>
@@ -1362,8 +1372,8 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 </section>
 
 <div class="num" id="num"></div>
-<script>/* diagram.js — plays the `flow`s of ```diagram``` figures (see diagram.py) and draws the
-   speaker's progress line under them. Inlined into slides.html by build_slides.py; the
+<script>/* diagram.js — plays the `flow`s and `swap`s of ```diagram``` figures (see diagram.py) and
+   draws the speaker's progress line under them. Inlined into slides.html by build_slides.py; the
    template calls axFlows.enter(slide) from show() and hands it the a and p keys
    (axFlows.play / axFlows.back). The deck/PDF never runs it: there the figure is static
    and diagram.css shows the numbered hops instead.
@@ -1377,12 +1387,24 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
    data-pts is the edge's own route in travel order, data-ms the hop's time,
    data-smin/-smax/-off the stretch beside the wire where its message rides.
 
+   A state's animations are its flows and its swaps, in the order written: one per a, one
+   segment of the line each ("flow" below means either, where it is about keys and stops).
+   A swap replaces parts: before it has played (on arrival, or p back to it) its out parts
+   are on screen and its in parts are not; playing it strikes an out box's label, fades the
+   out parts (a solid wire retracts into the end that stays) and draws the in wires from
+   their source (a dashed one fades in); after it, what rests is the end state. The markup
+   itself is that end state (print, the deck, flow-off): the script only adds the "before",
+   as a class, and the inline styles of the frames in between. A flow's station (a row or
+   cell as a hop) lights that part for a beat while the token is inside its box.
+
    Navigation never plays a flow: → / Space / PageDown / click always go to the next
    slide. On a slide with flows the template passes two keys on (either case, no Ctrl /
    Cmd / Alt, no auto-repeat):
      a   nothing playing: play the flow at the cursor. Playing: restart that flow from its
          start — while its token travels. In the 0.9 s hold after it has gone in, the flow
          looks done and counts as done: a plays the next flow (the last one: replays it).
+         A swap never rewinds: a while it plays finishes it at once (its end state, the
+         cursor after it), and the next a plays on.
          A second a within 250 ms of the last one is a key bounce or double tap: ignored.
      p   one stop back. Playing: stop, back to the start of that flow (nothing lit). Idle
          at the start of flow k > 1: to the start of flow k-1. Idle after the last flow:
@@ -1390,8 +1412,11 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
          again" is p, then a (p also clears the bounce guard, so that a always counts).
    The stops are the start of each flow plus "after the last". Arriving on a slide (any
    direction, a #N jump, a reload) puts the cursor at flow 1 with nothing playing and
-   nothing lit; leaving stops everything. A flow that finishes moves the cursor to the
-   next one; after the last one it stays on the last, so a replays it.
+   nothing lit — except arriving back from a later slide on one with a swap (not
+   flow-loop): the talk has moved past it, so the cursor is after the last swap, its end
+   state rests on screen and nothing plays by itself. Leaving stops everything. A flow
+   that finishes moves the cursor to the next one; after the last one it stays on the
+   last, so a replays it.
 
    Per slide, a class on the figure (a {.class} line before the fence) picks:
      flow-keys            only a and p play (flow-step is the same: the talk's old name)
@@ -1405,6 +1430,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
    Reduced motion: nothing moves. a shows the cursor flow's numbered hops (the print
    layer) and moves the line one whole segment on; p hides them and steps back one stop.
+   A swap is applied at once on a (its end state), and p puts the "before" back.
    flow-auto shows flow 1's numbers on arrival (its "autoplay"; the line one segment on).
    flow-loop shows every flow's numbers at once on arrival (the line full); its first a
    starts over at flow 1, its first p hides them and steps back one stop.
@@ -1424,6 +1450,11 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
       GAP = 600,     // flow-loop: between two flows of one slide
       REST = 2000,   // flow-loop: the static picture between rounds
       BOUNCE = 250;  // a second a this soon after the last is a key bounce or double tap
+  // a swap's phases, as fractions of its time (data-ms): the struck label, the out parts going,
+  // the in wires drawing (their heads and words last). They overlap: one replaces the other.
+  // The strike is drawn early and stands whole for a while before the box goes: it has to read
+  // from the back of the hall.
+  var SW = { strike: [0, .18], outBox: [.38, .72], outWire: [.3, .68], inWire: [.5, .93], inHead: [.88, .97], inWords: [.75, .97] };
   var KINDS = ['fwd', 'rev', 'warn'];
   var mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   var S = null, raf = 0, timer = 0, frozen = null;
@@ -1438,8 +1469,15 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     var svg = g.ownerSVGElement, id = g.getAttribute('data-flow');
     var kind = (/ax-f-(\w+)/.exec(g.getAttribute('class')) || [0, 'fwd'])[1];
     var under = sel(svg, 'ax-flow-under', id), glows = under ? under.querySelectorAll('.ax-hglow') : [];
-    var t = PRE, prev = null;
+    var t = PRE, prev = null, gi = 0;
     var hops = [].map.call(g.querySelectorAll('.ax-hop'), function (h, j) {
+      var part = h.getAttribute('data-part');
+      if (part) {                                       // a station: a beat inside the box, that part lit
+        var st = { part: svg.querySelector('[data-ax="' + part + '"]'), ms: +h.getAttribute('data-ms'), door: j ? 0 : PRE,
+                   edges: [], pill: null, mp: null, glow: null };
+        st.t0 = t; st.t1 = t + st.ms; t = st.t1;
+        return st;
+      }
       var pts = h.getAttribute('data-pts').split(' ').map(function (p) { return p.split(',').map(Number); });
       var cum = [0];
       for (var k = 1; k < pts.length; k++) cum.push(cum[k - 1] + Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]));
@@ -1451,7 +1489,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
         pill: pid ? svg.querySelector('.ax-pill[data-ax="' + pid + '"]') : null,   // the static twin
         mp: mp, smin: +h.getAttribute('data-smin') || 0, smax: +h.getAttribute('data-smax') || 0,
         off: mp ? nums(h, 'data-off') : [0, 0],
-        glow: glows[j] || null,
+        glow: glows[gi++] || null,                      // a station has no glow of its own
         // the next hop leaves from another side of the box: hide the token while it is "inside"
         jump: prev ? Math.hypot(pts[0][0] - prev.pts[prev.pts.length - 1][0], pts[0][1] - prev.pts[prev.pts.length - 1][1]) > 30 : false
       };
@@ -1464,6 +1502,40 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     return { g: g, svg: svg, id: id, kind: kind, hops: hops, token: g.querySelector('.ax-token'),
              lands: lands ? svg.querySelector('[data-ax="' + lands + '"]') : null,   // where the effect shows
              nums: sel(svg, 'ax-flow-nums', id), end: t, dur: t + HOLD };
+  }
+
+  // a path's length, from its d (the generator writes M x,y L x,y …): no layout needed
+  function pathLen(p) {
+    var v = (p.getAttribute('d') || '').replace(/[ML]/g, ' ').trim().split(/\s+/).map(function (xy) { return xy.split(',').map(Number); });
+    for (var L = 0, k = 1; k < v.length; k++) L += Math.hypot(v[k][0] - v[k - 1][0], v[k][1] - v[k - 1][1]);
+    return L;
+  }
+
+  function parseSwap(g) {
+    var svg = g.ownerSVGElement, ms = +g.getAttribute('data-ms'), parts = [];
+    [['data-out', 'out'], ['data-in', 'in']].forEach(function (r) {
+      (g.getAttribute(r[0]) || '').split(' ').filter(Boolean).forEach(function (spec) {
+        var id = spec.split(':')[0], keep = spec.split(':')[1] || 'a';
+        [].forEach.call(svg.querySelectorAll('.ax-swap-' + r[1] + '[data-ax="' + id + '"]'), function (el) {
+          var c = el.classList, p = { el: el, role: r[1], kind: 'part', paths: [], heads: [], strike: null };
+          if (c.contains('ax-elab')) p.kind = 'words';
+          else if (c.contains('ax-edge')) {
+            p.paths = [].slice.call(el.querySelectorAll('.ax-halo, .ax-glow, .ax-line'));
+            p.heads = [].slice.call(el.querySelectorAll('.ax-head'));
+            var line = el.querySelector('.ax-line'), dashed = line && getComputedStyle(line).strokeDasharray;
+            // a solid wire retracts (out) or draws (in); a dashed one, or one losing both ends, fades
+            p.kind = line && (!dashed || dashed === 'none') && keep !== '-' ? 'wire' : 'part';
+            p.keep = keep; p.D = line ? pathLen(line) + 2 : 0;
+          } else if (c.contains('ax-node')) {
+            p.kind = 'box'; p.strike = el.querySelector('.ax-swap-strike');
+            if (p.strike) p.SD = pathLen(p.strike) + 2;
+          }
+          parts.push(p);
+        });
+      });
+    });
+    return { swap: true, g: g, svg: svg, id: g.getAttribute('data-swap'), kind: 'swap', parts: parts, ms: ms,
+             hops: [], end: ms, dur: ms, state: null };
   }
 
   function point(h, s) {
@@ -1488,14 +1560,14 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   function frame(t) {
     if (!S || !S.run) return null;
     var u = t - S.run.at;
-    return u >= 0 && u < S.flows[S.run.j].dur ? { j: S.run.j, u: u } : null;
+    return u >= 0 && u < S.anims[S.run.j].dur ? { j: S.run.j, u: u } : null;
   }
   // runs that have ended by t move the cursor on. flow-auto's autoplay is its first flow
   // only; flow-loop chains the next one from the end of the last (not from when a tick
   // noticed it), so a round never drifts
   function advance(t) {
-    while (S && S.run && t >= S.run.at + S.flows[S.run.j].dur) {
-      var j = S.run.j, end = S.run.at + S.flows[j].dur, last = j + 1 === S.flows.length;
+    while (S && S.run && t >= S.run.at + S.anims[S.run.j].dur) {
+      var j = S.run.j, end = S.run.at + S.anims[j].dur, last = j + 1 === S.anims.length;
       S.stop = j + 1; S.run = null;
       if (!S.auto || S.mode !== 'loop') { S.auto = false; break; }
       S.run = { j: last ? 0 : j + 1, at: end + (last ? REST : GAP) };
@@ -1504,7 +1576,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   // how far along the line (ms of flow time) the clock is: inside a run, or at the cursor's stop
   function along(t) {
     var r = S.run;
-    if (r && t >= r.at) return S.line.B[r.j] + Math.min(t - r.at, S.flows[r.j].dur);
+    if (r && t >= r.at) return S.line.B[r.j] + Math.min(t - r.at, S.anims[r.j].dur);
     return S.line.B[S.stop];
   }
 
@@ -1522,9 +1594,10 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     if (active) {
       for (var j = 0; j < hops.length; j++) if (u >= hops[j].t0 - hops[j].door) cur = j;
       var h = hops[cur];
-      if (u < h.t0) {                                   // waiting at the door
+      if (h.part) hidden = true;                        // a station: the token is inside the box
+      else if (u < h.t0) {                              // waiting at the door (hidden: where it is does not matter)
         s = 0; hidden = h.jump && u < h.t0 - DWELL / 2;
-        where = hidden ? point(hops[cur - 1], hops[cur - 1].len) : point(h, 0);
+        where = point(h, 0);
       } else {
         s = ease(Math.min(1, (u - h.t0) / h.ms)) * h.len; where = point(h, s);
       }
@@ -1535,6 +1608,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     }
     hops.forEach(function (h, j) {
       var now_ = active && j === cur && u < h.t1, done = active && (j < cur || (j === cur && u >= h.t1));
+      if (h.part) { if (now_ || done) acc.parts.push([h.part, f.kind, now_]); return; }   // lit now, or passed
       cls(h.glow, 'ax-lit', now_);
       if (now_) acc.lit.push([h.edges, f.kind]); else if (done) acc.trail.push([h.edges, f.kind]);
       if (h.mp) {
@@ -1549,6 +1623,51 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     if (active && !hidden) place(f.token, where);
   }
 
+  // ---- a swap. At rest it is "before" (class ax-swap-pre on its parts: the out parts show, the in
+  // parts don't) or after (the markup as it is: the end state). Running, its parts carry
+  // ax-swap-run (all of them show) and the frame's inline styles: opacity, and a one-dash
+  // pattern (D D) whose offset retracts or draws a solid wire. Styles only change when needed.
+  function phase(u, ms, w) { return ease(Math.max(0, Math.min(1, (u / ms - w[0]) / (w[1] - w[0])))); }
+  function css(el, prop, v) { if (el.style[prop] !== v) el.style[prop] = v; }
+  // f > 0: the dash ends f·D short of the path's end; f < 0: it starts |f|·D in (D: the length + 2)
+  function dash(p, D, f) { css(p, 'strokeDasharray', D.toFixed(1) + ' ' + D.toFixed(1)); css(p, 'strokeDashoffset', (f * D).toFixed(1)); }
+  function bare(p) {
+    css(p.el, 'opacity', '');
+    p.paths.concat(p.strike ? [p.strike] : []).forEach(function (q) { css(q, 'strokeDasharray', ''); css(q, 'strokeDashoffset', ''); });
+    p.heads.forEach(function (h) { css(h, 'opacity', ''); });
+  }
+  function swapRest(sw, pre) {
+    var st = pre ? 'pre' : 'post';
+    if (sw.state === st) return;
+    sw.parts.forEach(function (p) { bare(p); cls(p.el, 'ax-swap-run', false); cls(p.el, 'ax-swap-pre', pre); });
+    sw.state = st;
+  }
+  function swapAt(sw, u) {
+    if (sw.state !== 'run') sw.parts.forEach(function (p) { cls(p.el, 'ax-swap-pre', false); cls(p.el, 'ax-swap-run', true); });
+    sw.state = 'run';
+    var ms = sw.ms, cap = function (x) { return Math.max(0, Math.min(1, x)).toFixed(3); };
+    sw.parts.forEach(function (p) {
+      if (p.role === 'out') {
+        if (p.kind === 'wire') {                        // retract into the end that stays: from the tip (a), or from the source (b)
+          var q = phase(u, ms, SW.outWire);
+          p.paths.forEach(function (path) { dash(path, p.D, p.keep === 'b' ? -q : q); });
+          // every retiring arrowhead goes early, together, whichever end stays: none is left pointing at nothing
+          p.heads.forEach(function (h) { css(h, 'opacity', cap(1 - q * 4)); });
+        } else {
+          css(p.el, 'opacity', cap(1 - phase(u, ms, p.kind === 'box' ? SW.outBox : SW.outWire)));
+          if (p.strike) dash(p.strike, p.SD, 1 - phase(u, ms, SW.strike));   // the struck label, left to right
+        }
+      } else if (p.kind === 'wire') {                   // draw from its source
+        p.paths.forEach(function (path) { dash(path, p.D, 1 - phase(u, ms, SW.inWire)); });
+        p.heads.forEach(function (h) { css(h, 'opacity', cap(phase(u, ms, SW.inHead))); });
+      } else css(p.el, 'opacity', cap(phase(u, ms, p.kind === 'words' ? SW.inWords : SW.inWire)));
+    });
+  }
+  function unswap(sw) {                                 // back to the markup: the end state, no classes, no styles
+    sw.parts.forEach(function (p) { bare(p); cls(p.el, 'ax-swap-pre', false); cls(p.el, 'ax-swap-run', false); });
+    sw.state = null;
+  }
+
   // the progress line: the fill to x (0..1), each boundary dot filled once reached
   function paintLine(ms) {
     var L = S.line;
@@ -1560,8 +1679,13 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
   function render(t) {
     if (!S || S.mode === 'off') return;
-    var fr = frame(t), acc = { lit: [], trail: [], off: [], land: [] };
-    S.flows.forEach(function (f, j) { paint(f, fr && fr.j === j ? fr.u : null, acc); });
+    var fr = frame(t), acc = { lit: [], trail: [], off: [], land: [], parts: [] };
+    S.anims.forEach(function (f, j) {
+      var u = fr && fr.j === j ? fr.u : null;
+      if (!f.swap) paint(f, u, acc);
+      else if (u !== null) swapAt(f, u);
+      else swapRest(f, !(fr ? j < fr.j : j < S.stop));  // played: an earlier one than the one playing, or before the cursor
+    });
     S.edges.forEach(function (e) {                      // an edge can serve several hops: decide once
       var lit = null, trail = null;
       acc.lit.forEach(function (l) { if (l[0].indexOf(e) >= 0) lit = l[1]; });
@@ -1574,6 +1698,10 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     S.lands.forEach(function (el) {
       var k = null; acc.land.forEach(function (l) { if (l[0][0] === el) k = l[1]; });
       cls(el, 'ax-landed', !!k); KINDS.forEach(function (kk) { cls(el, 'ax-lf-' + kk, k === kk); });
+    });
+    S.parts.forEach(function (el) {                     // stations: the one the token is in, and the ones it passed
+      var k = null, now_ = false; acc.parts.forEach(function (l) { if (l[0] === el) { k = l[1]; now_ = l[2]; } });
+      cls(el, 'ax-lit', !!k && now_); cls(el, 'ax-trail', !!k && !now_); KINDS.forEach(function (kk) { cls(el, 'ax-lf-' + kk, k === kk); });
     });
     paintLine(along(t));
     S.playing = !!fr;
@@ -1600,7 +1728,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   // reduced motion: which flow's numbered hops show — k, 'all' (the static overview) or -1
   function reveal(k) {
     S.svgs.forEach(function (svg) { cls(svg, 'ax-static', k === 'all'); });
-    S.flows.forEach(function (f, j) { cls(f.nums, 'ax-shown', j === k); });
+    S.anims.forEach(function (f, j) { cls(f.nums, 'ax-shown', j === k); });
   }
 
   function stop() {
@@ -1609,12 +1737,12 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     if (S) {
       S.run = null; S.auto = false; S.stop = 0; render(0);
       S.svgs.forEach(function (svg) { cls(svg, 'ax-static', false); });
-      S.flows.forEach(function (f) { cls(f.nums, 'ax-shown', false); });
+      S.anims.forEach(function (f) { cls(f.nums, 'ax-shown', false); if (f.swap) unswap(f); });
     }
   }
 
   // the line's DOM, in the figure (outside the SVG), built once per slide: a fill and one
-  // dot per boundary between two flows. Placement and look: diagram.css.
+  // dot per boundary between two animations. Placement and look: diagram.css.
   function line(fig, flows) {
     var B = [0];
     flows.forEach(function (f, j) { B.push(B[j] + f.dur); });
@@ -1636,18 +1764,20 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
   function load(slide) {
     var svgs = [].slice.call(slide.querySelectorAll('svg.ax'));
-    var flows = [];
-    svgs.forEach(function (svg) { [].forEach.call(svg.querySelectorAll('.ax-flow'), function (g) { flows.push(parseFlow(g)); }); });
+    var flows = [];                                     // the animations, in the order written: flows and swaps
+    svgs.forEach(function (svg) { [].forEach.call(svg.querySelectorAll('.ax-flow, .ax-swap'), function (g) {
+      flows.push(g.classList.contains('ax-swap') ? parseSwap(g) : parseFlow(g)); }); });
     if (!flows.length) return null;
     var fig = svgs[0].parentNode, fc = fig.classList;
     var mode = fc.contains('flow-keys') || fc.contains('flow-step') ? 'keys' : fc.contains('flow-loop') ? 'loop' : fc.contains('flow-off') ? 'off' : 'auto';
-    var edges = [], pills = [], lands = [];
+    var edges = [], pills = [], lands = [], parts = [];
     flows.forEach(function (f) { if (f.lands && lands.indexOf(f.lands) < 0) lands.push(f.lands); });
     flows.forEach(function (f) { f.hops.forEach(function (h) {
       h.edges.forEach(function (e) { if (edges.indexOf(e) < 0) edges.push(e); });
       if (h.pill && pills.indexOf(h.pill) < 0) pills.push(h.pill);
+      if (h.part && parts.indexOf(h.part) < 0) parts.push(h.part);
     }); });
-    return { slide: slide, svgs: svgs, flows: flows, edges: edges, pills: pills, lands: lands, mode: mode,
+    return { slide: slide, svgs: svgs, anims: flows, edges: edges, pills: pills, lands: lands, parts: parts, mode: mode,
              line: mode === 'off' ? null : line(fig, flows),
              stop: 0, run: null, auto: false, lastA: -Infinity, shown: -1, playing: false };
   }
@@ -1655,20 +1785,26 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   function mine(slide) { return !!S && S.slide === slide && S.mode !== 'off'; }
 
   var api = {
-    /* a slide was shown (also on re-entry and on a #N jump): reset, then maybe schedule */
-    enter: function (slide) {
+    /* a slide was shown (also on re-entry and on a #N jump): reset, then maybe schedule.
+       back: it was reached from a later slide (←, or a jump back) */
+    enter: function (slide, back) {
       stop();
       S = load(slide);
       if (!S || S.mode === 'off') return;
+      var sw = -1;
+      S.anims.forEach(function (f, j) { if (f.swap) sw = j; });
+      if (back && sw >= 0 && S.mode !== 'loop') {       // back from later in the talk: its swaps have been seen
+        S.stop = sw + 1; render(now()); return;         // the cursor after the last one, nothing plays by itself
+      }
       if (reduced()) {                                  // no motion: the print look instead
         if (S.mode === 'auto') { S.shown = 0; reveal(0); S.stop = 1; }                          // "autoplays" flow 1
-        else if (S.mode === 'loop') { S.shown = 'all'; reveal('all'); S.stop = S.flows.length; } // all of them, at rest
+        else if (S.mode === 'loop') { S.shown = 'all'; reveal('all'); S.stop = S.anims.length; } // all of them, at rest
         render(now()); return;
       }
       if (S.mode !== 'keys') { S.auto = true; S.run = { j: 0, at: now() + START }; }   // flow-auto / flow-loop
       tick();
     },
-    /* the a key: play the flow at the cursor, or restart the one travelling. true = handled */
+    /* the a key: play the flow at the cursor, restart the one travelling, or finish a swap. true = handled */
     play: function (slide) {
       if (!mine(slide)) return false;
       var t = now();
@@ -1676,14 +1812,16 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
       S.lastA = t;
       if (frozen === null) advance(t);
       S.auto = false;                                   // a key takes over from autoplay
-      var n = S.flows.length;
+      var n = S.anims.length;
       if (reduced()) {                                  // reveal the cursor flow's numbers, one whole segment on
         if (S.shown === 'all') S.stop = 0;              // from flow-loop's overview: start over at flow 1
         var k = Math.min(S.stop, n - 1);
         S.shown = k; reveal(k); S.stop = k + 1; render(t); return true;
       }
       var fr = frame(t);
-      if (fr && fr.u >= S.flows[fr.j].end) { S.stop = fr.j + 1; fr = null; }   // the hold: its token has gone in, it is done
+      // a swap never rewinds: a while it plays finishes it at once (its end state), and the next a plays on
+      if (fr && S.anims[fr.j].swap) { S.stop = fr.j + 1; S.run = null; tick(); return true; }
+      if (fr && fr.u >= S.anims[fr.j].end) { S.stop = fr.j + 1; fr = null; }   // the hold: its token has gone in, it is done
       S.run = { j: fr ? fr.j : Math.min(S.stop, n - 1), at: t };
       tick(); return true;
     },
@@ -1717,12 +1855,13 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     release: function () { frozen = null; if (S && S.mode !== 'off') { S.run = null; render(now()); } },
     info: function () {
       if (!S) return null;
-      var t = now(), n = S.flows.length;
+      var t = now(), n = S.anims.length;
       return { mode: S.mode, playing: S.playing, stop: S.stop, cursor: Math.min(S.stop, n - 1), auto: S.auto,
         running: S.run ? S.run.j : null, since: S.run ? t - S.run.at : null, shown: S.shown,
         line: S.line ? { B: S.line.B, total: S.line.total, at: S.mode === 'off' ? 0 : along(t) / S.line.total } : null,
-        flows: S.flows.map(function (f) { return { id: f.id, kind: f.kind, hops: f.hops.length, dur: f.dur, end: f.end,
-          hopTimes: f.hops.map(function (h) { return [h.t0, h.t1]; }) }; }) };
+        swaps: S.anims.filter(function (f) { return f.swap; }).map(function (f) { return { id: f.id, state: f.state }; }),
+        flows: S.anims.map(function (f) { return { id: f.id, kind: f.kind, hops: f.hops.length, dur: f.dur, end: f.end,
+          hopTimes: f.hops.map(function (h) { return [h.t0, h.t1]; }) }; }) };   // every animation (a swap: kind 'swap', no hops)
     }
   };
   window.axFlows = api;
@@ -1737,7 +1876,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
     slides.forEach(function (s, j) { s.classList.toggle('on', j === i); });
     if (!(i !== n && i === from)) {                      // → on the last slide, ← on the first: stay put, don't restart
       slides[i].classList.toggle('fwd', from >= 0 && i === from + 1);   // {.pop} plays on forward moves only
-      if (window.axFlows) axFlows.enter(slides[i]);      // a map's flows reset on every arrival
+      if (window.axFlows) axFlows.enter(slides[i], from > i);   // a map's flows reset on every arrival (back: its swaps seen)
     }
     document.getElementById('num').textContent = (i + 1) + ' / ' + slides.length;
     if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));

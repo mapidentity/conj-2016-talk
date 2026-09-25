@@ -495,12 +495,15 @@ The position **is** part of the value. {.rule}
 <!-- slide 14 · the map, state 5 -->
 ## 🗺 tr-load! keeps the lines
 
+{.flow-step}
 ```diagram arch 5
 ```
 <!-- /slide -->
 
 > New: `tr-load!` (read → eval); the watcher now loads the views
 > through it.
+
+> `a` swaps load-file for tr-load!, `a` plays save-trload, → next slide.
 
 <!-- page "tr-load! — load, but keep the lines" @12:26
   slide 15
@@ -1422,11 +1425,13 @@ edge e-get    page:l=82 -> httpkit:r         "GET /"  t=.5
 edge e-html   views:r -> page:l=212          "HTML"   t=.648  below  4-5:'just a string'
 
 # ---- §1 the manual loop: save, a typed load-file, F5 --------------------------------
-node loader  "load-file"  420,180  220x64   mono  @2  12-12:require
+# load-file: until tr-load! replaces it (the swap in state 5); back in 11 as the second loader
+# (Calva's Load buffer, through nREPL: it gets the buffer, not the file); in 12 prod's `require`
+node loader  "load-file"  420,180  220x64   mono  @2-4,11,12  12-12:require  +11-11:warn
 edge e-save   buffer:r -> src:l=350          "save"   @2  +2-2:human
-edge e-read   src:r=212 -> loader:l                   @2
-edge e-repl   nrepl:b -> loader:t                     @2  +11-11:warn
-edge e-def    loader:r -> views:l            ""       mono  @2  2-2:def  3:''  11-11:def  +11-11:warn
+edge e-read   src:r=212 -> loader:l                   @2-4,12
+edge e-repl   nrepl:b -> loader:t                     @2-4,11  +11-11:warn
+edge e-def    loader:r -> views:l            ""       mono  @2-4,11,12  2-2:def  3:''  11-11:def  +11-11:warn
 node you     "you"        1500,400 120x64   @2,11  +11-11:new
 edge e-f5     you:t -> page:b=1560           "F5"     human  left  @2,11  +11-11:new
 edge e-gap    page:l=176 -> views:r=176      ""       gap  @2-6
@@ -1435,7 +1440,7 @@ mark m-gap    q ""        1250,176  @2-6
 # ---- §1 hot reload: the watcher, one socket, the browser side, the render boundary ---
 node watcher "watcher"    420,318  180x64   @3
 edge e-poll   src:r=350 -> watcher:l                  @3
-edge e-dep    watcher:t=510 -> loader:b=510           @3
+edge e-dep    watcher:t=510 -> loader:b=510           @3-4
 node hub     "/dev/ws"    560,620  220x212  mono  @3
   row h-disp "dispatch"   @7
 edge e-notify watcher:b=580 -> hub:t=580              @3
@@ -1485,10 +1490,13 @@ edge e-light  overlay:t=1720 -> page:b=1720   @9
 key k-fwd fwd "page → code"  1100,106  @13
 key k-rev rev "code → page"  1100,150  @13
 
-# ---- message flows: a bare @K is state K only; on a {.flow-step} slide, a plays the next flow, p steps back ----
+# ---- animations: flows and swaps, a bare @K is state K only; on a {.flow-step} slide, a plays the next one, p steps back ----
 # §1: the watcher loads first (dependency order); only after every load succeeded does it send "reload"
 flow save-load @3                     : e-save, e-poll, e-dep, e-def
 flow save-reload @3 lands=page        : e-notify, e-wsreload "reload", e-reloadpage, e-get, e-call, e-html
+# §4: tr-load! takes over from load-file (state 5 arrives with the old loader still wired), then a save takes the new path
+swap loader-swap @5                   : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-deftr
+flow save-trload @5 lands=views       : e-save, e-poll, e-views, trload.c-read, trload.c-eval, e-deftr ":line"
 flow click-open @7 lands=buffer       : e-click, e-wsinsp< "open", e-codeg
 flow cursor rev @9 lands=page.p-el    : e-wsjoy "cursor", e-resolve, e-resolve<, e-wsinsp "highlight", e-light
 flow calva-load warn @11 lands=views.v-main : e-eval "load-file", e-repl, e-def

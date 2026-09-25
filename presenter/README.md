@@ -26,8 +26,8 @@ Edit those; never the deck.
   architecture diagram, written once in the run-sheet as a `<!-- diagram NAME · note -->`
   block and shown state by state on slides. `diagram.py` parses the DSL and draws
   each state (and each minimap) as SVG, `diagram.css` is its look, and `diagram.js`
-  plays its message flows in `slides.html` (on the `a` / `p` keys) and draws the
-  speaker's progress line under them. Both builders inline the CSS, and
+  plays its message flows and swaps in `slides.html` (on the `a` / `p` keys) and
+  draws the speaker's progress line under them. Both builders inline the CSS, and
   `build_slides.py` also inlines the JS, even when the run-sheet has no diagram.
   See "Diagrams" below, and **`DIAGRAM.md`** for the DSL reference.
 - **`highlight.py`** — the build-time syntax highlighter (Clojure, JS, bash, HTML
@@ -201,11 +201,15 @@ option, is **`DIAGRAM.md`**. In short:
 canvas 1760x870
 step 1 "a webserver, a REPL, an editor"   # a state; the caption is its heading and aria-label
 step 3 "hot reload"
+step 5 "tr-load! keeps the lines"
 region jvm lane "JVM" 380,16 1020x846
 …                                    # the other regions, nodes and edges
 node watcher "watcher" 420,318 180x64 @3          # @3: on screen from state 3 on
 edge e-poll src:r=350 -> watcher:l @3
 flow save-load @3 : e-save, e-poll, e-dep, e-def
+# state 5 arrives with load-file still wired; the first a retires it and draws tr-load!'s wires
+# (loader, e-read, … are defined in the elided lines, with ranges that end at 4 or start at 5)
+swap loader-swap @5 : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-deftr
 ```
 <!-- /diagram -->
 ````
@@ -258,9 +262,20 @@ flow save-load @3 : e-save, e-poll, e-dep, e-def
     the cursor goes back to the start of the flow before (after the last flow: to
     the start of the last one).
 
-  Every arrival puts the cursor on flow 1 with nothing lit. A finished flow moves it
+  Every arrival puts the cursor on flow 1 with nothing lit (arriving back on a slide
+  with a swap from a later one: after the swap, see below). A finished flow moves it
   on; after the last one it stays there, so `a` replays it. To show a flow again:
   `p`, then `a`.
+
+  A **swap** (state 5: tr-load! takes over from load-file) is played by the same keys,
+  in its turn among the state's flows: the slide arrives with the old parts still
+  there, `a` strikes and retires them while the new wires draw in (1.8 s), and `p`
+  puts the old picture back. An `a` while it plays finishes it at once (a swap never
+  rewinds). Arriving back from a later slide shows its end state. Print, the deck and
+  minimaps show the end state too; print and the deck keep the retired box's label,
+  struck through, where it was. A flow can also pass through a
+  box's rows or cells (`trload.c-read`): each lights for a beat. Details: `DIAGRAM.md`,
+  "Flows" and "Swaps".
 
   On stage: the keys reach the slides only while the page has focus — after the
   address bar, press F6 (a click would also advance). Reduced motion must be off
@@ -289,7 +304,10 @@ flow save-load @3 : e-save, e-poll, e-dep, e-def
   arrival, and `{.flow-loop}` all of them.
 - **Build checks.** Errors stop the build:
   - unknown ids;
-  - a flow or `lands=` that is not on screen in its state;
+  - a flow or `lands=` that is not on screen in its state (at its turn among the
+    state's flows and swaps);
+  - a swap whose parts break its rules (on screen before it, not after, or the other
+    way round for the parts it brings in), or that would leave a wire hanging;
   - a fence naming a diagram or state that doesn't exist;
   - a non-empty fence body;
   - two minimaps on one slide;
