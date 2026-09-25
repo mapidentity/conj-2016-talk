@@ -114,11 +114,10 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 -->
 
 <!-- slide 1 · title -->
-# Where Did This `<div>` Come From?
+# ++Where Did This `<div>` Come From?++
 
-Patrick de Kruif · Clojure/Conj 2026 {.sub}
+## Patrick de Kruif · Clojure/Conj 2026
 
-“Creators need an immediate connection to what they make.” — Bret Victor {.sub}
 <!-- /slide -->
 
 **[SLIDE 1: title]** "Hello. My name is Patrick. I’m a freelance software developer and consultant from the Netherlands, and a lot of my work is building web applications in Clojure."
@@ -228,8 +227,7 @@ Patrick de Kruif · Clojure/Conj 2026 {.sub}
 ```
 <!-- /slide -->
 
-> New: the manual loop — save, a typed `(load-file …)`, F5 by hand —
-> and the amber ? from the page back to the views: no way back.
+> New: the manual loop — save, a typed `(load-file …)`, F5 by hand.
 
 > `a` plays three-hops, → next slide.
 
@@ -389,8 +387,9 @@ ws.onmessage = function (e) {
 ```
 <!-- /slide -->
 
-> New: the page's `span.badge.hot` row, and ✕ on the HTML wire —
-> *just a string*: the structure is gone.
+> New: the page's `span.badge.hot` row, ✕ on the HTML wire —
+> *just a string*: the structure is gone — and the amber ? from the page
+> back to the views: no way back.
 
 > `a` plays just-a-string, → next slide.
 
@@ -586,8 +585,7 @@ re-run this at a later step, ask for `(:data-src (second …))` instead.)*
 ```
 <!-- /slide -->
 
-> New: `tag-tree` in `dev-body` at the seam; the page's `data-src`
-> and `data-name` rows.
+> New: `tag-tree` in `dev-body` at the seam; the page's `data-src` row.
 
 > `a` plays tag-render, → next slide.
 
@@ -598,15 +596,15 @@ re-run this at a later step, ask for `(:data-src (second …))` instead.)*
 <!-- slide 17 · metadata becomes attributes -->
 # 🏷 metadata → attributes
 
-```minimap arch 6 devbody.d-tag,seam,page.p-src,page.p-name
+```minimap arch 6 devbody.d-tag,seam,page.p-src
 ```
 
 ```clojure
 ;; tag-tree walks the assembled page; for every element that carries
-;; reader metadata, it rebuilds the vector with two attributes added:
+;; reader metadata, it rebuilds the vector with its position as an attribute:
 (assoc attrs
-  :data-src  (str (:file m) ":" (:line m) ":" (:column m))
-  :data-name (name (first node)))
+  :data-src (str (:file m) ":" (:line m) ":" (:column m))
+  …)
 ```
 
 ```clojure
@@ -759,7 +757,7 @@ What *made* this thing?"
 <!-- /slide -->
 
 > New: the `wrap` cell in `tr-load!`, and its wire into the views: the
-> loader re-defs them wrapped.
+> loader re-defs them wrapped; and the page's `data-name` row (ns/fn).
 
 > `a` plays wrap-load, → next slide.
 
@@ -1437,7 +1435,7 @@ node views   ""           710,160  280x104
 node page    "page"       1430,50  314x236  list
   row p-el    "span.badge.hot" mono  @4  10:'span / article'
   row p-src   "data-src"       mono  @6
-  row p-name  "data-name"      mono  @6
+  row p-name  "data-name"      mono  @8
   row p-call  "data-callsite"  mono  @10
 
 edge e-eval   calva:r -> nrepl:l             "eval"  below  2-2:'(load-file …)'  3:''  11-11:'Load buffer'  +2-2:human  +2-2:new  +11-11:warn
@@ -1455,8 +1453,8 @@ edge e-repl   nrepl:b -> loader:t                     @2-4,11  +11-11:warn
 edge e-def    loader:r -> views:l            ""       mono  @2-4,11,12  2-2:def  3:''  11-11:def  +11-11:warn
 node you     "you"        1500,400 120x64   @2,11  +11-11:new
 edge e-f5     you:t -> page:b=1560           "F5"     human  left  @2,11  +11-11:new
-edge e-gap    page:l=176 -> views:r=176      ""       gap  @2-6
-mark m-gap    q ""        1250,176  @2-6
+edge e-gap    page:l=170 -> views:r=170      ""       gap  @4-6
+mark m-gap    q ""        1250,170  @4-6
 
 # ---- §1 hot reload: the watcher, one socket, the browser side, the render boundary ---
 node watcher "watcher"    420,318  180x64   @3
@@ -1526,8 +1524,8 @@ flow just-a-string @4 lands=page.p-el : e-get, e-call, e-html at m-render
 # §4: tr-load! takes over from load-file (state 5 arrives with the old loader still wired), then a save takes the new path
 swap loader-swap @5                   : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-deftr
 flow save-trload @5 lands=views       : e-save, e-poll, e-views, trload.c-read, trload.c-eval, e-deftr ":line"
-# §5: at the seam, dev-body's tag-tree turns metadata into attributes; data-src and data-name arrive
-flow tag-render @6 lands=page.p-src,page.p-name : e-get, e-call, e-html at seam+e-binds+devbody.d-tag
+# §5: at the seam, dev-body's tag-tree turns metadata into attributes; data-src arrives
+flow tag-render @6 lands=page.p-src : e-get, e-call, e-html at seam+e-binds+devbody.d-tag
 # §6: the click reads data-src; the dispatch resolves it (resolve-src, every open) and runs code -g
 flow click-open @7 lands=buffer       : page.p-src, e-click, e-wsinsp< "open", hub.h-disp+m-resolve, e-codeg
 # §7: after read and eval comes wrap: the views come back holding a wrapper that knows its name
