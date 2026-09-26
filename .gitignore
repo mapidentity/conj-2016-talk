@@ -5,8 +5,9 @@
 /livecode-presenter.pdf
 
 # Committed on purpose, for contrast: figures/ costs a full re-capture to
-# reproduce (clean demo tree, four step-branch boots, a headless browser),
-# and slides.html is 16K. Both are cheap to carry.
+# reproduce (clean demo tree, five step-branch boots, a headless browser and
+# a headed one under Xvfb), and slides.html is ~0.3 MB of text. Both are
+# cheap to carry.
 
 # Build junk
 __pycache__/

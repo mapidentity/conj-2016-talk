@@ -6,6 +6,8 @@
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; }
+  /* screenshots are referenced as figures/talk/NAME.png, relative to this file: the
+     folder travels with slides.html */
   html, body { height: 100%; background: #16141f; color: #ece9f1; }
   /* The deck is sized from this one root — every size below is em-relative, so the
      slides scale with the viewport instead of clipping on a smaller projector.
@@ -21,8 +23,8 @@
      last lines instead of overflowing the slide. Slide geometry still measures
      as "fits", so test by measuring scrollHeight-clientHeight on every <pre>,
      at 1920x1080, across all slides. At this padding/gap/leading, base 38 clips
-     slide 7 (27px, the socket). The binding slides are the tall code blocks —
-     7 (the socket), 15 (the loader) and 19 (a click that travels); the
+     slide 12 (27px, the socket). The binding slides are the tall code blocks —
+     12 (the socket), 20 (the loader) and 27 (a click that travels); the
      numbers move when slides are inserted, the names don't. */
   body {
     font-family: system-ui, sans-serif; font-size: min(3.333vh, 1.875vw);
@@ -52,7 +54,7 @@
   }
   code { padding: .1em .35em; font-size: .92em; }
   /* 1.35 leading, not 1.5: on tall blocks that difference is what buys the
-     larger base above without clipping slides 7, 15 and 19 (see above) */
+     larger base above without clipping slides 12, 20 and 27 (see above) */
   pre { padding: .5em 1em; font-size: .85em; line-height: 1.35; overflow-x: auto; }
   /* box-drawing diagrams: rules must sit tight against their sides to read as a box */
   pre.diagram { line-height: 1.05; font-size: .78em; }
@@ -61,6 +63,61 @@
   pre .ad { display: block; color: #e8fff5; background: rgba(52, 211, 153, .12);
             box-shadow: -1em 0 0 rgba(52, 211, 153, .12), 1em 0 0 rgba(52, 211, 153, .12); }
   pre .rm { display: block; color: #f6d9d9; background: rgba(248, 113, 113, .12); }
+  /* {.repl} fences: `user=> ` lines are input (the prompt recedes), the rest is output */
+  pre.repl .rp { color: #6f6890; }
+  pre.repl .ro { opacity: .72; }
+  /* ```lang from=N cursor=L:C fences: one block span per line, a gutter of line numbers,
+     the cursor's line banded to the block's edges (like .ad), and a caret that takes no
+     room, so every column stays where the file has it */
+  pre .ln { display: block; }
+  pre .gut { color: #565070; margin-right: 1.2ch; }
+  pre .ln.cur { background: rgba(139, 127, 245, .16);
+                box-shadow: -1em 0 0 rgba(139, 127, 245, .16), 1em 0 0 rgba(139, 127, 245, .16); }
+  pre .caret { display: inline-block; width: .14em; height: 1.3em; margin: 0 -.07em;
+               vertical-align: -.3em; background: #b7a5ff; border-radius: .07em; }
+  /* screenshots: a line holding only ![alt](figures/talk/NAME.png "caption") is a
+     figure; consecutive image lines are one group, side by side (.pair) or one above
+     the other (.stack). A group has ONE scale, so equal app pixels stay equal on the
+     slide (its images share a capture DPR): build_slides.py writes its shape from the
+     PNGs' pixel sizes — --hw (height over width), --kx / --ky (gaps across / down),
+     --kc (caption rows) — and each figure's --wa / --wb (its width over the group's
+     width / height).
+     The group asks for the height it needs at the full slide width (92vw: .slide's 4vw
+     side padding) and gives height back when the slide has less room (flex-shrink; the
+     other blocks of an image slide keep theirs, or a <pre> would be squashed — see the
+     note at the top). It is a size container, and each image takes the smaller of the
+     widths that fit across (100cqw) and down (100cqh): the group fills its box with no
+     letterbox, and the img's width/height attributes give it that box before it loads,
+     so nothing shifts. Centred as a unit; a stack's images share their left edge. */
+  .shots { --gap: .6em; --cap: calc(1.65em * .78);
+           --gx: calc(var(--kx) * var(--gap));
+           --gy: calc(var(--ky) * var(--gap) + var(--kc) * var(--cap));
+           flex: 0 1 auto; min-height: 0; container-type: size;
+           height: calc((92vw - var(--gx)) * var(--hw) + var(--gy));
+           display: flex; justify-content: center; align-items: flex-start; }
+  .shots > .grp { display: flex; gap: var(--gap); align-items: flex-start; }
+  .shots.stack > .grp { flex-direction: column; }
+  .slide:has(> .shots) > :not(.shots) { flex-shrink: 0; }
+  figure.shot { display: flex; flex-direction: column; align-items: flex-start; }
+  figure.shot .frame { position: relative; display: inline-block; line-height: 0; }
+  figure.shot img { display: block; height: auto; border-radius: .2em;
+                    width: min(calc((100cqw - var(--gx)) * var(--wa)),
+                               calc((100cqh - var(--gy)) * var(--wb))); }
+  /* one line, a fixed height (--cap above, in the group's em): the group reserves it */
+  figure.shot figcaption { font-size: .78em; line-height: 1.3; height: 1.65em; padding-top: .35em;
+                           width: 0; min-width: 100%;   /* the image alone sets the width */
+                           white-space: nowrap; color: #b4abcf; }
+  /* {.guide}: two dashed hairlines at 25% and 75% of the image's height, from 45% of
+     its width to the right edge — drawn on .frame, the image's own box, so a caption
+     never shifts them. A zoom strip captured with the element it measures spanning
+     those heights and starting at 45% (capture.cjs, the title-row strip rule: NEW)
+     carries that element's top and bottom edges on past its neighbour, and shows how
+     far the neighbour hangs off them. */
+  figure.guide .frame::before, figure.guide .frame::after {
+    content: ""; position: absolute; left: 45%; right: 0; transform: translateY(-50%);
+    border-top: .06em dashed rgba(139, 127, 245, .95); }
+  figure.guide .frame::before { top: 25%; }
+  figure.guide .frame::after { top: 75%; }
   /* inline figures (```svg fences) */
   .figure { display: flex; justify-content: flex-start; }
   /* em, not rem: rem is the html root and would not follow the scaled body size */

@@ -13,7 +13,8 @@
 #                              (build_slides.py renders them; see README.md, "Slides").
 #   ../livecode-cheatsheet.md  code blocks, addressed by label (§2a, §2d#2) or by
 #                              a line they contain (~"(defn tr-load!").
-#   ../figures/talk/*.png      screenshots, by name (capture.cjs).
+#   ../figures/talk/*.png      screenshots, by name (capture.cjs): a page's `shot` items,
+#                              and the images of its slides (embedded, like everything).
 #
 # Code is syntax-highlighted at build time; screenshots are embedded as resized
 # base64 PNGs so the single .html is portable.
@@ -41,6 +42,13 @@ def img(name):
     if name not in IMG:
         IMG[name] = data_uri(name)
     return IMG[name]
+
+def img_src(rel):
+    """A slide's image, by its path relative to talk/ (what slides.html references) → embedded."""
+    p = (ROOT / rel).resolve()
+    if p.parent == FIG.resolve() and p.suffix == ".png":
+        return img(p.stem)
+    raise SystemExit(f"slide image {rel!r}: the deck embeds figures/talk/NAME.png only")
 
 # ------------------------------------------------------------ highlight ------
 import sys; sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -271,6 +279,34 @@ CSS += r"""
    flow; --ax-mini-w is the width build_slides.py settled on, in the projector's em */
 .slide > .ax-mini { position:absolute; top:7.5mm; right:5mm; width:calc(var(--ax-mini-w, 9) * 2.1mm); }
 .slide > .ax-mini svg.axm { --axm-s:.6; }
+/* {.repl} fences and ```lang from= cursor= fences (build_slides.py): scoped to the slide
+   card, because .repl is also the deck's own REPL card class */
+.slide pre.repl .rp { color:#6f6890; } .slide pre.repl .ro { opacity:.72; }
+.slide pre .ln { display:block; } .slide pre .gut { color:#565070; margin-right:1.2ch; }
+.slide pre .ln.cur { background:rgba(139,127,245,.16);
+                     box-shadow:-4mm 0 0 rgba(139,127,245,.16), 4mm 0 0 rgba(139,127,245,.16); }
+.slide pre .caret { display:inline-block; width:.14em; height:1.3em; margin:0 -.07em; vertical-align:-.3em;
+                    background:#b7a5ff; border-radius:.07em; }
+/* screenshots on a slide card: the projector's groups (slides-template.html, `.shots`)
+   with the same one-scale-per-group rule — the card's width across, and 112mm down for
+   the whole group, so a portrait page crop leaves the page its speaker column. The deck's
+   own .shot card look (light border, caption bar) is reset here. */
+.slide .shots { --gap:2.5mm; --cap:5mm; --gx:calc(var(--kx) * var(--gap));
+                --gy:calc(var(--ky) * var(--gap) + var(--kc) * var(--cap));
+                container-type:inline-size; display:flex; justify-content:center; margin:2mm 0; }
+.slide .shots > .grp { display:flex; gap:var(--gap); align-items:flex-start; }
+.slide .shots.stack > .grp { flex-direction:column; }
+.slide figure.shot { margin:0; border:0; border-radius:0; background:none; overflow:visible;
+                     display:flex; flex-direction:column; align-items:flex-start; }
+.slide figure.shot .frame { position:relative; display:inline-block; line-height:0; }
+.slide figure.shot img { display:block; height:auto; max-width:none; margin:0; border-radius:3px;
+                         width:min(calc((100cqw - var(--gx)) * var(--wa)), calc((112mm - var(--gy)) * var(--wb))); }
+.slide figure.shot figcaption { height:var(--cap); width:0; min-width:100%; padding:1mm 0 0; background:none; border:0;
+                                font-size:8pt; line-height:1.3; white-space:nowrap; color:#b4abcf; }
+.slide figure.guide .frame::before, .slide figure.guide .frame::after {
+  content:""; position:absolute; left:45%; right:0; transform:translateY(-50%);
+  border-top:1.5px dashed rgba(139,127,245,.95); }
+.slide figure.guide .frame::before { top:25%; } .slide figure.guide .frame::after { top:75%; }
 """
 CSS += (Path(__file__).resolve().parent / "diagram.css").read_text(encoding="utf-8")   # ```diagram``` maps and minimaps: the slides' look; static here (hop numbers instead of motion)
 HEAD = ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
@@ -502,6 +538,7 @@ def parse_slides():
         inner = inner.strip()                    # build_slides never indents inside <pre>
         inner = (inner.replace('class="accent"', 'class="ac"').replace('class="green"', 'class="gr"')
                       .replace(' class="void"', ''))
+        inner = re.sub(r'<img src="([^"]+)"', lambda m: f'<img src="{img_src(m.group(1))}"', inner)   # self-contained
         out[int(n)] = inner
     return out
 SLIDES = parse_slides()

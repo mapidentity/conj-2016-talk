@@ -1,7 +1,7 @@
 # presenter/ — how the flip-through talk deck is generated
 
 Source for `../livecode-presenter.html` and `../livecode-presenter.pdf` — the
-48-page landscape presenter script for *Where Did This `<div>` Come From?*
+55-page landscape presenter script for *Where Did This `<div>` Come From?*
 (projector-left / speaker-notes-right, one talk beat per page).
 
 Everything here is **generated**: the builder contains no talk text. The
@@ -33,15 +33,31 @@ Edit those; never the deck.
 - **`highlight.py`** — the build-time syntax highlighter (Clojure, JS, bash, HTML
   snippets), shared by the deck's code and REPL cards and the slides' fenced blocks.
 - **`topdf.cjs`** — renders the HTML to `../livecode-presenter.pdf` (A4 landscape).
-- **`capture.cjs`** — captures the browser figures into `../figures/talk/`.
-  Drives a swiftshader Chromium; reverse-direction highlights are produced by
-  opening a second `/dev/ws` socket from the page and sending a `cursor` message,
-  which the demo server broadcasts back as a `highlight`.
+- **`capture.cjs`** — captures the browser figures into `../figures/talk/`: the
+  screenshots on the demo-moment slides, which show what the finished app on stage
+  cannot (the intermediate states: no `data-*` yet, a breadcrumb without names or
+  glyphs, the manual reload loop) and back up the live moments. Drives a swiftshader
+  Chromium, per shot at its own viewport and DPR (zoom strips at DPR 3–6), with
+  `FONTCONFIG_FILE=fonts.conf` so 🌶 comes from Noto Color Emoji as on the stage
+  browser, not from the pixel font Unifont. Reverse-direction highlights are produced
+  by opening a second `/dev/ws` socket from the page and sending a `cursor` message,
+  which the demo server broadcasts back as a `highlight`. Shots that change the
+  running server — a `load-file` sent over the socket REPL — run last in their step.
+  The DevTools shots are the real Chrome DevTools: the Elements rows from the DevTools
+  frontend served on `--remote-debugging-port` (`$CAPTURE_DEVTOOLS_PORT`, 9333), and
+  Chrome's own inspect highlight from a headed Chromium under `xvfb-run` on a display
+  of its own (never `:0`), each grab checked for the tooltip and the fill and retried
+  when the overlay has not painted. From §7 on the talk's pill is straight (the live
+  §6 fix is never reverted), so the later shots apply that fix to the page too.
 - **`refresh.sh [--deck-only]`** — the whole pipeline below as one command.
 - **`run-tag.sh <step>`** — detach-checkouts `../../demo` at a step branch, boots it
-  on `$CAPTURE_PORT` (8090; the app honours `PORT`), runs `capture.cjs` for that step, kills the server. Shots differ per step because
-  the talk builds up (element breadcrumb at `step-4`, components at `step-5`,
-  reverse + call-sites at `step-7`).
+  on `$CAPTURE_PORT` (8090; the app honours `PORT`) with a socket REPL on
+  `$CAPTURE_REPL_PORT` (5557), runs `capture.cjs` for that step (the DevTools shots
+  also take `$CAPTURE_DEVTOOLS_PORT`, 9333), kills the server.
+  Shots differ per step because the talk builds up (the bare app, DevTools and the
+  manual loop at `step-0`, `data-src` in DevTools at `step-3`, the element breadcrumb
+  at `step-4`, components at `step-5`, reverse, call sites, glyphs and the plain-load
+  sharp edge at `step-7`).
 - **`preview.cjs [pageNums]`** / **`measure.cjs`** — dev helpers: screenshot pages
   for eyeballing / report per-page heights so nothing overflows one sheet.
 
@@ -51,7 +67,8 @@ The one-liner (from anywhere): `bash talk/presenter/refresh.sh` — captures the
 figures, puts the demo repo back on its branch, builds HTML + PDF, and checks
 page heights; `--deck-only` skips the capture after text-only edits. It captures
 on port 8090 (`CAPTURE_PORT` overrides), so a REPL on 8080 can keep running;
-it refuses to run with a dirty demo tree or a busy capture port, and fails if any two figures
+it refuses to run with a dirty demo tree or a busy capture, socket-REPL or DevTools port (8090, 5557,
+9333), and fails if any two figures
 came out identical (a shot of the wrong server). Step by step, the same is:
 
 Node's Playwright is global, so set `NODE_PATH` for the `.cjs` scripts
@@ -62,7 +79,7 @@ cd conj/talk/presenter
 export NODE_PATH="$(npm root -g)"
 
 # 1. (only if the demo app / a shot changed) re-capture the figures:
-for t in step-0 step-4 step-5 step-7; do bash run-tag.sh "$t"; done
+for t in step-0 step-3 step-4 step-5 step-7; do bash run-tag.sh "$t"; done
 # leaves ../../demo on a detached HEAD — restore it afterwards:
 git -C ../../demo switch -q -f main
 
@@ -115,7 +132,7 @@ The lines inside the comment are the **projector column**, top to bottom:
 | `code §2a ["caption"]` | the cheatsheet block under label §2a (`§2d#2` = its second block); TYPE/PASTE/CHECKOUT pill and file name come from the label |
 | `code ~"(defn tr-load!" ["caption"]` | the first cheatsheet block containing that text — for unlabeled blocks |
 | `repl ~"(read-string" ~"(def render"` | one or more cheatsheet blocks as a REPL card; `;; =>` lines become results |
-| `slide 5` | the run-sheet's slide 5 block, reproduced |
+| `slide 5` | the run-sheet's slide 5 block, reproduced (its screenshots embedded) |
 | `shot NAME ["caption"] [tall] [hero]` | `../figures/talk/NAME.png` |
 | `shots NAME "cap" \| NAME "cap"` | two screenshots side by side |
 | `dom '<span class="badge">' ["caption"]` | a DevTools-style element line |
@@ -167,6 +184,10 @@ for how views load. {.rule .big}
 | ```` ```svg ```` … ```` ``` ```` fenced block | an inline figure: the SVG is passed through **verbatim** (not escaped) inside `<div class="figure">`. Use the slide palette (`#ece9f1` text, `#8b7ff5` accent, `#9d94b8` muted, `#211d30` chips) and a `viewBox` with no fixed width, so it scales in both `slides.html` and the deck |
 | ```` ```diagram NAME K ```` fence (empty body) | state K of the run-sheet's `diagram NAME` block, full size, filling the room below the heading. See "Diagrams" |
 | ```` ```minimap NAME K ID,ID… ```` fence (empty body) | state K as a small you-are-here inset beside the heading, with those parts lit. One per slide. See "Diagrams" |
+| ```` ```clojure from=17 cursor=21:8 ```` | options after the language: `from=N` numbers the lines from N in a gutter; `cursor=L:C` bands line L and puts a caret before column C (1-based, as the reader counts: keep the file's indentation). Not for `diff` |
+| `{.repl}` before a ```` ```clojure ```` fence | a REPL exchange: a line starting `user=> ` is input (prompt dim, form highlighted), every other line is output (muted) |
+| `![alt](figures/talk/NAME.png "caption")` alone on a line | a screenshot, `<figure class="shot">`. The path is relative to `talk/` and must exist (the build fails otherwise); the caption is optional, inline markdown, one line (write `'…'` when it holds a `"`); no `]` in the alt. `{.guide}` at the end of the line: dashed hairlines at 25% and 75% of the image's height, from 45% of its width to the right edge (the capture cuts the strip so the measured element spans exactly that: `capture.cjs`, the title-row strip rule) |
+| consecutive image lines | one group: side by side (`{.pair}`, the default) or one above the other (`{.stack}`) — the class on the line before. The group has **one scale** (from the PNGs' pixel sizes), so its images must share a capture DPR; it takes the room below the other blocks, and a blank line starts a new group |
 | `{.big}` on a line of its own | classes for the block that follows; `{.steps}` renders a list as the two-column step grid |
 | `… {.sub}` at the end of a paragraph, list item or table cell | classes for that paragraph / item / cell |
 | `**bold**`, `` `code` `` | inline |
@@ -175,16 +196,39 @@ for how views load. {.rule .big}
 The classes are the ones `slides-template.html` styles: `sub` (muted),
 `big`, `rule` (left bar, for the talk's assertions), `note` (boxed aside —
 a caption remarking on the block above it), `accent`, `green`, `strike`,
-`steps`. For a ```` ```diagram ```` fence there are also the flow modes
+`steps`, `repl`; for images `pair`, `stack` and `guide`. For a ```` ```diagram ```` fence there are also the flow modes
 `flow-keys` (alias `flow-step`), `flow-auto`, `flow-loop` and `flow-off`, plus `pop`. For a
 ```` ```minimap ```` fence there are `rev` and `warn`. Add a class
 there when a slide needs a new look; add markdown syntax here only when the
 content cannot be said with the above. `slides.html` still opens standalone in
 a browser tab (arrow keys / click to advance; on a map with flows, `a` plays
-the next flow and `p` steps back — see "Flow modes" below) for the projector. The current
+the next flow and `p` steps back — see "Flow modes" below) for the projector.
+It references its screenshots relatively (`figures/talk/NAME.png`), so the
+`figures/talk/` folder travels with it; the deck embeds them instead. The current
 slide is kept in the URL hash (`slides.html#3`), so a reload — e.g. after
 `refresh.sh` rebuilt the file — stays on that slide, and `#N` jumps straight
 to slide N.
+
+### Screenshots on slides
+
+The demo-moment slides show the app through real captures (`capture.cjs`), each
+beside the narration that already describes it. How they are laid out:
+
+- **Fill without shifting.** A group asks for the height it needs at the full slide
+  width and gives height back when the slide has less room; every other block on an
+  image slide keeps its size. Each image takes the smaller of the two widths that fit
+  across and down, so it is never letterboxed or stretched, and the `<img>`'s
+  `width`/`height` attributes give it its box before it loads. Checked at 1920×1080,
+  1280×720 and 1024×768.
+- **One scale per group.** A pair (before/after) or a stack (minute one/now) shows
+  equal app pixels at equal size, which is what makes the comparison honest. That is
+  why a group's shots share one capture DPR.
+- **Legibility.** Text the audience must read inside a screenshot (DevTools rows, the
+  breadcrumb) needs about 28 px on a 1080p slide: capture zooms at DPR 3 or more and
+  crop tight (`capture.cjs` has the clip rules). Page-wide shots are backups for live
+  moments and read as a pattern, not as detail.
+- **The deck** shows the same groups on the slide card, scaled to the card's width and
+  at most 112 mm tall per group, embedded as base64 like every other figure.
 
 ## Diagrams (the map)
 
@@ -228,7 +272,7 @@ swap loader-swap @5 : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-d
   same place and scale on every map slide:
 
   ````text
-  <!-- slide 4 · the dev channel -->
+  <!-- slide 9 · the dev channel -->
   ## 🔥 hot reload
 
   {.flow-step}
@@ -285,7 +329,7 @@ swap loader-swap @5 : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-d
   on the presenting machine, or the flows only show as numbers. The line sits in
   the bottom ~12 px at 1080p: check that the projector does not overscan.
 - **The progress line.** Under a map with flows, a hairline along the very bottom of
-  the slide (below the `N / 33` counter) shows the speaker where the flows are: one
+  the slide (below the `N / 49` counter) shows the speaker where the flows are: one
   segment per flow, as long as the flow; a small dot between two flows; a thicker
   fill that grows with the animation's own clock and rests at the cursor when idle.
   It is quiet on purpose (the audience should hardly notice it). Print, the deck and

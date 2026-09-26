@@ -28,7 +28,23 @@ Syntax (documented in README.md, "Slides"):
                           amber). The build checks that the heading leaves room
                           and narrows the inset if not (see fit_minimap)
   ```lang … ```           a verbatim code block, syntax-highlighted when the fence
-                          names a language (clojure, html, js, bash; see highlight.py)
+                          names a language (clojure, html, js, bash; see highlight.py).
+                          After the language: from=N numbers the lines from N in a
+                          gutter; cursor=L:C bands line L and puts a caret before
+                          column C (1-based, as the reader counts)
+  {.repl} + ```clojure    a REPL exchange: a `user=> ` line is input (the prompt dim,
+                          the form highlighted), every other line is output (muted)
+  ![alt](figures/talk/NAME.png "caption")
+                          a line holding only an image: a screenshot, `<figure class=
+                          "shot">`. The path is relative to talk/ and must exist; the
+                          caption (optional, inline markdown) may be '…' when it holds
+                          a `"`; `{.cls}` at the end of the line classes the figure
+                          ({.guide}: hairlines at 25% and 75% of its height,
+                          from 45% of its width to the right edge).
+                          Consecutive image lines are one group, side by side
+                          ({.pair}, the default) or one above the other ({.stack}) —
+                          on the line before. A group has ONE scale (from the PNGs'
+                          pixel sizes), so its images must share one capture DPR
   {.cls .cls2}            on a line of its own: classes for the block that
                           follows (`{.steps}` renders a list as the step grid);
                           at the end of a paragraph, list item or table cell:
@@ -37,6 +53,7 @@ Syntax (documented in README.md, "Slides"):
 """
 import html, re, sys
 from pathlib import Path
+from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from highlight import highlight, HL
 import diagram
@@ -49,6 +66,12 @@ SRC, TEMPLATE, OUT = ROOT / "livecode-talk.md", HERE / "slides-template.html", R
 esc = lambda s: html.escape(s, quote=False)
 ATTR = re.compile(r"\s*\{((?:\s*\.[\w-]+)+)\s*\}\s*$")
 BR = "\x01"
+
+IMG_LINE = re.compile(r"""^!\[([^\]]*)\]\(\s*([^\s)"']+)(?:\s+(?:"([^"]*)"|'([^']*)'))?\s*\)\s*$""")
+GROUPS = ("pair", "stack")                           # the layouts of an image group
+
+def is_image(ln):
+    return bool(IMG_LINE.match(split_attr(ln)[0].strip()))
 
 def split_attr(s):
     """'text {.a .b}' → ('text', ['a', 'b']); no attribute → (s, [])."""
@@ -79,7 +102,7 @@ def text(lines):
 
 # ------------------------------------------------------------------ blocks ---
 def parse_blocks(lines):
-    """→ [(kind, classes, payload)] with kind in heading|para|list|table|code|svg."""
+    """→ [(kind, classes, payload)] with kind in heading|para|list|table|code|svg|shots|diagram|minimap."""
     blocks, pending, i = [], [], 0
     def take(pred):
         nonlocal i
@@ -95,7 +118,7 @@ def parse_blocks(lines):
             pending += split_attr(ln)[1]; i += 1; continue
         c, pending = pending, []
         if ln.startswith("```"):
-            lang = ln[3:].strip() or None
+            lang = ln[3:].strip() or None                # the whole info string, for the special fences
             if lang and lang.split()[0] in ("diagram", "minimap"):   # a state of a run-sheet diagram
                 kind, one_line = lang.split()[0], lang.endswith("```")   # ```diagram arch 5``` on one line is fine too
                 args = lang.rstrip("`").split()[1:]
@@ -116,15 +139,26 @@ def parse_blocks(lines):
                 i += 1                               # closing fence
                 blocks.append(("svg", c, body))
                 continue
+            lang, opts = fence_info(lang)
             if lang and lang not in HL: raise SystemExit(f"{SRC.name}: unknown fence language {lang!r} (known: {', '.join(sorted(HL))})")
             i += 1
             body = take(lambda l: not l.startswith("```"))
             i += 1                                   # closing fence
-            blocks.append(("code", c, (lang, body)))
+            blocks.append(("code", c, (lang, body, opts)))
+        elif ln.startswith("![") and not is_image(ln):
+            raise SystemExit(f"{SRC.name}: {ln.strip()!r}: an image line is ![alt](path \"caption\") {{.cls}} and nothing else (no ] in the alt)")
+        elif is_image(ln):                           # a group of screenshots: consecutive image lines
+            figs = []
+            while i < len(lines) and is_image(lines[i]):
+                body, fc = split_attr(lines[i].strip())
+                m = IMG_LINE.match(body.strip())
+                figs.append((m[2], m[1], m[3] if m[3] is not None else m[4], fc))
+                i += 1
+            blocks.append(("shots", c, figs))
         elif ln.startswith("#"):
             level = len(ln) - len(ln.lstrip("#"))
             i += 1
-            body = [ln.lstrip("#").strip()] + take(lambda l: l.strip() and not l.startswith(("#", "- ", "|", "```")))
+            body = [ln.lstrip("#").strip()] + take(lambda l: l.strip() and not l.startswith(("#", "- ", "|", "```")) and not is_image(l))
             blocks.append(("heading", c, (level, body)))
         elif ln.startswith("- "):
             items = []
@@ -136,7 +170,7 @@ def parse_blocks(lines):
         elif ln.startswith("|"):
             blocks.append(("table", c, take(lambda l: l.startswith("|"))))
         else:
-            body = take(lambda l: l.strip() and not l.startswith(("```", "|")) and not ATTR.fullmatch(l))
+            body = take(lambda l: l.strip() and not l.startswith(("```", "|")) and not ATTR.fullmatch(l) and not is_image(l))
             blocks.append(("para", c, body))
     return blocks
 
@@ -158,8 +192,9 @@ def render_block(kind, classes, payload):
         _, k, ids, width = payload
         return f'<div{cls(["ax-mini"] + classes)} style="--ax-mini-w:{width:g}">' + DIAGRAMS[name].mini(k, ids) + "</div>"
     if kind == "code":
-        lang, body = payload
-        return f"<pre{cls(classes)}><code>{highlight(chr(10).join(body), lang)}</code></pre>"
+        return code_html(classes, *payload)
+    if kind == "shots":
+        return shots_html(classes, payload)
     if kind == "list":
         items = []
         for it in payload:
@@ -185,6 +220,105 @@ def render_block(kind, classes, payload):
             out.append("    <tr>" + "".join(cells) + "</tr>")
         return f'<table{cls(["void"] + classes)}>\n' + "\n".join(out) + "\n  </table>"
     raise SystemExit(f"{SRC.name}: unknown block {kind!r}")
+
+# ------------------------------------------------------------ code fences ---
+FENCE_OPTS = ("from", "cursor")
+
+def fence_info(info):
+    """'clojure from=17 cursor=21:8' → ('clojure', {'from': 17, 'cursor': (21, 8)})."""
+    words = (info or "").split()
+    lang, opts = (words[0] if words else None), {}
+    for w in words[1:]:
+        k, eq, v = w.partition("=")
+        if not eq or k not in FENCE_OPTS:
+            raise SystemExit(f"{SRC.name}: fence ```{info}: unknown option {w!r} (known: {', '.join(k + '=' for k in FENCE_OPTS)})")
+        if k == "from" and v.isdigit(): opts[k] = int(v)
+        elif k == "cursor" and re.fullmatch(r"\d+:\d+", v): opts[k] = tuple(int(x) for x in v.split(":"))
+        else: raise SystemExit(f"{SRC.name}: fence ```{info}: want from=N / cursor=LINE:COL, got {w!r}")
+    if opts and lang == "diff": raise SystemExit(f"{SRC.name}: fence ```{info}: a diff takes no from= / cursor=")
+    return lang, opts
+
+SPAN = re.compile(r"<span[^>]*>|</span>")
+
+def html_lines(h):
+    """Highlighted HTML → one self-contained string per source line: a span that runs
+    across a line break is closed at the end of the line and reopened on the next."""
+    out, open_ = [], []
+    for ln in h.split("\n"):
+        head = "".join(open_)
+        for m in SPAN.finditer(ln):
+            if m[0].startswith("</"): open_.pop()
+            else: open_.append(m[0])
+        out.append(head + ln + "</span>" * len(open_))
+    return out
+
+def at_column(h, col, mark):
+    """Insert `mark` before the col-th visible character (1-based) of an HTML line."""
+    i = n = 0
+    while i < len(h):
+        if h[i] == "<": i = h.index(">", i) + 1; continue
+        if n == col - 1: return h[:i] + mark + h[i:]
+        i = h.index(";", i) + 1 if h[i] == "&" else i + 1
+        n += 1
+    if n == col - 1: return h + mark
+    raise SystemExit(f"{SRC.name}: cursor= column {col} is past the end of its line ({n} characters)")
+
+def code_html(classes, lang, body, opts):
+    """A fenced block. {.repl}: `user=> ` lines are input, the rest output. from= / cursor=:
+    each line becomes a block span (a gutter number; the cursor line banded, a caret)."""
+    if "repl" in classes:
+        rows = [f'<span class="rp">user=&gt;</span> {highlight(l[7:], lang)}' if l.startswith("user=> ")
+                else f'<span class="ro">{highlight(l, lang)}</span>' for l in body]
+        inner = "\n".join(rows)
+    elif opts:
+        first = opts.get("from", 1)
+        lines = html_lines(highlight("\n".join(body), lang))
+        last = first + len(lines) - 1
+        cur_line, cur_col = opts.get("cursor", (None, None))
+        if cur_line is not None and not first <= cur_line <= last:
+            raise SystemExit(f"{SRC.name}: cursor= line {cur_line} is outside the block's lines {first}–{last}")
+        rows = []
+        for k, h in enumerate(lines):
+            n = first + k
+            if n == cur_line: h = at_column(h, cur_col, '<span class="caret"></span>')
+            gut = f'<span class="gut">{n:>{len(str(last))}}</span>' if "from" in opts else ""
+            rows.append(f'<span class="ln{" cur" if n == cur_line else ""}">{gut}{h or " "}</span>')
+        inner = "".join(rows)                        # block spans: a "\n" between them would double the break
+    else:
+        inner = highlight("\n".join(body), lang)
+    return f"<pre{cls(classes)}><code>{inner}</code></pre>"
+
+# ------------------------------------------------------------ screenshots ---
+# An image group's look lives in slides-template.html (`.shots`); this writes only its
+# shape, from the PNGs' pixel sizes: one scale for the whole group, so a pair or a stack
+# shows equal app pixels at equal size (its images must share one capture DPR).
+#   group:  --hw  its height over its width, in PNG px (stack: Σh / max w; pair: max h / Σw)
+#           --kx / --ky  the gaps across / down; --kc  the caption rows
+#   figure: --wa / --wb  its PNG width over the group's width / height
+def image_size(src):
+    p = ROOT / src
+    if not p.is_file(): raise SystemExit(f"{SRC.name}: image {src!r} not found (a path relative to {ROOT.name}/)")
+    with Image.open(p) as im: return im.size
+
+def shots_html(classes, figs):
+    layout = [k for k in classes if k in GROUPS]
+    if len(layout) > 1: raise SystemExit(f"{SRC.name}: an image group is {{.pair}} or {{.stack}}, not both")
+    kind = "stack" if len(figs) == 1 else (layout[0] if layout else "pair")
+    sizes = [image_size(src) for src, *_ in figs]
+    ncap = sum(1 for f in figs if f[2])
+    if kind == "stack":
+        W, H, kx, ky, kc = max(w for w, _ in sizes), sum(h for _, h in sizes), 0, len(figs) - 1, ncap
+    else:
+        W, H, kx, ky, kc = sum(w for w, _ in sizes), max(h for _, h in sizes), len(figs) - 1, 0, min(ncap, 1)
+    out = []
+    for (src, alt, cap, fcls), (w, h) in zip(figs, sizes):
+        capd = f"<figcaption>{inline(cap)}</figcaption>" if cap else ""
+        out.append(f'    <figure{cls(["shot"] + fcls)} style="--wa:{w / W:.5f};--wb:{w / H:.5f}">'
+                   f'<span class="frame"><img src="{html.escape(src)}" width="{w}" height="{h}" alt="{html.escape(alt)}"></span>'
+                   f"{capd}</figure>")
+    extra = [k for k in classes if k not in GROUPS]
+    return (f'<div{cls(["shots", kind] + extra)} style="--hw:{H / W:.5f};--kx:{kx};--ky:{ky};--kc:{kc}"><div class="grp">\n'
+            + "\n".join(out) + "\n  </div></div>")
 
 # ---------------------------------------------------------------- minimap ---
 # A ```minimap``` inset sits top right, beside the heading and out of the flow

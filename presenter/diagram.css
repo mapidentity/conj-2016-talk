@@ -297,7 +297,7 @@ svg.ax .ax-swap-cue .ax-swap-strike { display: inline; stroke-width: 3; }
 /* ===== the progress line under a map with flows (diagram.js builds it, as DOM in the
    figure, outside the SVG; slides.html only: the deck runs no script, and print hides it).
    For the speaker, not the audience: a 1 px hairline along the very bottom of the slide,
-   as wide as the figure (the slide's 4vw side padding), below the "N / 33" counter (whose
+   as wide as the figure (the slide's 4vw side padding), below the "N / 49" counter (whose
    box ends ~.43em up; the line sits .2em from the edge). One segment per flow, as long as
    the flow; a 5 px dot between two flows, hollow until reached, then solid with a 1 px
    ring of the background around it, so a passed boundary still shows on the fill; the

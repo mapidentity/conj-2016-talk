@@ -4,14 +4,16 @@
 #   bash talk/presenter/refresh.sh              # screenshots + HTML + PDF + overflow check
 #   bash talk/presenter/refresh.sh --deck-only  # skip the screenshots (text-only edits)
 #
-# Capturing boots the demo at step-0/4/5/7 (detached checkouts) on port
-# $CAPTURE_PORT (default 8090 — never the REPL's 8080), so it needs that port
-# free and the demo working tree clean; the demo repo is put back
-# on the branch it was on. Every step aborts the script on failure.
+# Capturing boots the demo at step-0/3/4/5/7 (detached checkouts) on port
+# $CAPTURE_PORT (default 8090 — never the REPL's 8080), with a socket REPL on
+# $CAPTURE_REPL_PORT (5557) and the DevTools frontend on $CAPTURE_DEVTOOLS_PORT
+# (9333), so it needs those ports free and the demo working tree clean; the
+# demo repo is put back on the branch it was on. Every step aborts the script
+# on failure.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEMO="$(cd "$HERE/../.." && pwd)/demo"
-STEPS=(step-0 step-4 step-5 step-7)      # the steps whose shots differ (see capture.cjs)
+STEPS=(step-0 step-3 step-4 step-5 step-7)   # the steps whose shots differ (see capture.cjs)
 cd "$HERE"
 export NODE_PATH="${NODE_PATH:-$(npm root -g)}"
 PORT="${CAPTURE_PORT:-8090}"
@@ -25,11 +27,14 @@ if [ "$capture" = 1 ]; then
     git -C "$DEMO" status --short >&2
     exit 1
   fi
-  if ss -ltn 2>/dev/null | grep -q ":$PORT "; then
-    echo "capture port $PORT is in use — stop that server first (or set CAPTURE_PORT):" >&2
-    ss -ltnp 2>/dev/null | grep ":$PORT " >&2
-    exit 1
-  fi
+  for p in "$PORT" "${CAPTURE_REPL_PORT:-5557}" "${CAPTURE_DEVTOOLS_PORT:-9333}"; do
+    if ss -ltn 2>/dev/null | grep -q ":$p "; then
+      echo "capture port $p is in use — stop that process first (or set CAPTURE_PORT /" \
+           "CAPTURE_REPL_PORT / CAPTURE_DEVTOOLS_PORT):" >&2
+      ss -ltnp 2>/dev/null | grep ":$p " >&2
+      exit 1
+    fi
+  done
   # remember where the demo repo was, and put it back whatever happens
   branch="$(git -C "$DEMO" symbolic-ref --short -q HEAD || echo main)"
   trap 'git -C "$DEMO" switch -q -f "$branch"; echo "### demo repo back on $branch"' EXIT

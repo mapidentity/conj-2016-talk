@@ -12,7 +12,7 @@
 > `livecode-cheatsheet.md` (keep it on a second screen or printed) — for
 > reference while you talk, and as a paste source if a checkout misbehaves.
 > Nothing in it is typed on stage.
-> Slides (33) are defined **in this file**, each as a
+> Slides (49) are defined **in this file**, each as a
 > `<!-- slide N · name -->` … `<!-- /slide -->` block after the page marker
 > that first shows it; `slides.html` is generated from them (projector tab).
 > They carry the code now — but still no plan slide and no step list until
@@ -51,7 +51,7 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 | --- | --- |
 | §1 the problem + hot reload | `step-1` |
 | §2 the question, asked twice | — |
-| §3 why not? can we? (slides 12–13) | — |
+| §3 why not? can we? (slides 17–18) | — |
 | §4 keep the structure | `step-2` |
 | §5 carry it to the DOM | `step-3` |
 | §6 overlay + click→editor | `step-4` |
@@ -99,7 +99,7 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 ---
 
-## §1 · The problem, and the chain that closes it (0:00–10:21) — slides 1–8
+## §1 · The problem, and the chain that closes it (0:00–10:21) — slides 1–13
 
 > The first three minutes are the abstract coming true in front of them —
 > same arc, same key phrases ("the div forgets it was ever Clojure code on a
@@ -122,6 +122,18 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 **[SLIDE 1: title]** "Hello. My name is Patrick. I’m a freelance software developer and consultant from the Netherlands, and a lot of my work is building web applications in Clojure."
 
+<!-- page "The recipe app" @0:12
+  slide 2
+-->
+
+<!-- slide 2 · the app -->
+## 🍜 the recipe app
+
+![The recipe app: header, stats, the recipe of the day, filters, the first cards](figures/talk/s01-app.png)
+<!-- /slide -->
+
+> Slide 2 for the app; the live browser runs the finished app (⌖ badge bottom-left).
+
 > Show demo application
 
 "For years, my default stack for applications like this was Reagent and re-frame. It provided the kind of user experience we wanted from a single-page application."
@@ -141,6 +153,12 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 "For the kind of database-backed applications I usually build, there are good reasons to. The browser is much more capable than it used to be. You can get a rich user experience with much less JavaScript. And if the server renders the UI, quite a lot of machinery simply disappears."
 
 "So... I tried it."
+
+<!-- page "Just Clojure, rendered on the server" @1:15 [demo] compact
+  slide 2
+-->
+
+> Browser beats here: slide 2 stays up (the live app already shows ⌖ inspect); `deps.edn` is live.
 
 > Return attention to demo
 
@@ -165,10 +183,10 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 "I also left behind a development environment that I really liked. That tight connection between the code and the running application isn’t there anymore. Shopping around for existing tools turned up empty, and I *really* started feeling that when working without that again."
 
 <!-- page "The map — a webserver, a REPL, an editor" @3:16
-  slide 2
+  slide 3
 -->
 
-<!-- slide 2 · the map, state 1 -->
+<!-- slide 3 · the map, state 1 -->
 ## 🗺 a webserver, a REPL, an editor
 
 {.flow-step}
@@ -181,11 +199,33 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 > `a` plays request, → next slide.
 
-<!-- page "A very simple app — and nothing to inspect it with" @3:26 [demo]
-  shot s01-page "The recipe app: a featured recipe, filters, eight cards, ratings, icons. Server-rendered Hiccup, zero JavaScript. The spicy pills hang crooked." tall
+<!-- page "A very simple app — and nothing to inspect it with" @3:26
+  slide 4
 -->
 
+<!-- slide 4 · crooked -->
+## 🌶️ crooked
+
+![The recipe of the day's title row: the NEW badge, and the spicy pill hanging lower](figures/talk/s01-crooked-zoom.png) {.guide}
+<!-- /slide -->
+
+> Slide 4 on "Crooked."
+
 **[browser — the felt instance]** "To show what I mean, let's have a look at this example. See this spicy pill on the recipe of the day? It hangs a little lower than the NEW badge right next to it. Crooked. We should fix that. So first: where does it come from? Right-click, inspect."
+
+<!-- page "DevTools: a span, class badge hot" @3:45
+  slide 5
+-->
+
+<!-- slide 5 · right-click, inspect -->
+## 🔍 right-click, inspect
+
+{.stack}
+![Chrome's inspect highlight on the spicy pill: span.badge.hot](figures/talk/s01-devtools-page.png)
+![DevTools Elements: the selected span, class badge hot, no data attributes](figures/talk/s01-devtools-rows.png)
+<!-- /slide -->
+
+> Slide 5 replaces the next direction (the finished DOM carries data-* attributes).
 
 > Browser right click, select spicy badge element on recipe of the day.
 
@@ -207,19 +247,62 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 "I'm going to assume it does both. Let's make sure it's the right one. I'll just change the title real quick and see the change."
 
+<!-- page "Save, refresh — nothing" @5:00
+  slide 6
+-->
+
+<!-- slide 6 · edit, save, refresh -->
+## 💾 edit, save, refresh
+
+```diff
+-       [:span.badge.hot "🌶 " t])]
++       [:span.badge.hot "🌶🔥 " t])]
+```
+
+{.stack}
+![The recipe of the day's badges after save and refresh: still just 🌶 spicy](figures/talk/s01-badges-featured.png "recipe of the day")
+![A grid card's badges after save and refresh: still just 🌶 spicy](figures/talk/s01-badges-grid.png "the grid")
+
+saved, refreshed: unchanged {.note}
+<!-- /slide -->
+
+> Slides 6–7 replace the next two directions, the live loop (the watcher would reload on save).
+
 > Add `Ctrl+Shift+U → type 1f525 🔥` inside `[:span.badge.hot "🌶 " t]`, save, return to browser.
 
 "I don't see any change. Oh right, I need to refresh the page. Still nothing. Of course, I need to reload this source file first."
+
+<!-- page "Reload the file, then refresh" @5:30
+  slide 7
+-->
+
+<!-- slide 7 · load the file, refresh again -->
+## 🔁 load the file, refresh again
+
+{.repl}
+```clojure
+user=> (load-file "src/demo/views.clj")
+#'demo.views/layout
+```
+
+{.stack}
+![The recipe of the day's spicy pill after load-file and refresh: 🌶🔥 spicy](figures/talk/s01-fire-featured.png "recipe of the day")
+![A grid card's spicy pill after load-file and refresh: 🌶🔥 spicy](figures/talk/s01-fire-grid.png "the grid")
+
+featured and grid: both 🌶️🔥 {.note}
+<!-- /slide -->
+
+> Skip the next direction: never run load-file live, it strips the finished app's tags (§10).
 
 > In REPL execute `(load-file "src/demo/views.clj")` and refresh browser.
 
 "There! it looks like it affects both featured and regular badges. But this edit, reload, refresh loop will get really annoying really fast and this is about the most basic of tooling that we're missing here."
 
 <!-- page "The map — every change: three hops by hand" @6:13
-  slide 3
+  slide 8
 -->
 
-<!-- slide 3 · the map, state 2 -->
+<!-- slide 8 · the map, state 2 -->
 ## 🗺 every change: three hops by hand
 
 {.flow-step}
@@ -232,10 +315,10 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 > `a` plays three-hops, → next slide.
 
 <!-- page "Save, and the page follows" @6:23
-  slide 4
+  slide 9
 -->
 
-<!-- slide 4 · the dev channel -->
+<!-- slide 9 · the dev channel -->
 ## 🔥 hot reload
 
 {.flow-step}
@@ -248,13 +331,13 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 > `a` plays save-load, `a` plays save-reload, → next slide.
 
-**[SLIDE 4: hot reload]** "I've set my editor to save when switching context. And when it does that, something should inform the server to reload the file. If that succeeds, something should let the browser know to do a page refresh. Of course I could let Calva or Emacs do the reloading but lets not rely on any particular editor unless we really have to. And of course, all the development tooling that we add should not ship to production. Using macros would be one way to do that, but deps tools gives us something out of the box."
+**[SLIDE 9: hot reload]** "I've set my editor to save when switching context. And when it does that, something should inform the server to reload the file. If that succeeds, something should let the browser know to do a page refresh. Of course I could let Calva or Emacs do the reloading but lets not rely on any particular editor unless we really have to. And of course, all the development tooling that we add should not ship to production. Using macros would be one way to do that, but deps tools gives us something out of the box."
 
 <!-- page "One alias, and dev/ exists" @7:26
-  slide 5
+  slide 10
 -->
 
-<!-- slide 5 · deps.edn, one alias -->
+<!-- slide 10 · deps.edn, one alias -->
 # 🔧 development only
 
 ```minimap arch 3 dev
@@ -273,13 +356,13 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 ```
 <!-- /slide -->
 
-**[SLIDE 5: deps.edn]** "We'll start the REPL with an extra `:dev` alias. This split ensures that any library dependency or source file under that alias is excluded from the production build."
+**[SLIDE 10: deps.edn]** "We'll start the REPL with an extra `:dev` alias. This split ensures that any library dependency or source file under that alias is excluded from the production build."
 
 <!-- page "Watch the files" @8:01
-  slide 6
+  slide 11
 -->
 
-<!-- slide 6 · the watcher -->
+<!-- slide 11 · the watcher -->
 # 📂👀 something watches
 
 ```minimap arch 3 watcher,e-poll,e-dep,e-notify
@@ -305,13 +388,13 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 <!-- /slide -->
 
-**[SLIDE 6: the watcher]** "Watching for source file changes can be relatively easy, just poll every 200 milliseconds for any file change. Reload any and all that have been changed in the mean time."
+**[SLIDE 11: the watcher]** "Watching for source file changes can be relatively easy, just poll every 200 milliseconds for any file change. Reload any and all that have been changed in the mean time."
 
 <!-- page "One socket" @8:36
-  slide 7
+  slide 12
 -->
 
-<!-- slide 7 · the socket -->
+<!-- slide 12 · the socket -->
 # 💌🌐 something tells the browser
 
 ```clojure
@@ -334,13 +417,13 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 uses `org.clojure/data.json` to send a websocket message with `http-kit` {.note}
 <!-- /slide -->
 
-**[SLIDE 7: the socket]** "http-kit can trivially setup a websocket. We can use that to restore our connection to browser, similar to what Vite, figwheel, shadow-cljs and others do. Server sent events would be an option here too, but in this case I went with websockets."
+**[SLIDE 12: the socket]** "http-kit can trivially setup a websocket. We can use that to restore our connection to browser, similar to what Vite, figwheel, shadow-cljs and others do. Server sent events would be an option here too, but in this case I went with websockets."
 
 <!-- page "And the browser acts" @9:15
-  slide 8
+  slide 13
 -->
 
-<!-- slide 8 · the browser side -->
+<!-- slide 13 · the browser side -->
 # ⚡ something acts on it
 
 ```minimap arch 3 devbody.d-script,seam,e-binds,reloadjs,e-reloadpage
@@ -360,26 +443,28 @@ ws.onmessage = function (e) {
 ```
 <!-- /slide -->
 
-**[SLIDE 8: the browser side]** "We need the browser to actually respond to data we send to it. That means we need to add dev only JavaScript to the application itself. We can do that by conditionally including that."
+**[SLIDE 13: the browser side]** "We need the browser to actually respond to data we send to it. That means we need to add dev only JavaScript to the application itself. We can do that by conditionally including that."
 
 "This is a very well trodden path so I won't bore you with more details, but lets have a look whether this idea actually works *here*. We need to restart the REPL though, to include the new deps alias."
 
 > Run checkout step-1. Restart the REPL. Revert the local badge change. Show it works.
 
+> Instead of the checkout and restart above: make the 🔥 edit now, save — the page follows; revert, save. Inspect mode off.
+
 "As we can see this solves the first hurdle."
 
 ---
 
-## §2 · The question, asked twice (10:21–11:34) — slides 9–11
+## §2 · The question, asked twice (10:21–11:34) — slides 14–16
 
 > The wire is in and the page still knows nothing about itself. Ask the
 > question here, answer *why not* here; everything after this is *how*.
 
 <!-- page "The map — render deletes the structure" @10:21
-  slide 9
+  slide 14
 -->
 
-<!-- slide 9 · the map, state 4 -->
+<!-- slide 14 · the map, state 4 -->
 ## 🗺 render deletes the structure
 
 {.flow-step}
@@ -394,10 +479,10 @@ ws.onmessage = function (e) {
 > `a` plays just-a-string, → next slide.
 
 <!-- page "The question — said twice" @10:31
-  slide 10
+  slide 15
 -->
 
-<!-- slide 10 · the question -->
+<!-- slide 15 · the question -->
 # 🖝 What do we need to point at a pixel\
 and ask ==which Clojure form made it==?
 
@@ -406,13 +491,13 @@ and ask ==which Clojure form made it==?
 ```
 <!-- /slide -->
 
-**[SLIDE 10: the question — say it twice]** "Lets quickly get back to our original question. Where did this badge come from?"
+**[SLIDE 15: the question — say it twice]** "Lets quickly get back to our original question. Where did this badge come from?"
 
 <!-- page "Why not: render deletes the structure" @10:50
-  slide 11
+  slide 16
 -->
 
-<!-- slide 11 · why not: render deletes the structure -->
+<!-- slide 16 · why not: render deletes the structure -->
 # 🗺 source mapping
 
 ## What we have
@@ -433,11 +518,11 @@ and ask ==which Clojure form made it==?
 ```
 <!-- /slide -->
 
-**[SLIDE 11: why — render deletes the structure]** "Like the page refresh, we need to add something to the page to interact with the elements shown. To be able to do that, we need some kind of source mapping. This can be done in many ways of course, but adding it as data attributes seems straightforward enough."
+**[SLIDE 16: why — render deletes the structure]** "Like the page refresh, we need to add something to the page to interact with the elements shown. To be able to do that, we need some kind of source mapping. This can be done in many ways of course, but adding it as data attributes seems straightforward enough."
 
 ---
 
-## §3 · Why not? Can we? (11:34–12:16) — slides 12–13, then REPL
+## §3 · Why not? Can we? (11:34–12:16) — slides 17–18, then REPL
 
 > The intellectual heart, and it is two slides rather than a typing beat:
 > the default reader loses the position, tools.reader keeps it, and because
@@ -446,10 +531,10 @@ and ask ==which Clojure form made it==?
 > typing into the silence.
 
 <!-- page "How? — what the reader could tell us" @11:34
-  slide 12
+  slide 17
 -->
 
-<!-- slide 12 · how? -->
+<!-- slide 17 · how? -->
 # How?
 
 ```minimap arch 4 loader,e-read,src
@@ -469,10 +554,10 @@ and ask ==which Clojure form made it==?
 "The reader converts our source code file into actual data structures. To match this with line numbers, we need to do that in the reader. But our standard reader does not provide that. Should we build our own reader then?"
 
 <!-- page "The reader that keeps the position" @11:54 compact
-  slide 13
+  slide 18
 -->
 
-<!-- slide 13 · the insight -->
+<!-- slide 18 · the insight -->
 # clojure.tools reader
 
 ```clojure
@@ -494,13 +579,13 @@ The position **is** part of the value. {.rule}
 
 ---
 
-## §4 · Keep the structure: `tr-load!` (12:16–14:24) — slides 14–15 → `step-2`
+## §4 · Keep the structure: `tr-load!` (12:16–14:24) — slides 19–21 → `step-2`
 
 <!-- page "The map — tr-load! keeps the lines" @12:16
-  slide 14
+  slide 19
 -->
 
-<!-- slide 14 · the map, state 5 -->
+<!-- slide 19 · the map, state 5 -->
 ## 🗺 tr-load! keeps the lines
 
 {.flow-step}
@@ -514,10 +599,10 @@ The position **is** part of the value. {.rule}
 > `a` swaps load-file for tr-load!, `a` plays save-trload, → next slide.
 
 <!-- page "tr-load! — load, but keep the lines" @12:26
-  slide 15
+  slide 20
 -->
 
-<!-- slide 15 · the loader -->
+<!-- slide 20 · the loader -->
 # 📐 a loader that keeps the lines
 
 ```clojure
@@ -535,7 +620,7 @@ views load through `tr-load!`, everything else through `load-file` {.note}
 why our own? Clojure's loader hard-wires its reader: `Compiler.load` → `LispReader.read` {.sub}
 <!-- /slide -->
 
-**[SLIDE 15: the loader]** "So that's the whole idea. Read the file with
+**[SLIDE 20: the loader]** "So that's the whole idea. Read the file with
 tools.reader instead of the standard one, and stamp which file we're in onto
 every element while we're there. The reader gives us line and column, but it
 has no idea which file it came from, so we add that ourselves."
@@ -552,9 +637,23 @@ HTML tag keyword."
 
 "From now on views load through this loader, and nothing else does."
 
-<!-- page "A runtime value that knows its source" @13:40 [demo]
-  repl ~"(dev.watcher/load-views!)"
+<!-- page "A runtime value that knows its source" @13:40
+  slide 21
 -->
+
+<!-- slide 21 · ask the value -->
+## ⌨️ ask the value
+
+{.repl}
+```clojure
+user=> (dev.watcher/load-views!)
+nil
+user=> (meta (demo.views/recipe-card (first demo.main/recipes)))
+{:file "demo/views.clj", :line 14, :column 3, :end-line 31, :end-column 64}
+```
+<!-- /slide -->
+
+> Slide 21 replaces the REPL beat below (on the finished app this meta is nil).
 
 **[demo — REPL]** `(dev.watcher/load-views!)`, then
 `(meta (demo.views/recipe-card (first demo.main/recipes)))` →
@@ -571,13 +670,13 @@ re-run this at a later step, ask for `(:data-src (second …))` instead.)*
 
 ---
 
-## §5 · Carry it to the DOM: `tag-tree` (14:24–17:09) — slides 16–17 → `step-3`
+## §5 · Carry it to the DOM: `tag-tree` (14:24–17:09) — slides 22–25 → `step-3`
 
 <!-- page "The map — metadata becomes attributes" @14:24
-  slide 16
+  slide 22
 -->
 
-<!-- slide 16 · the map, state 6 -->
+<!-- slide 22 · the map, state 6 -->
 ## 🗺 metadata becomes attributes
 
 {.flow-step}
@@ -590,10 +689,10 @@ re-run this at a later step, ask for `(:data-src (second …))` instead.)*
 > `a` plays tag-render, → next slide.
 
 <!-- page "tag-tree — metadata becomes attributes" @14:34
-  slide 17
+  slide 23
 -->
 
-<!-- slide 17 · metadata becomes attributes -->
+<!-- slide 23 · metadata becomes attributes -->
 # 🏷 metadata → attributes
 
 ```minimap arch 6 devbody.d-tag,seam,page.p-src
@@ -616,7 +715,7 @@ re-run this at a later step, ask for `(:data-src (second …))` instead.)*
 the render boundary: where hiccup meets the stringifier {.note}
 <!-- /slide -->
 
-**[SLIDE 17: metadata becomes attributes]** "The browser can't read Clojure
+**[SLIDE 23: metadata becomes attributes]** "The browser can't read Clojure
 metadata. So somewhere between the views running and hiccup turning them into
 a string, we walk the tree once and turn that metadata into real attributes.
 Elements without it pass straight through."
@@ -630,9 +729,26 @@ on the classpath."
 
 > Run checkout step-3.
 
-<!-- page "That div now remembers" @15:32 [demo]
-  dom '<span class="badge hot" data-src="demo/views.clj:21:8">' "DevTools, on the same crooked pill from minute one — the whole thesis rendered into one line of HTML."
+<!-- page "That div now remembers" @15:32
+  slide 24
+  slide 25
 -->
+
+<!-- slide 24 · minute one · now -->
+## 🏷 minute one · now
+
+{.stack}
+![DevTools at minute one: the span, class badge hot](figures/talk/s01-devtools-plain.png "minute one")
+![DevTools now: the same span, with data-name and data-src demo/views.clj:21:8](figures/talk/s05-devtools-data.png "now")
+<!-- /slide -->
+
+<!-- slide 25 · eight cards, one line -->
+## 🗂️ eight cards, one line
+
+![DevTools: the eight card roots, every one data-src demo/views.clj:14:3](figures/talk/s05-devtools-cards.png)
+<!-- /slide -->
+
+> Slide 24 at the callback, slide 25 at the scroll, instead of live DevTools. Their `data-name` is the bare tag; names arrive in §7.
 
 **[demo — the callback]** Browser reloads on save. Open DevTools, inspect
 **the same crooked pill from minute one** →
@@ -649,13 +765,13 @@ tell?"
 
 ---
 
-## §6 · The overlay, and a click that opens your editor (17:09–20:07) — slides 18–19 → `step-4`
+## §6 · The overlay, and a click that opens your editor (17:09–20:07) — slides 26–29 → `step-4`
 
 <!-- page "The map — a click that travels" @17:09
-  slide 18
+  slide 26
 -->
 
-<!-- slide 18 · the map, state 7 -->
+<!-- slide 26 · the map, state 7 -->
 ## 🗺 a click that travels
 
 {.flow-step}
@@ -670,10 +786,10 @@ tell?"
 > `a` plays click-open, → next slide.
 
 <!-- page "The overlay, the trust boundary, the dispatch" @17:24
-  slide 19
+  slide 27
 -->
 
-<!-- slide 19 · a click that travels -->
+<!-- slide 27 · a click that travels -->
 # 🖱 a click that travels
 
 ```minimap arch 7 overlay,e-wsinsp,hub.h-disp,e-codeg
@@ -701,7 +817,7 @@ function sendOpen(src) {                  // src is "file:line:col"
 `code -g file:line:col` — naive, and it works {.note}
 <!-- /slide -->
 
-**[SLIDE 19: a click that travels]** "The overlay is about two hundred lines
+**[SLIDE 27: a click that travels]** "The overlay is about two hundred lines
 of plain JavaScript and no framework. It walks up the `data-src` ancestors to
 build the breadcrumb, and on a click it peels the file, line and column apart
 and sends them down the socket we already have."
@@ -721,9 +837,28 @@ has one flaw we fix when the editor joins the conversation."
 
 > Run checkout step-4.
 
-<!-- page "From a pixel to a paren" @18:53 [demo]
-  shot s06-hover-badge "Hover → a box on the element and the breadcrumb of its tagged ancestors. Click → your editor jumps to `views.clj` 21:8."
+<!-- page "From a pixel to a paren" @18:53
+  slide 28
 -->
+
+<!-- slide 28 · pixel → paren -->
+## 🖱 pixel → paren
+
+![The overlay on the crooked pill: its box, and the breadcrumb main ▸ section ▸ article ▸ div ▸ h2 ▸ span, demo/views.clj:21:8](figures/talk/s06-popup-plain.png)
+
+```clojure from=17 cursor=21:8
+    [:h2 name
+     (when new?
+       [:span.badge "NEW"])
+     (when-let [t (some #{"spicy"} tags)]
+       [:span.badge.hot "🌶 " t])]
+    [:p description]
+```
+
+`demo/views.clj` — the click lands on line 21, column 8 {.note}
+<!-- /slide -->
+
+> Slide 28 instead of the live toggle, hover and click (the live crumb already shows names and () λ).
 
 **[demo]** Toggle the badge (Alt+Shift+I). Hover around: boxes + breadcrumbs
 (`main ▸ section ▸ article ▸ div ▸ h2 ▸ span`) — spend 20 seconds just
@@ -733,6 +868,21 @@ pill — click → **your editor jumps to `views.clj` line 21, column 8.**
 isn't the guess I would have made: the obvious move is to straighten
 `.badge`, and that would shove the NEW badge too. The element just told me
 it came from `[:span.badge.hot …]`, so `.hot` is the hook."
+
+<!-- page "One rule less" @19:35 [demo]
+  slide 29
+-->
+
+<!-- slide 29 · one rule less -->
+## 📏 one rule less
+
+{.stack}
+![The title row with top: .45rem: the spicy pill hangs below NEW's edges](figures/talk/s01-crooked-zoom.png "`top: .45rem`") {.guide}
+![The title row with the rule removed: the spicy pill sits on NEW's edges](figures/talk/s06-straight-zoom.png "without it") {.guide}
+<!-- /slide -->
+
+> Live fix with inspect mode off; slide 29 if it misbehaves. After the talk: `git -C demo checkout resources/style.css`.
+
 Remove the `top: .45rem` rule from `.badge.hot` in `style.css`, save → the
 pill straightens, NEW stays where it was.
 "See it, point at it, fix it, see it again. The question from minute
@@ -742,13 +892,13 @@ What *made* this thing?"
 
 ---
 
-## §7 · Components: name what produced it (20:07–22:33) — slides 20–21 → `step-5`
+## §7 · Components: name what produced it (20:07–22:33) — slides 30–32 → `step-5`
 
 <!-- page "The map — name what made it" @20:07
-  slide 20
+  slide 30
 -->
 
-<!-- slide 20 · the map, state 8 -->
+<!-- slide 30 · the map, state 8 -->
 ## 🗺 name what made it
 
 {.flow-step}
@@ -762,10 +912,10 @@ What *made* this thing?"
 > `a` plays wrap-load, → next slide.
 
 <!-- page "instrument-var! — the loader does it all" @20:17
-  slide 21
+  slide 31
 -->
 
-<!-- slide 21 · what made this -->
+<!-- slide 31 · what made this -->
 # 🧩 name what made it
 
 ```minimap arch 8 trload.c-wrap,views
@@ -791,7 +941,7 @@ the var now holds the wrapper. the source on disk is untouched {.note}
 no annotations, no registry. the loader takes care of it. {.sub}
 <!-- /slide -->
 
-**[SLIDE 21: name what made it]** "An element's position can't answer 'what
+**[SLIDE 31: name what made it]** "An element's position can't answer 'what
 made this'. That needs the enclosing `defn` — and the var already knows its
 own file and line."
 
@@ -813,14 +963,24 @@ tagged root back, not your literal. The original is one lookup away, under
 
 > Run checkout step-5.
 
-<!-- page "The breadcrumb names the whole tower" @21:46 [demo]
-  shot s07-hover-star "After instrumenting: the breadcrumb now names the whole tower of components."
+<!-- page "The breadcrumb names the whole tower" @21:46
+  slide 32
 -->
+
+<!-- slide 32 · the whole tower, named -->
+## 🧩 the whole tower, named
+
+{.stack}
+![The overlay on the spicy pill: page ▸ featured ▸ recipe-card ▸ div ▸ h2 ▸ span, demo/views.clj:21:8](figures/talk/s07-popup-pill.png)
+![The overlay on a featured star: page ▸ featured ▸ recipe-card ▸ div ▸ div ▸ rating ▸ star, demo/ui/views.clj:19:1](figures/talk/s07-popup-names.png)
+<!-- /slide -->
+
+> Slide 32 instead of the live hover and the card-root click (live crumbs show () λ).
 
 **[demo]** Save `inspector.clj` — watch the terminal: the engine reloads AND
 the views re-tag themselves (§4's one line, earning its keep). Hover a star:
 the breadcrumb now names the whole tower —
-`page ▸ featured ▸ recipe-card ▸ div ▸ rating ▸ star`. Click a card's *root*
+`page ▸ featured ▸ recipe-card ▸ div ▸ div ▸ rating ▸ star`. Click a card's *root*
 → your editor opens the `defn recipe-card` line. "Views stayed plain
 `defn`s — no annotations, no registry. The loader did it all. So the page
 can now point at your code, precisely, in your vocabulary. One direction.
@@ -828,16 +988,16 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 
 ---
 
-## §8 · The reverse direction: your cursor drives the browser (22:33–25:43) — slides 22–23 → `step-6`
+## §8 · The reverse direction: your cursor drives the browser (22:33–25:43) — slides 33–36 → `step-6`
 
 > THE KNOCKOUT. Protect it (see the hard gate in the cuts section), and when
 > the stars light, stop talking for three full seconds.
 
 <!-- page "The map — your cursor drives the browser" @22:33
-  slide 22
+  slide 33
 -->
 
-<!-- slide 22 · the map, state 9 -->
+<!-- slide 33 · the map, state 9 -->
 ## 🗺 your cursor drives the browser
 
 {.flow-step}
@@ -852,10 +1012,10 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 > `a` plays cursor, → next slide.
 
 <!-- page "An index, an agent, a highlighter" @22:48
-  slide 23
+  slide 34
 -->
 
-<!-- slide 23 · the other direction -->
+<!-- slide 34 · the other direction -->
 # ↩ the other direction
 
 {.rev}
@@ -879,7 +1039,7 @@ the index is built by the same read pass — that's what the\
 `:end-line`/`:end-column` were for {.note}
 <!-- /slide -->
 
-**[SLIDE 23: the other direction]** "This is the half I wanted most: let the
+**[SLIDE 34: the other direction]** "This is the half I wanted most: let the
 code point back at everything it rendered. Three small things — an index, an
 agent in the editor, and a highlighter."
 
@@ -899,8 +1059,18 @@ demoted to a fallback."
 > Run checkout step-6. Then run *Joyride: Run Workspace Script*.
 
 <!-- page "Your cursor drives the browser" @24:07 [demo]
-  shots s08-desc-9 "cursor in `recipe-card`'s `[:p description]` → nine green boxes, one per card" | s08-badges-3 "cursor onto `[:span.badge]` → the three NEW badges"
+  slide 35
 -->
+
+<!-- slide 35 · your cursor, on the page -->
+## ↩ your cursor, on the page
+
+{.pair}
+![Cursor on recipe-card's :p description: nine green boxes, one per card](figures/talk/s08-cursor-desc.png '`[:p description]`, line 22 → nine')
+![Cursor on the NEW badge's :span.badge: the three NEW badges, the spicy pills dark](figures/talk/s08-cursor-new.png '`[:span.badge "NEW"]`, line 19 → three')
+<!-- /slide -->
+
+> Live; slides 35–36 if the agent misbehaves.
 
 **[demo — narrate every move, then stop narrating]** Inspect mode on. Editor
 cursor into `recipe-card`'s body on `[:p description]` (line 22) → **nine
@@ -911,8 +1081,14 @@ spicy pills right beside them stay dark.** "Not a class selector: the page
 knows which line made which pill."
 
 <!-- page "The knockout — all forty-five stars" @24:49 [the knockout]
-  shot s08-stars-45 "Cursor in `star`'s body, in the UI-kit namespace → all 45 stars on the page ignite." tall hero
+  slide 36
 -->
+
+<!-- slide 36 · forty-five -->
+## ⭐ forty-five
+
+![Cursor in star's body, in the UI-kit namespace: all 45 stars on the page lit](figures/talk/s08-cursor-stars.png "`star`'s body, `demo/ui/views.clj` line 23")
+<!-- /slide -->
 
 Then the knockout: switch files to
 `ui/views.clj`, cursor into `star`'s body — **all forty-five stars on the
@@ -925,13 +1101,13 @@ one*?" **[point at the featured card]**
 
 ---
 
-## §9 · Call sites: telling instances apart (25:43–29:57) — slides 24–25 → `step-7`
+## §9 · Call sites: telling instances apart (25:43–29:57) — slides 37–40 → `step-7`
 
 <!-- page "The map — which call made it" @25:43
-  slide 24
+  slide 37
 -->
 
-<!-- slide 24 · the map, state 10 -->
+<!-- slide 37 · the map, state 10 -->
 ## 🗺 which call made it
 
 {.flow-step}
@@ -946,10 +1122,10 @@ one*?" **[point at the featured card]**
 > `a` plays callsite-load, `a` plays callsite-render, → next slide.
 
 <!-- page "Same function, two call sites, told apart" @25:53
-  slide 25
+  slide 38
 -->
 
-<!-- slide 25 · which call made it -->
+<!-- slide 38 · which call made it -->
 # 🎯 which call made it
 
 ```minimap arch 10 trload.c-calls,page.p-call
@@ -975,7 +1151,7 @@ guards: only known view fns · never inside `->` or `quote` {.note}
 rewriting between read and eval — a step no Clojure loader has {.sub}
 <!-- /slide -->
 
-**[SLIDE 25: which call made it]** "Three `(stat …)` calls, three identical
+**[SLIDE 38: which call made it]** "Three `(stat …)` calls, three identical
 roots — and nothing in the DOM records which call made which one. So while
 we're loading, each call to a view function gets rewritten to carry its own
 invocation site."
@@ -995,8 +1171,18 @@ engine, re-tagged the views, and reloaded the page. One command, whole
 state."
 
 <!-- page "Eight grid cards, or just the featured one" @27:17 [demo]
-  shots s09-grid-8 "grid `(recipe-card r)` → 8 grid cards; featured stays dark" | s09-featured-1 "`featured`'s `(recipe-card r)` → only the featured card"
+  slide 39
 -->
+
+<!-- slide 39 · eight, or one -->
+## 🎯 eight, or one
+
+{.pair}
+![Cursor on the grid's call of recipe-card: the eight grid cards lit, the featured card dark](figures/talk/s09-callsite-grid.png "the grid's `(recipe-card r)`, line 81 → eight")
+![Cursor on featured's call of recipe-card: only the featured card lit](figures/talk/s09-callsite-featured.png "`featured`'s `(recipe-card r)`, line 38 → one")
+<!-- /slide -->
+
+> Live; slides 39–40 as backup.
 
 **[demo — the payoff pair]** `recipe-card` is called from TWO places: the
 grid's `for`, and `featured`.
@@ -1008,8 +1194,14 @@ grid's `for`, and `featured`.
    page can now say which call made which, so I can give the big card its
    word and leave the grid alone."
 <!-- page "One crumb, two files" @28:25 [demo]
-  shot s09-hover-glyphs "The breadcrumb folds every component: `()` the call site, `λ` the definition. One crumb spans two files."
+  slide 40
 -->
+
+<!-- slide 40 · every component, folded -->
+## 🧭 every component, folded
+
+![The overlay on a featured star: page ▸ featured () λ ▸ recipe-card () λ ▸ div ▸ div ▸ rating () λ ▸ star () λ, demo/ui/views.clj:19:1](figures/talk/s09-popup-glyphs.png)
+<!-- /slide -->
 
 3. *(Optional — the payoff pair already proved it.)* Cursor on
    `(ui/stat "cooks" 7)` (line 73) → one stat — "and a *cross-namespace*
@@ -1028,13 +1220,13 @@ exactly when you should stop trusting me and ask: how does it *break*?"
 
 ---
 
-## §10 · The sharp edge (29:57–33:59) — slides 26–29
+## §10 · The sharp edge (29:57–33:59) — slides 41–45
 
 <!-- page "The map — a plain load strips the tags" @29:57
-  slide 26
+  slide 41
 -->
 
-<!-- slide 26 · the map, state 11 -->
+<!-- slide 41 · the map, state 11 -->
 ## 🗺 a plain load strips the tags
 
 {.flow-step}
@@ -1049,10 +1241,10 @@ exactly when you should stop trusting me and ask: how does it *break*?"
 > `a` plays calva-load, `a` plays by-hand, → next slide.
 
 <!-- page "The re-def that strips every tag" @30:12
-  slide 27
+  slide 42
 -->
 
-<!-- slide 27 · the sharp edge -->
+<!-- slide 42 · the sharp edge -->
 ## The re-def that strips every tag
 
 The tags exist **only because the loader applied them**.\
@@ -1067,9 +1259,24 @@ for how views load. {.rule .big}
 The moment there are two ways to load a thing, one of them is wrong. {.sub}
 <!-- /slide -->
 
-**[SLIDE 27: the re-def that strips every tag]** "Before you build this at
+**[SLIDE 42: the re-def that strips every tag]** "Before you build this at
 home, the one thing that WILL bite you. Everything works because the loader
 applied the tags. Watch what happens when I go around it."
+
+<!-- page "Dead cards, live stars" @30:40 [demo]
+  slide 43
+-->
+
+<!-- slide 43 · after a plain load -->
+## ⚠️ after a plain load
+
+{.stack}
+![Before: hovering the recipe of the day's description shows its box and breadcrumb](figures/talk/s10-plain-before.png "before")
+![After a plain load-file and a refresh: the same hover shows nothing](figures/talk/s10-plain-dead.png "after: nothing")
+![After the plain load, a star still answers: rating ▸ star () λ, demo/ui/views.clj:19:1](figures/talk/s10-plain-star.png "a star, after")
+<!-- /slide -->
+
+> Live on the finished app; slide 43 if the load or the recovery misbehaves.
 
 > **[live]** Calva: *Load/Evaluate buffer* on `views.clj` — a plain load, no
 > tools.reader. Then **[F5]**.
@@ -1090,8 +1297,8 @@ an unmodified buffer writes nothing — so without the edit the watcher never
 fires. A silent fumble inside the section about silent failures would be
 brutal.)*
 
-<!-- page "Your REPL is the second loader" @32:14 [slide 27]
-  slide 27
+<!-- page "Your REPL is the second loader" @32:14 [slide 42]
+  slide 42
 -->
 
 "And a single `defn` eval does the same thing — alt-Enter, the gesture we
@@ -1102,10 +1309,10 @@ that means putting the loader behind nREPL. The moment there are two ways to
 load a thing, one of them is wrong."
 
 <!-- page "The map — the inspector doesn't ship" @32:49
-  slide 28
+  slide 44
 -->
 
-<!-- slide 28 · the map, state 12 -->
+<!-- slide 44 · the map, state 12 -->
 ## 🗺 the inspector doesn't ship
 
 {.flow-step}
@@ -1120,11 +1327,11 @@ load a thing, one of them is wrong."
 > `a` plays prod-render, → next slide.
 
 <!-- page "The inspector doesn't ship" @32:59
-  slide 29
+  slide 45
   repl ~"demo.views/*render-boundary*"
 -->
 
-<!-- slide 29 · the inspector doesn't ship -->
+<!-- slide 45 · the inspector doesn't ship -->
 ## The inspector doesn't ship
 
 ```minimap arch 12 seam,e-html
@@ -1140,7 +1347,7 @@ load a thing, one of them is wrong."
 - a dev-only **classpath**: nothing binds the seam. absent, not ~~disabled~~
 <!-- /slide -->
 
-**[SLIDE 29: the inspector doesn't ship]** REPL: `demo.views/*render-boundary*` →
+**[SLIDE 45: the inspector doesn't ship]** REPL: `demo.views/*render-boundary*` →
 `#function[clojure.core/identity]` — "the app's one seam, and outside a dev
 request that is all it ever is — even in this JVM. `wrap-dev` binds it per
 request, and `wrap-dev` lives in `dev/`, which prod's classpath doesn't
@@ -1153,13 +1360,13 @@ production. There, we still throw it away."
 
 ---
 
-## §11 · What it generalizes to + close (33:59–38:00) — slides 30–33
+## §11 · What it generalizes to + close (33:59–38:00) — slides 46–49
 
 <!-- page "The map — both directions, one JVM" @33:59
-  slide 30
+  slide 46
 -->
 
-<!-- slide 30 · the map, state 13 -->
+<!-- slide 46 · the map, state 13 -->
 ## 🗺 both directions, one JVM
 
 {.flow-step}
@@ -1173,10 +1380,10 @@ production. There, we still throw it away."
 > `a` plays pixel-paren, `a` plays cursor-pixel, → next slide.
 
 <!-- page "What you take home" @34:14
-  slide 31
+  slide 47
 -->
 
-<!-- slide 31 · what generalizes -->
+<!-- slide 47 · what generalizes -->
 ## What you take home
 
 {.big}
@@ -1189,7 +1396,7 @@ production. There, we still throw it away."
   ~800 lines all in, glue included. A weekend.
 <!-- /slide -->
 
-**[SLIDE 31: three take-homes]**
+**[SLIDE 47: three take-homes]**
 - "'Code is data' is usually sold with macros. This is the better demo:
   because Hiccup is data, about 450 lines of Clojure for the core — roughly
   800 counting the browser overlay and the editor agent — bought a
@@ -1202,10 +1409,10 @@ production. There, we still throw it away."
 - "The highest-leverage tool is the small one you build for *your* system."
 
 <!-- page "Take the same walk" @35:05
-  slide 32
+  slide 48
 -->
 
-<!-- slide 32 · repo -->
+<!-- slide 48 · repo -->
 ## Take the same walk
 
 {.steps}
@@ -1223,16 +1430,16 @@ the production-shaped version, every trade-off argued:\
 **Parens to Production** — mapidentity.github.io/parens-to-production {.sub}
 <!-- /slide -->
 
-**[SLIDE 32: repo + book]** "The demo repo is branched step by step — clone it,
+**[SLIDE 48: repo + book]** "The demo repo is branched step by step — clone it,
 `git switch step-0`, and take the same walk. The production-shaped
 version — classpath separation, morphing reloads, reconnect handling, every
 trade-off argued — is a chapter in the open companion book."
 
 <!-- page "Hiccup is just data. So inspect it." @35:44
-  slide 33
+  slide 49
 -->
 
-<!-- slide 33 · close -->
+<!-- slide 49 · close -->
 # ++Hiccup is just data.++\
 So inspect it.
 
@@ -1241,7 +1448,7 @@ So inspect it.
 Thank you. · questions? {.sub}
 <!-- /slide -->
 
-**[SLIDE 33: close]** "We started with Bret Victor's principle — an
+**[SLIDE 49: close]** "We started with Bret Victor's principle — an
 immediate connection to what you make — and the one place our stack broke
 it: a crooked pill nobody could trace. Now the connection runs both ways,
 and the gap between the tools you have and the tools you can imagine turned
@@ -1267,7 +1474,7 @@ silence. Never rush the stars.
 2. §9's third beat, the cross-namespace `(ui/stat …)` proof — the payoff
    pair already made the point; this one is reassurance, not revelation.
 3. §10's REPL beat (the seam is `identity`) — one spoken sentence instead.
-4. §9's guard narration (slide 25) — show the slide, say "three guards keep
+4. §9's guard narration (slide 38) — show the slide, say "three guards keep
    it safe", checkout, go straight to the payoff pair. (Never cut the payoff
    pair; it's the talk's most distinctive 40 seconds.)
 5. §7's slide narration — checkout, hover a star, let the breadcrumb make the

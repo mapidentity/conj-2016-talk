@@ -377,7 +377,7 @@ The class line before the ` ```diagram ``` ` fence decides what happens without 
 ### The progress line
 
 Under a map with flows, a hairline runs along the very bottom of the projector
-slide, as wide as the figure and below the `N / 33` counter. It is for the speaker,
+slide, as wide as the figure and below the `N / 49` counter. It is for the speaker,
 not the audience:
 - One segment per flow or swap, each as long as it takes (a flow's 0.9 s hold included).
   When the state has two or more flows, a small dot marks each boundary; a dot is
