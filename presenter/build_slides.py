@@ -26,7 +26,8 @@ Syntax (documented in README.md, "Slides"):
                           parts lit, top right beside the heading, out of the
                           flow (one per slide; {.rev} / {.warn} light them green /
                           amber). The build checks that the heading leaves room
-                          and narrows the inset if not (see fit_minimap)
+                          and narrows the inset if not; on a slide with no
+                          heading it takes its own row (see fit_minimap)
   ```lang … ```           a verbatim code block, syntax-highlighted when the fence
                           names a language (clojure, html, js, bash; see highlight.py).
                           After the language: from=N numbers the lines from N in a
@@ -322,7 +323,8 @@ def shots_html(classes, figs):
 
 # ---------------------------------------------------------------- minimap ---
 # A ```minimap``` inset sits top right, beside the heading and out of the flow
-# (slides-template.html, `.ax-mini`), so the body never moves. It must neither run
+# (slides-template.html, `.ax-mini`), so the body doesn't move (on a slide with no
+# heading it takes its own row instead: see fit_minimap). It must neither run
 # into the heading's words nor reach down into the body. The slide geometry that
 # decides both, in em of the slide's base font, as slides-template.html sets it
 # (keep these in step with it). 16:9 is the tightest case — a wider screen only adds
@@ -356,14 +358,21 @@ def heading_em(level, body):
     return max((w(l) for l in lines), default=0.0), len(lines)
 
 def fit_minimap(n, blocks, aspect):
-    """The inset's width (em) on slide n, whose blocks start with it: as wide as the heading
-    row's height lets it be without reaching the body (at most --ax-mini-max), narrower
-    beside a long heading, down to --ax-mini-min — below that the build warns."""
+    """→ (width in em, alone) of the inset on slide n, whose blocks start with it: as wide as
+    the heading row's height lets it be without reaching the body (at most --ax-mini-max),
+    narrower beside a long heading, down to --ax-mini-min — below that the build warns.
+    On a slide that starts without a heading (a full-bleed screenshot) it is `alone`: it
+    takes its own row at the top, as wide as beside a one-line h2, and the body starts
+    below it (the template's `.ax-alone`; the build prints a `note:`)."""
     mx, mn = mini_sizes()
     head = blocks[1] if len(blocks) > 1 and blocks[1][0] == "heading" else None
-    if not head: print(f"  warning: slide {n}: a minimap sits beside the heading, and this slide does not start with one")
-    words, lines = heading_em(*head[2]) if head else (0.0, 0)
-    size, lh = HEAD.get(head[2][0], HEAD[2]) if head else (0.0, 0.0)
+    if not head:
+        size, lh = HEAD[2]
+        w = min(mx, (size * lh + MINI_DROP + GAP - CLEAR["body"]) * aspect)
+        print(f"  note: slide {n}: no heading — the minimap takes its own row at the top ({w:.2f}em), the body starts below it")
+        return round(w, 2), True
+    words, lines = heading_em(*head[2])
+    size, lh = HEAD.get(head[2][0], HEAD[2])
     row = size * lh * lines
     by_height = (row + MINI_DROP + GAP - CLEAR["body"]) * aspect
     by_words = SLIDE_W - words - CLEAR["words"]
@@ -376,7 +385,7 @@ def fit_minimap(n, blocks, aspect):
         w = mn
     elif by_words < min(mx, by_height):
         print(f"  note: slide {n}: minimap narrowed to {w:.2f}em beside the heading ({min(mx, by_height):.2f}em would touch it)")
-    return round(w, 2)
+    return round(w, 2), False
 
 # ------------------------------------------------------------------ slides ---
 BLOCK = re.compile(r"^<!-- slide (\d+) · (.*?) -->[ \t]*\n(.*?)^<!-- /slide -->[ \t]*$\n?", re.M | re.S)
@@ -409,14 +418,16 @@ def slides():
     return out
 
 def slide_html(n, blocks):
-    """Slide n's blocks → its inner HTML. A minimap goes first, out of the flow."""
+    """Slide n's blocks → its inner HTML. A minimap goes first, out of the flow (in it on a
+    slide with no heading: see fit_minimap)."""
     minis = [b for b in blocks if b[0] == "minimap"]
     if len(minis) > 1: raise SystemExit(f"{len(minis)} minimaps (one per slide)")
     if minis:                                        # first in the section: see the template
         blocks = minis + [b for b in blocks if b[0] != "minimap"]
         _, c, (name, k, ids) = minis[0]
         if name not in DIAGRAMS: raise SystemExit(f"no `<!-- diagram {name} · … -->` … `<!-- /diagram -->` block")
-        blocks[0] = ("minimap", c, (name, k, ids, fit_minimap(n, blocks, DIAGRAMS[name].W / DIAGRAMS[name].H)))
+        width, alone = fit_minimap(n, blocks, DIAGRAMS[name].W / DIAGRAMS[name].H)
+        blocks[0] = ("minimap", c + ["ax-alone"] * alone, (name, k, ids, width))
     return "\n".join("  " + render_block(*b) for b in blocks)
 
 def page(found=None):

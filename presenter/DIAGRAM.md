@@ -87,7 +87,8 @@ looks like "new" on a map slide.
 - **Placement:** top right, starting 0.8em above the heading's top edge and
   ending at the slide's right padding. It is out of the flow, and the build puts
   it first in the section wherever the fence was written. So the heading and the
-  body sit exactly where they would without it, and a minimap never shifts a slide.
+  body sit exactly where they would without it, and a minimap never shifts a slide,
+  except on a slide with no heading (`.ax-alone`, see "Size").
 - **Size:** `build_slides.py` works out the width and writes it on the inset
   (`--ax-mini-w`, in em):
   - it is as wide as the heading row allows without reaching the body: about
@@ -99,6 +100,11 @@ looks like "new" on a map slide.
     inset. If even the minimum doesn't fit, it prints a `warning:` and draws the
     inset at the minimum width, overlapping the heading. The fix is to shorten
     the heading or drop the inset.
+  - on a slide that doesn't start with a heading (a full-bleed screenshot), the
+    inset is `.ax-alone`: it takes its own row in the flow, at the same top-right
+    box and as wide as beside a one-line h2 (7.65em), and the body starts below
+    it, centred in what is left as below a heading. An image group gives up that
+    height. The build prints a `note:`.
   - The two limits live in `slides-template.html`, and the build reads them from
     there.
   - The heading is measured in DejaVu Sans Bold, with emoji at 1.25em. That is the
@@ -107,7 +113,8 @@ looks like "new" on a map slide.
     stage.
 - **In the deck:** the slide card shows the inset top right, below the "slide N"
   label, at 2.1 mm per em of its projector width (about 19 mm), with thinner
-  strokes. The deck's CSS in `build_presenter.py` sets this.
+  strokes. The deck's CSS in `build_presenter.py` sets this, and puts an
+  `.ax-alone` inset in the card's flow at the same box, above the body.
 - **Limit:** one minimap per slide.
 
 ## The DSL
@@ -548,8 +555,8 @@ imports it. So `refresh.sh` runs them in either mode.
   (its look changes on the cut).
 - A message that finds no clear stretch (it then rides on the wire); a hop number
   that finds no clear spot.
-- A minimap on a slide that doesn't start with a heading; a minimap with no room
-  beside its heading (see "Size" above). A narrowed minimap prints a `note:`.
+- A minimap with no room beside its heading (see "Size" above). A narrowed
+  minimap, and one on a slide with no heading (its own row), print a `note:`.
 
 ## Standalone SVGs
 

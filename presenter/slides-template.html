@@ -23,8 +23,8 @@
      last lines instead of overflowing the slide. Slide geometry still measures
      as "fits", so test by measuring scrollHeight-clientHeight on every <pre>,
      at 1920x1080, across all slides. At this padding/gap/leading, base 38 clips
-     slide 12 (27px, the socket). The binding slides are the tall code blocks —
-     12 (the socket), 21 (the loader) and 29 (a click that travels); the
+     slide 13 (27px, the socket). The binding slides are the tall code blocks —
+     13 (the socket), 22 (the loader) and 30 (a click that travels); the
      numbers move when slides are inserted, the names don't. */
   body {
     font-family: system-ui, sans-serif; font-size: min(3.333vh, 1.875vw);
@@ -54,7 +54,7 @@
   }
   code { padding: .1em .35em; font-size: .92em; }
   /* 1.35 leading, not 1.5: on tall blocks that difference is what buys the
-     larger base above without clipping slides 12, 21 and 29 (see above) */
+     larger base above without clipping slides 13, 22 and 30 (see above) */
   pre { padding: .5em 1em; font-size: .85em; line-height: 1.35; overflow-x: auto; }
   /* box-drawing diagrams: rules must sit tight against their sides to read as a box */
   pre.diagram { line-height: 1.05; font-size: .78em; }
@@ -136,13 +136,20 @@
      (--ax-mini-w, in em): as wide as the heading row allows without reaching down to
      the body (~9em beside an h1, ~7.6em beside an h2), at most --ax-mini-max, narrowed
      beside a long heading down to --ax-mini-min (below that the build warns). It reads
-     those two numbers here, and assumes this sheet's padding, gap and h1/h2 sizes. */
+     those two numbers here, and assumes this sheet's padding, gap and h1/h2 sizes.
+     One case is placed differently: .ax-alone, on a slide with no heading (a full-bleed
+     screenshot). That inset is in the flow, at the same top-right box and as wide as
+     beside a one-line h2, and the body starts below it, the auto margins handed on as
+     after a heading. */
   .slide { --ax-mini-max: 10; --ax-mini-min: 6.5; }
   .slide:has(> .ax-mini) { position: relative; }
   .slide > .ax-mini { position: absolute; top: calc(4vh - .8em); right: 4vw;
                       width: calc(var(--ax-mini-w, 9) * 1em); }
   .slide > .ax-mini:first-child + * { margin-top: 0; }
   .slide > .ax-mini:first-child + * + * { margin-top: auto; }
+  .slide > .ax-mini.ax-alone { position: static; align-self: flex-end; margin-top: -.8em; }
+  .slide > .ax-mini.ax-alone:first-child + * { margin-top: auto; }
+  .slide > .ax-mini.ax-alone:first-child + * + * { margin-top: 0; }
 /*{{DIAGRAM_CSS}}*/
   /* font-size too: `code` above is .92em, which would compound with pre's own
      reduction and set block code smaller than intended (.8 x .92 = .736em) */

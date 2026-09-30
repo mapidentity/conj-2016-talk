@@ -1047,7 +1047,8 @@ class Diagram:
         """An element's name for a screen reader: its words, not its id."""
         if el.kind == "edge":
             return el.text(k) or " → ".join(self._say(self.els[s.split(":")[0]], k) for s in (el.a, el.b))
-        if el.kind in ("row", "cell"): return f"{self._say(el.parent, k)} {el.text(k)}"
+        if el.kind in ("row", "cell"):               # a box without words is named by its rows: the row alone
+            return f"{self._say(el.parent, k)} {el.text(k)}" if el.parent.text(k) else el.text(k)
         if el.kind == "node" and not el.text(k) and el.parts: return el.parts[0].text(k)
         return el.text(k) or el.id
 

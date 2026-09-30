@@ -183,7 +183,7 @@ for how views load. {.rule .big}
 | ```` ```clojure ```` … ```` ``` ```` fenced block | `<pre><code>`, verbatim; syntax-highlighted when the fence names a language: `clojure`/`clj`, `html`/`dom`, `js`, `bash`/`sh` (no inline markup inside) |
 | ```` ```svg ```` … ```` ``` ```` fenced block | an inline figure: the SVG is passed through **verbatim** (not escaped) inside `<div class="figure">`. Use the slide palette (`#ece9f1` text, `#8b7ff5` accent, `#9d94b8` muted, `#211d30` chips) and a `viewBox` with no fixed width, so it scales in both `slides.html` and the deck |
 | ```` ```diagram NAME K ```` fence (empty body) | state K of the run-sheet's `diagram NAME` block, full size, filling the room below the heading. See "Diagrams" |
-| ```` ```minimap NAME K ID,ID… ```` fence (empty body) | state K as a small you-are-here inset beside the heading, with those parts lit. One per slide. See "Diagrams" |
+| ```` ```minimap NAME K ID,ID… ```` fence (empty body) | state K as a small you-are-here inset beside the heading, with those parts lit. One per slide; on a slide with no heading it takes its own row at the top. See "Diagrams" |
 | ```` ```clojure from=17 cursor=21:8 ```` | options after the language: `from=N` numbers the lines from N in a gutter; `cursor=L:C` bands line L and puts a caret before column C (1-based, as the reader counts: keep the file's indentation). Not for `diff` |
 | `{.repl}` before a ```` ```clojure ```` fence | a REPL exchange: a line starting `user=> ` is input (prompt dim, form highlighted), every other line is output (muted) |
 | `![alt](figures/talk/NAME.png "caption")` alone on a line | a screenshot, `<figure class="shot">`. The path is relative to `talk/` and must exist (the build fails otherwise); the caption is optional, inline markdown, one line (write `'…'` when it holds a `"`); no `]` in the alt. `{.guide}` at the end of the line: dashed hairlines at 25% and 75% of the image's height, from 45% of its width to the right edge (the capture cuts the strip so the measured element spans exactly that: `capture.cjs`, the title-row strip rule) |
@@ -285,10 +285,13 @@ swap loader-swap @5 : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-d
 - **A minimap:** an empty ```` ```minimap NAME K ID,ID… ```` fence anywhere in the
   slide block. It lights the listed regions, nodes, rows, cells or edges in the
   accent colour, or green with `{.rev}`, or amber with `{.warn}`. The build places
-  it top right, beside the heading and out of the flow, so the body never moves.
+  it top right, beside the heading and out of the flow, so the body doesn't move.
   It sizes the inset to the heading row, about 327 px wide at 1080p beside an h1.
   Beside a long heading it narrows the inset (`note:`), and warns when even
-  `--ax-mini-min` doesn't fit.
+  `--ax-mini-min` doesn't fit. On a slide with no heading (a full-bleed
+  screenshot) the inset (`.ax-alone`, `note:`) takes its own row at the top, at the
+  same top-right box and as wide as beside a one-line h2, and the body starts
+  below it, centred in what is left as it would be below a heading.
 
   ````text
   ```minimap arch 3 watcher,e-poll
