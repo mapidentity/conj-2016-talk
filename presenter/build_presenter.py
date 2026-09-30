@@ -279,6 +279,9 @@ CSS += r"""
    flow; --ax-mini-w is the width build_slides.py settled on, in the projector's em */
 .slide > .ax-mini { position:absolute; top:7.5mm; right:5mm; width:calc(var(--ax-mini-w, 9) * 2.1mm); }
 .slide > .ax-mini svg.axm { --axm-s:.6; }
+/* {.hero} headings: the slide's one word, big and centred on the card (the projector's
+   is page-centred, slides-template.html) */
+.slide h1.hero { font-size:54pt; line-height:1; letter-spacing:.04em; text-align:center; margin:0; padding:16mm 0; }
 /* {.repl} fences and ```lang from= cursor= fences (build_slides.py): scoped to the slide
    card, because .repl is also the deck's own REPL card class */
 .slide pre.repl .rp { color:#6f6890; } .slide pre.repl .ro { opacity:.72; }

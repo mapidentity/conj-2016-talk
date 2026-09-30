@@ -25,7 +25,7 @@
      as "fits", so test by measuring scrollHeight-clientHeight on every <pre>,
      at 1920x1080, across all slides. At this padding/gap/leading, base 38 clips
      slide 12 (27px, the socket). The binding slides are the tall code blocks —
-     12 (the socket), 20 (the loader) and 27 (a click that travels); the
+     12 (the socket), 21 (the loader) and 29 (a click that travels); the
      numbers move when slides are inserted, the names don't. */
   body {
     font-family: system-ui, sans-serif; font-size: min(3.333vh, 1.875vw);
@@ -55,7 +55,7 @@
   }
   code { padding: .1em .35em; font-size: .92em; }
   /* 1.35 leading, not 1.5: on tall blocks that difference is what buys the
-     larger base above without clipping slides 12, 20 and 27 (see above) */
+     larger base above without clipping slides 12, 21 and 29 (see above) */
   pre { padding: .5em 1em; font-size: .85em; line-height: 1.35; overflow-x: auto; }
   /* box-drawing diagrams: rules must sit tight against their sides to read as a box */
   pre.diagram { line-height: 1.05; font-size: .78em; }
@@ -510,6 +510,12 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   ul { padding-left: 1.1em; display: grid; gap: .55em; }
   li::marker { color: #8b7ff5; }
   .big { font-size: 1.35em; }
+  /* {.hero} on a heading: the slide's one word (DEMO), huge and centred on the page —
+     no heading row. Auto margins on every side centre it in the flex column; the
+     second selector outranks the minimap rule above, which zeroes the margin-top of
+     the block after an inset. */
+  .slide > .hero, .slide > .ax-mini:first-child + .hero {
+    margin: auto; text-align: center; font-size: 11em; line-height: 1; letter-spacing: .04em; }
   .rule { border-left: .21em solid #8b7ff5; padding: .4em 0 .4em .8em; }
   /* a remark on the block above — boxed, so it reads as an aside, not as body copy */
   .note { border-left: .18em solid #8b7ff5; background: rgba(139, 127, 245, .10);
@@ -539,7 +545,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 2 · the app -->
 <section class="slide">
-  <h2>🍜 the recipe app</h2>
   <div class="shots stack" style="--hw:0.56250;--kx:0;--ky:0;--kc:0"><div class="grp">
     <figure class="shot" style="--wa:1.00000;--wb:1.77778"><span class="frame"><img src="figures/talk/s01-app.png" width="2560" height="1440" alt="The recipe app: header, stats, the recipe of the day, filters, the first cards"></span></figure>
   </div></div>
@@ -547,7 +552,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 3 · the map, state 1 -->
 <section class="slide">
-  <h2>🗺 a webserver, a REPL, an editor</h2>
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="1" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 1: a webserver, a REPL, an editor">
   <g class="ax-region ax-r-lane ax-cast" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-cast" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
@@ -575,7 +579,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 4 · crooked -->
 <section class="slide">
-  <h2>🌶️ crooked</h2>
+  <h2>🌶️</h2>
   <div class="shots stack" style="--hw:0.15600;--kx:0;--ky:0;--kc:0"><div class="grp">
     <figure class="shot guide" style="--wa:1.00000;--wb:6.41026"><span class="frame"><img src="figures/talk/s01-crooked-zoom.png" width="1500" height="234" alt="The recipe of the day&#x27;s title row: the NEW badge, and the spicy pill hanging lower"></span></figure>
   </div></div>
@@ -583,7 +587,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 5 · right-click, inspect -->
 <section class="slide">
-  <h2>🔍 right-click, inspect</h2>
+  <h2>🔍</h2>
   <div class="shots stack" style="--hw:0.35635;--kx:0;--ky:1;--kc:0"><div class="grp">
     <figure class="shot" style="--wa:1.00000;--wb:2.80624"><span class="frame"><img src="figures/talk/s01-devtools-page.png" width="1260" height="212" alt="Chrome&#x27;s inspect highlight on the spicy pill: span.badge.hot"></span></figure>
     <figure class="shot" style="--wa:0.90476;--wb:2.53898"><span class="frame"><img src="figures/talk/s01-devtools-rows.png" width="1140" height="237" alt="DevTools Elements: the selected span, class badge hot, no data attributes"></span></figure>
@@ -592,30 +596,27 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 6 · edit, save, refresh -->
 <section class="slide">
-  <h2>💾 edit, save, refresh</h2>
+  <h2>🖮💾⟳</h2>
   <pre><code><span class="rm">-       [:span.badge.hot "🌶 " t])]</span><span class="ad">+       [:span.badge.hot "🌶🔥 " t])]</span></code></pre>
   <div class="shots stack" style="--hw:0.30385;--kx:0;--ky:1;--kc:2"><div class="grp">
     <figure class="shot" style="--wa:1.00000;--wb:3.29114"><span class="frame"><img src="figures/talk/s01-badges-featured.png" width="2080" height="336" alt="The recipe of the day&#x27;s badges after save and refresh: still just 🌶 spicy"></span><figcaption>recipe of the day</figcaption></figure>
     <figure class="shot" style="--wa:0.68269;--wb:2.24684"><span class="frame"><img src="figures/talk/s01-badges-grid.png" width="1420" height="296" alt="A grid card&#x27;s badges after save and refresh: still just 🌶 spicy"></span><figcaption>the grid</figcaption></figure>
   </div></div>
-  <p class="note">saved, refreshed: unchanged</p>
 </section>
 
 <!-- 7 · load the file, refresh again -->
 <section class="slide">
-  <h2>🔁 load the file, refresh again</h2>
+  <h2>🔁</h2>
   <pre class="repl"><code><span class="rp">user=&gt;</span> (load-file <span class="st">"src/demo/views.clj"</span>)
 <span class="ro">#'demo.views/layout</span></code></pre>
   <div class="shots stack" style="--hw:0.30385;--kx:0;--ky:1;--kc:2"><div class="grp">
     <figure class="shot" style="--wa:1.00000;--wb:3.29114"><span class="frame"><img src="figures/talk/s01-fire-featured.png" width="2080" height="336" alt="The recipe of the day&#x27;s spicy pill after load-file and refresh: 🌶🔥 spicy"></span><figcaption>recipe of the day</figcaption></figure>
     <figure class="shot" style="--wa:0.68269;--wb:2.24684"><span class="frame"><img src="figures/talk/s01-fire-grid.png" width="1420" height="296" alt="A grid card&#x27;s spicy pill after load-file and refresh: 🌶🔥 spicy"></span><figcaption>the grid</figcaption></figure>
   </div></div>
-  <p class="note">featured and grid: both 🌶️🔥</p>
 </section>
 
 <!-- 8 · the map, state 2 -->
 <section class="slide">
-  <h2>🗺 every change: three hops by hand</h2>
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="2" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 2: every change: three hops by hand">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
@@ -653,7 +654,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 
 <!-- 9 · the dev channel -->
 <section class="slide">
-  <h2>🔥 hot reload</h2>
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="3" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 3: hot reload">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
@@ -705,66 +705,51 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 <!-- 10 · deps.edn, one alias -->
 <section class="slide">
   <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="3" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 3: hot reload (here: DEV ONLY)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band axm-lit" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/></svg></div>
-  <h1>🔧 development only</h1>
+  <h1>🔧</h1>
   <pre><code><span class="cx">  :deps {org.clojure/clojure {:mvn/version "1.12.4"}</span><span class="cx">         http-kit/http-kit   {:mvn/version "2.8.0"}</span><span class="cx">         hiccup/hiccup       {:mvn/version "2.0.0"}}</span><span class="cx"> </span><span class="cx">  :aliases</span><span class="cx">  {:nrepl {…}</span><span class="ad">+  :dev   {:extra-paths ["dev"]</span><span class="ad">+          :extra-deps  {…}}</span><span class="cx">  }</span></code></pre>
 </section>
 
 <!-- 11 · the watcher -->
 <section class="slide">
   <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="3" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 3: hot reload (here: watcher, src/ → watcher, watcher → load-file, watcher → /dev/ws)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge axm-lit" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge axm-lit" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge axm-lit" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/></svg></div>
-  <h1>📂👀 something watches</h1>
-  <pre><code>(<span class="bi">loop</span> [seen (modified-times)]
-  (Thread/sleep 200)
-  (<span class="bi">let</span> [current (modified-times)
-        changed (<span class="bi">for</span> [[path t] current
-                      <span class="kw">:when</span> (and (not= t (<span class="bi">get</span> seen path))
-                                 (watched? path))]
-                  path)]
-    (<span class="bi">when</span> (seq changed)
-      (<span class="bi">when</span> (<span class="bi">if</span> (<span class="bi">some</span> #(str/ends-with? % <span class="st">".clj"</span>) changed)
-              (reload-clojure!)     <span class="cm">; tools.namespace: dependency order</span>
-              true)                 <span class="cm">; assets need no load</span>
-        (socket/notify-reload!)))
-    (<span class="bi">recur</span> current)))</code></pre>
-  <p class="note"><code>notify-reload!</code> for every file changed in the last 200 milliseconds.</p>
+  <h1>📂👀</h1>
+  <pre><code><span class="ln"><span class="gut">1</span>(<span class="bi">loop</span> [seen (modified-times)]</span><span class="ln"><span class="gut">2</span>  (Thread/sleep 200)</span><span class="ln"><span class="gut">3</span>  (<span class="bi">let</span> [current (modified-times)</span><span class="ln"><span class="gut">4</span>        changed (changed-files seen current)]</span><span class="ln"><span class="gut">5</span>    (<span class="bi">when</span> (seq changed)</span><span class="ln"><span class="gut">6</span>      (reload-clojure! changed)</span><span class="ln cur"><span class="gut">7</span>      <span class="caret"></span>(socket/notify-reload!))</span><span class="ln"><span class="gut">8</span>    (<span class="bi">recur</span> current)))</span></code></pre>
+  <p class="note"><code>notify-reload!</code> when files (sources or resources) changed in the last 200 milliseconds.</p>
 </section>
 
 <!-- 12 · the socket -->
 <section class="slide">
-  <h1>💌🌐 something tells the browser</h1>
-  <pre><code>(<span class="bi">defonce</span> clients (atom #{}))
-
-(<span class="bi">defn</span> broadcast! [msg]
-  (<span class="bi">let</span> [s (json/write-str msg)]
-    (<span class="bi">doseq</span> [ch @clients]
-      (http/send! ch s))))
-
-(<span class="bi">defn</span> notify-reload! []
-  (broadcast! {<span class="kw">:type</span> <span class="st">"reload"</span>}))
-
-(<span class="bi">defn</span> ws-handler [req]
-  (http/as-channel req
-    {<span class="kw">:on-open</span>  (<span class="bi">fn</span> [ch] (<span class="bi">swap!</span> clients conj ch))
-     <span class="kw">:on-close</span> (<span class="bi">fn</span> [ch _] (<span class="bi">swap!</span> clients disj ch))}))</code></pre>
-  <p class="note">uses <code>org.clojure/data.json</code> to send a websocket message with <code>http-kit</code></p>
+  <h1>💌🌐</h1>
+  <pre><code><span class="ln"><span class="gut">1</span>(<span class="bi">defn</span> broadcast! [msg]</span><span class="ln"><span class="gut">2</span>  (<span class="bi">let</span> [s (json/write-str msg)]</span><span class="ln"><span class="gut">3</span>    (<span class="bi">doseq</span> [ch @clients]</span><span class="ln"><span class="gut">4</span>      (http/send! ch s))))</span><span class="ln"><span class="gut">5</span> </span><span class="ln"><span class="gut">6</span>(<span class="bi">defn</span> notify-reload! []</span><span class="ln cur"><span class="gut">7</span>  (broadcast! {<span class="kw">:type</span> <span class="st"><span class="caret"></span>"reload"</span>}))</span></code></pre>
+  <p class="note">sends a <code>reload</code> message to all connected clients</p>
 </section>
 
 <!-- 13 · the browser side -->
 <section class="slide">
   <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="3" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 3: hot reload (here: dev-body +&lt;script&gt;, seam, dev-body → seam, reload.js, reload())"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge axm-lit" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge axm-lit" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node axm-lit" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="devbody.d-script" x="906.0" y="356.0" width="208.0" height="44.0" rx="7"/></svg></div>
-  <h1>⚡ something acts on it</h1>
-  <pre><code>(<span class="bi">defn-</span> dev-body [body]
-  (list body
-        [<span class="kw">:script</span> {<span class="kw">:src</span> <span class="st">"/dev/reload.js"</span>}]))</code></pre>
-  <pre><code>ws.onmessage = <span class="bi">function</span> (e) {
-  <span class="bi">var</span> m = JSON.parse(e.data);
-  <span class="bi">if</span> (m.type === <span class="st">'reload'</span>) location.reload();
-};</code></pre>
+  <h1>⟳</h1>
+  <pre><code><span class="ln"><span class="gut">1</span>(<span class="bi">defn-</span> dev-body [body]</span><span class="ln"><span class="gut">2</span>  (list body</span><span class="ln"><span class="gut">3</span>        [<span class="kw">:script</span> {<span class="kw">:src</span> <span class="st">"/dev/reload.js"</span>}]))</span></code></pre>
+  <pre><code><span class="ln"><span class="gut">1</span>ws.onmessage = <span class="bi">function</span> (e) {</span><span class="ln"><span class="gut">2</span>  <span class="bi">var</span> m = JSON.parse(e.data);</span><span class="ln cur"><span class="gut">3</span>  <span class="bi">if</span> (m.type === <span class="st">'reload'</span>) <span class="caret"></span>location.reload();</span><span class="ln"><span class="gut">4</span>};</span></code></pre>
 </section>
 
-<!-- 14 · the map, state 4 -->
+<!-- 14 · the page follows -->
 <section class="slide">
-  <h2>🗺 render deletes the structure</h2>
+  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="3" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 3: hot reload (here: dev-body +&lt;script&gt;, seam, dev-body → seam, reload.js, reload())"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge axm-lit" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge axm-lit" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node axm-lit" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="devbody.d-script" x="906.0" y="356.0" width="208.0" height="44.0" rx="7"/></svg></div>
+  <h1 class="hero"><span class="green">DEMO</span></h1>
+</section>
+
+<!-- 15 · the question -->
+<section class="slide">
+  <h1>What do we need to point at an element<br>and ask <span class="accent">which Clojure form made it</span>?</h1>
+  <div class="shots stack" style="--hw:0.09704;--kx:0;--ky:0;--kc:0"><div class="grp">
+    <figure class="shot" style="--wa:1.00000;--wb:10.30556"><span class="frame"><img src="figures/talk/s06-popup-plain.png" width="2226" height="216" alt="The overlay on the crooked pill: its box, and the breadcrumb main ▸ section ▸ article ▸ div ▸ h2 ▸ span, demo/views.clj:21:8"></span></figure>
+  </div></div>
+  <pre><code><span class="ln"><span class="gut">17</span>    [<span class="kw">:h2</span> <span class="bi">name</span></span><span class="ln"><span class="gut">18</span>     (<span class="bi">when</span> new?</span><span class="ln"><span class="gut">19</span>       [<span class="kw">:span.badge</span> <span class="st">"NEW"</span>])</span><span class="ln"><span class="gut">20</span>     (<span class="bi">when-let</span> [t (<span class="bi">some</span> #{<span class="st">"spicy"</span>} tags)]</span><span class="ln cur"><span class="gut">21</span>       <span class="caret"></span>[<span class="kw">:span.badge.hot</span> <span class="st">"🌶 "</span> t])]</span><span class="ln"><span class="gut">22</span>    [<span class="kw">:p</span> description]</span></code></pre>
+  <p class="note"><code>demo/views.clj</code>: the click lands on line 21, column 8</p>
+</section>
+
+<!-- 16 · the map, state 4 -->
+<section class="slide">
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="4" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 4: render deletes the structure">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
@@ -812,15 +797,9 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 </svg></div>
 </section>
 
-<!-- 15 · the question -->
+<!-- 17 · why not: render deletes the structure -->
 <section class="slide">
-  <h1>🖝 What do we need to point at a pixel<br>and ask <span class="accent">which Clojure form made it</span>?</h1>
-  <pre><code>&lt;<span class="bi">span</span> <span class="at">class</span>=<span class="st">"badge hot"</span>&gt;🌶 spicy&lt;/<span class="bi">span</span>&gt;</code></pre>
-</section>
-
-<!-- 16 · why not: render deletes the structure -->
-<section class="slide">
-  <h1>🗺 source mapping</h1>
+  <h2>🤔</h2>
   <h2>What we have</h2>
   <pre><code>(hiccup2/html [<span class="kw">:span.badge.hot</span> <span class="st">"🌶 "</span> t])</code></pre>
   <pre><code>&lt;<span class="bi">span</span> <span class="at">class</span>=<span class="st">"badge hot"</span>&gt;🌶 spicy&lt;/<span class="bi">span</span>&gt;</code></pre>
@@ -829,37 +808,28 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <pre><code>&lt;<span class="bi">span</span> <span class="at">class</span>=<span class="st">"badge hot"</span> <span class="at">data-src</span>=<span class="st">"demo/views.clj:21:8"</span>&gt;🌶 spicy&lt;/<span class="bi">span</span>&gt;</code></pre>
 </section>
 
-<!-- 17 · how? -->
+<!-- 18 · how? -->
 <section class="slide">
-  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="4" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 4: render deletes the structure (here: load-file, src/ → load-file, src/)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-gap" d="M1430.0,170.0 L990.0,170.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge axm-lit" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node axm-lit" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/></svg></div>
-  <h1>How?</h1>
+  <div class="ax-mini" style="--ax-mini-w:7.65"><svg class="axm axm-arch" data-step="4" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 4: render deletes the structure (here: load-file, src/ → load-file, src/)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-repl" d="M505.0,114.0 L505.0,180.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge" data-ax="e-gap" d="M1430.0,170.0 L990.0,170.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-dep" d="M510.0,318.0 L510.0,244.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge axm-lit" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node axm-lit" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/></svg></div>
+  <h2>🤔</h2>
   <ul>
-    <li>✅ We already know which source file is loaded;</li>
-    <li>❗ Line &amp; column data; only <span class="accent"><b>R</b></span>ead from <span class="accent"><b>R</b></span>EPL touches source files</li>
-    <li>🤔 Can it add metadata to hiccup forms?</li>
+    <li class="big">We already know which source file is loaded;</li>
+    <li class="big">Line &amp; column data; only <span class="accent"><b>R</b></span>ead from <span class="accent"><b>R</b></span>EPL touches source file content</li>
+    <li class="big">Can it add <span class="accent">metadata</span> to <span class="green">hiccup</span> forms?</li>
   </ul>
   <pre><code>(read-string <span class="st">"[:span.badge.hot \"🌶 \" t]"</span>)
 → [<span class="kw">:span.badge.hot</span> \"🌶 \" t]
 (<span class="bi">meta</span> …) → nil</code></pre>
 </section>
 
-<!-- 18 · the insight -->
+<!-- 19 · the insight -->
 <section class="slide">
-  <h1>clojure.tools reader</h1>
-  <pre><code>(with-open [r (clojure.tools.reader.reader-types/indexing-push-back-reader
-               <span class="st">"[:span.badge.hot
-                \"🌶 \"
-                t]"</span>)]
-  (-&gt; (clojure.tools.reader/read r)
-      (<span class="bi">nth</span> 2)
-      (#(vector (<span class="bi">name</span> %) (<span class="bi">meta</span> %)))))
-→ [<span class="st">"t"</span> {<span class="kw">:column</span> 17, <span class="kw">:end-column</span> 18, <span class="kw">:end-line</span> 3, <span class="kw">:line</span> 3}]</code></pre>
-  <p class="rule">Load views through tools.reader → every element knows its source.<br>The position <b>is</b> part of the value.</p>
+  <h2>clojure.tools reader<br><span class="accent">indexing-push-back-reader</span></h2>
+  <pre><code><span class="ln"><span class="gut">1</span>(with-open [r (clojure.tools.reader.reader-types/indexing-push-back-reader</span><span class="ln"><span class="gut">2</span>               <span class="st">"[:span.badge.hot</span></span><span class="ln"><span class="gut">3</span><span class="st">                \"🌶 \"</span></span><span class="ln cur"><span class="gut">4</span><span class="st">                <span class="caret"></span>t]"</span>)]</span><span class="ln"><span class="gut">5</span>  (-&gt; (clojure.tools.reader/read r)</span><span class="ln"><span class="gut">6</span>      (<span class="bi">nth</span> 2)</span><span class="ln"><span class="gut">7</span>      (#(vector % (<span class="bi">meta</span> %)))))</span><span class="ln"><span class="gut">8</span>→ [t {<span class="kw">:column</span> 17, <span class="kw">:end-column</span> 18, <span class="kw">:end-line</span> 3, <span class="kw">:line</span> 3}]</span></code></pre>
 </section>
 
-<!-- 19 · the map, state 5 -->
+<!-- 20 · the map, state 5 -->
 <section class="slide">
-  <h2>🗺 tr-load! keeps the lines</h2>
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="5" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 5: tr-load! keeps the lines">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
@@ -912,21 +882,14 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 </svg></div>
 </section>
 
-<!-- 20 · the loader -->
+<!-- 21 · the loader -->
 <section class="slide">
-  <h1>📐 a loader that keeps the lines</h1>
-  <pre><code>(<span class="bi">defn</span> tr-load! [path]
-  (<span class="bi">let</span> [rdr (rt/indexing-push-back-reader (<span class="bi">slurp</span> path) 1 file) <span class="cm">; …told the file</span>
-        …]
-    (<span class="bi">binding</span> [*ns* *ns*, *file* file]
-      (eval (read1))                    <span class="cm">; the ns form FIRST</span>
-      (<span class="bi">doseq</span> [form body]                <span class="cm">; …then everything else</span>
-        (eval form)))))</code></pre>
+  <h2>🚚</h2>
+  <pre><code><span class="ln"><span class="gut">1</span>(<span class="bi">defn</span> tr-load!</span><span class="ln"><span class="gut">2</span>  [file]</span><span class="ln"><span class="gut">3</span>  (<span class="bi">let</span> [rdr (rt/indexing-push-back-reader …)</span><span class="ln"><span class="gut">4</span>        …]</span><span class="ln"><span class="gut">5</span>    (<span class="bi">binding</span> [*ns* *ns*, *file* file, …]</span><span class="ln"><span class="gut">6</span>      (eval ns-form) <span class="cm">; ns form first so that ::aliases resolve at read time</span></span><span class="ln"><span class="gut">7</span>      (<span class="bi">doseq</span> [form body]</span><span class="ln"><span class="gut">8</span>        (eval form)))))</span></code></pre>
   <p class="note">views load through <code>tr-load!</code>, everything else through <code>load-file</code></p>
-  <p class="sub">why our own? Clojure's loader hard-wires its reader: <code>Compiler.load</code> → <code>LispReader.read</code></p>
 </section>
 
-<!-- 21 · ask the value -->
+<!-- 22 · ask the value -->
 <section class="slide">
   <h2>⌨️ ask the value</h2>
   <pre class="repl"><code><span class="rp">user=&gt;</span> (dev.watcher/load-views!)
@@ -935,9 +898,8 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 <span class="ro">{<span class="kw">:file</span> <span class="st">"demo/views.clj"</span>, <span class="kw">:line</span> 14, <span class="kw">:column</span> 3, <span class="kw">:end-line</span> 31, <span class="kw">:end-column</span> 64}</span></code></pre>
 </section>
 
-<!-- 22 · the map, state 6 -->
+<!-- 23 · the map, state 6 -->
 <section class="slide">
-  <h2>🗺 metadata becomes attributes</h2>
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="6" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 6: metadata becomes attributes">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
@@ -950,7 +912,6 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge ax-k-gap ax-old" data-ax="e-gap"><path class="ax-glow" d="M1430.0,170.0 L1006.0,170.0"/><path class="ax-line" d="M1430.0,170.0 L1006.0,170.0"/><path class="ax-head" d="M990.0,170.0 L1009.0,160.5 L1009.0,179.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
   <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
   <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
@@ -976,15 +937,20 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <g class="ax-node ax-old" data-ax="seam"><rect x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/></g>
   <g class="ax-node ax-mono ax-list ax-old" data-ax="devbody"><rect x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><text class="ax-label" x="918.0" y="342.2" font-size="34">dev-body</text><g class="ax-part ax-row ax-mono ax-old" data-ax="devbody.d-script"><rect class="ax-hit" x="909.0" y="359.0" width="202.0" height="38.0" rx="7"/><text x="926.0" y="389.5" text-anchor="start" font-size="32">+&lt;script&gt;</text></g><g class="ax-part ax-row ax-mono ax-new" data-ax="devbody.d-tag"><rect class="ax-hit" x="909.0" y="403.0" width="202.0" height="38.0" rx="7"/><text x="926.0" y="433.5" text-anchor="start" font-size="32">tag-tree</text></g></g>
   <g class="ax-node ax-mono ax-old" data-ax="trload"><rect x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><text class="ax-label" x="638.0" y="508.2" font-size="34">tr-load!</text><g class="ax-pipe"><path d="M734.4,554.0 L966.0,554.0"/><path class="ax-head" d="M975.0,554.0 L964.0,548.0 L964.0,560.0 Z"/></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-read"><rect x="636.0" y="532.0" width="93.4" height="44.0" rx="8"/><text x="682.7" y="564.1" text-anchor="middle" font-size="28">read</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-eval"><rect x="980.0" y="532.0" width="93.4" height="44.0" rx="8"/><text x="1026.8" y="564.1" text-anchor="middle" font-size="28">eval</text></g></g>
-  <g class="ax-mark ax-m-q ax-old" data-ax="m-gap"><circle class="ax-glyph" cx="1250.0" cy="170.0" r="17"/><text class="ax-q" x="1250.0" y="180.1" text-anchor="middle" font-size="28">?</text></g>
   <rect class="ax-tbg ax-note-bg ax-old" data-ax="seam-l" x="1054.0" y="227.0" width="79.4" height="31.9" rx="5"/><text class="ax-note ax-mono ax-old" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28">seam</text>
   <g class="ax-flow-nums ax-f-fwd" data-flow="tag-render"><g class="ax-hopnum" transform="translate(1104.7 82.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">1</text></g><g class="ax-hopnum" transform="translate(1194.9 212.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">2</text></g></g>
 </svg></div>
 </section>
 
-<!-- 23 · metadata becomes attributes -->
+<!-- 24 · the inspector shows file:line:col -->
 <section class="slide">
-  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="6" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 6: metadata becomes attributes (here: dev-body tag-tree, seam, page data-src)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-gap" d="M1430.0,170.0 L990.0,170.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-src" x="1436.0" y="146.0" width="302.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="devbody.d-tag" x="906.0" y="400.0" width="208.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/></svg></div>
+  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="6" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 6: metadata becomes attributes (here: dev-body tag-tree, seam, page data-src)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-src" x="1436.0" y="146.0" width="302.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="devbody.d-tag" x="906.0" y="400.0" width="208.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/></svg></div>
+  <h1 class="hero"><span class="green">DEMO</span></h1>
+</section>
+
+<!-- 25 · metadata becomes attributes -->
+<section class="slide">
+  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="6" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 6: metadata becomes attributes (here: dev-body tag-tree, seam, page data-src)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-src" x="1436.0" y="146.0" width="302.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="devbody.d-tag" x="906.0" y="400.0" width="208.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/></svg></div>
   <h1>🏷 metadata → attributes</h1>
   <pre><code><span class="cm">;; tag-tree walks the assembled page; for every element that carries</span>
 <span class="cm">;; reader metadata, it rebuilds the vector with its position as an attribute:</span>
@@ -997,7 +963,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <p class="note">the render boundary: where hiccup meets the stringifier</p>
 </section>
 
-<!-- 24 · minute one · now -->
+<!-- 26 · minute one · now -->
 <section class="slide">
   <h2>🏷 minute one · now</h2>
   <div class="shots stack" style="--hw:0.24308;--kx:0;--ky:1;--kc:2"><div class="grp">
@@ -1006,7 +972,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   </div></div>
 </section>
 
-<!-- 25 · eight cards, one line -->
+<!-- 27 · eight cards, one line -->
 <section class="slide">
   <h2>🗂️ eight cards, one line</h2>
   <div class="shots stack" style="--hw:0.23246;--kx:0;--ky:0;--kc:0"><div class="grp">
@@ -1014,9 +980,8 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   </div></div>
 </section>
 
-<!-- 26 · the map, state 7 -->
+<!-- 28 · the map, state 7 -->
 <section class="slide">
-  <h2>🗺 a click that travels</h2>
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="7" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 7: a click that travels">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
@@ -1068,10 +1033,10 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 </svg></div>
 </section>
 
-<!-- 27 · a click that travels -->
+<!-- 29 · a click that travels -->
 <section class="slide">
-  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="7" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 7: a click that travels (here: inspector.js, /dev/ws → inspector.js, /dev/ws dispatch, code -g)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge axm-lit" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge axm-lit" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="hub.h-disp" x="566.0" y="672.0" width="208.0" height="152.0" rx="7"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-node axm-lit" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/></svg></div>
-  <h1>🖱 a click that travels</h1>
+  <div class="ax-mini" style="--ax-mini-w:7.65"><svg class="axm axm-arch" data-step="7" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 7: a click that travels (here: inspector.js, /dev/ws → inspector.js, /dev/ws dispatch, code -g)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge axm-lit" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge axm-lit" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="hub.h-disp" x="566.0" y="672.0" width="208.0" height="152.0" rx="7"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-node axm-lit" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/></svg></div>
+  <h2>🖱</h2>
   <pre><code><span class="bi">function</span> sendOpen(src) {                  <span class="cm">// src is "file:line:col"</span>
   <span class="bi">var</span> p = src.split(<span class="st">':'</span>), col = +p.pop(), line = +p.pop();
   ws.send(JSON.stringify({type: <span class="st">'open'</span>, src: p.join(<span class="st">':'</span>), line, col}));
@@ -1085,12 +1050,12 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   (<span class="bi">when</span> (and (.exists f) (str/ends-with? (.getName f) <span class="st">".clj"</span>)
              (.startsWith (.toPath f) (.toPath root)))
     f))</code></pre>
-  <p class="note"><code>code -g file:line:col</code> — naive, and it works</p>
+  <p class="note">shell to: <code>code -g file:line:col</code></p>
 </section>
 
-<!-- 28 · pixel → paren -->
+<!-- 30 · pixel → paren -->
 <section class="slide">
-  <h2>🖱 pixel → paren</h2>
+  <h2>🖱</h2>
   <div class="shots stack" style="--hw:0.09704;--kx:0;--ky:0;--kc:0"><div class="grp">
     <figure class="shot" style="--wa:1.00000;--wb:10.30556"><span class="frame"><img src="figures/talk/s06-popup-plain.png" width="2226" height="216" alt="The overlay on the crooked pill: its box, and the breadcrumb main ▸ section ▸ article ▸ div ▸ h2 ▸ span, demo/views.clj:21:8"></span></figure>
   </div></div>
@@ -1098,7 +1063,13 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <p class="note"><code>demo/views.clj</code> — the click lands on line 21, column 8</p>
 </section>
 
-<!-- 29 · one rule less -->
+<!-- 31 · hover, click, the editor jumps -->
+<section class="slide">
+  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="7" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 7: a click that travels (here: inspector.js, /dev/ws → inspector.js, /dev/ws dispatch, code -g)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge axm-lit" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge axm-lit" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="hub.h-disp" x="566.0" y="672.0" width="208.0" height="152.0" rx="7"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-node axm-lit" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/></svg></div>
+  <h1 class="hero"><span class="green">DEMO</span></h1>
+</section>
+
+<!-- 32 · one rule less -->
 <section class="slide">
   <h2>📏 one rule less</h2>
   <div class="shots stack" style="--hw:0.31200;--kx:0;--ky:1;--kc:2"><div class="grp">
@@ -1107,9 +1078,8 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   </div></div>
 </section>
 
-<!-- 30 · the map, state 8 -->
+<!-- 33 · the map, state 8 -->
 <section class="slide">
-  <h2>🗺 name what made it</h2>
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="8" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 8: name what made it">
   <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
   <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
@@ -1161,7 +1131,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 </svg></div>
 </section>
 
-<!-- 31 · what made this -->
+<!-- 34 · what made this -->
 <section class="slide">
   <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="8" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 8: name what made it (here: tr-load! wrap, demo.views)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-wrap" x="1101.5" y="532.0" width="93.4" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/></svg></div>
   <h1>🧩 name what made it</h1>
@@ -1178,7 +1148,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <p class="sub">no annotations, no registry. the loader takes care of it.</p>
 </section>
 
-<!-- 32 · the whole tower, named -->
+<!-- 35 · the whole tower, named -->
 <section class="slide">
   <h2>🧩 the whole tower, named</h2>
   <div class="shots stack" style="--hw:0.23165;--kx:0;--ky:1;--kc:0"><div class="grp">
@@ -1187,7 +1157,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   </div></div>
 </section>
 
-<!-- 33 · the map, state 9 -->
+<!-- 36 · the map, state 9 -->
 <section class="slide">
   <h2>🗺 your cursor drives the browser</h2>
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="9" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 9: your cursor drives the browser">
@@ -1249,7 +1219,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 </svg></div>
 </section>
 
-<!-- 34 · the other direction -->
+<!-- 37 · the other direction -->
 <section class="slide">
   <div class="ax-mini rev" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="9" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 9: your cursor drives the browser (here: tr-load! index, resolve-cursor, Joyride, Joyride → /dev/ws)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><path class="axm-edge" data-ax="e-light" d="M1720.0,780.0 L1720.0,286.0"/><path class="axm-edge axm-lit" data-ax="e-wsjoy" d="M178.0,812.0 L560.0,812.0"/><path class="axm-edge axm-lit" data-ax="e-resolve" d="M780.0,650.0 L1278.1,650.0 L1278.1,576.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-index" x="1222.9" y="532.0" width="110.3" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="joyride" x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/></svg></div>
   <h1>↩ the other direction</h1>
@@ -1263,16 +1233,13 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <p class="note">the index is built by the same read pass — that's what the<br><code>:end-line</code>/<code>:end-column</code> were for</p>
 </section>
 
-<!-- 35 · your cursor, on the page -->
+<!-- 38 · the other direction -->
 <section class="slide">
-  <h2>↩ your cursor, on the page</h2>
-  <div class="shots pair" style="--hw:0.60588;--kx:1;--ky:0;--kc:1"><div class="grp">
-    <figure class="shot" style="--wa:0.50000;--wb:0.82525"><span class="frame"><img src="figures/talk/s08-cursor-desc.png" width="2144" height="2598" alt="Cursor on recipe-card&#x27;s :p description: nine green boxes, one per card"></span><figcaption><code>[:p description]</code>, line 22 → nine</figcaption></figure>
-    <figure class="shot" style="--wa:0.50000;--wb:0.82525"><span class="frame"><img src="figures/talk/s08-cursor-new.png" width="2144" height="2598" alt="Cursor on the NEW badge&#x27;s :span.badge: the three NEW badges, the spicy pills dark"></span><figcaption><code>[:span.badge "NEW"]</code>, line 19 → three</figcaption></figure>
-  </div></div>
+  <div class="ax-mini rev" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="9" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 9: your cursor drives the browser (here: tr-load! index, resolve-cursor, Joyride, Joyride → /dev/ws)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><path class="axm-edge" data-ax="e-light" d="M1720.0,780.0 L1720.0,286.0"/><path class="axm-edge axm-lit" data-ax="e-wsjoy" d="M178.0,812.0 L560.0,812.0"/><path class="axm-edge axm-lit" data-ax="e-resolve" d="M780.0,650.0 L1278.1,650.0 L1278.1,576.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-index" x="1222.9" y="532.0" width="110.3" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="joyride" x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/></svg></div>
+  <h1 class="hero"><span class="green">DEMO</span></h1>
 </section>
 
-<!-- 36 · forty-five -->
+<!-- 39 · forty-five -->
 <section class="slide">
   <h2>⭐ forty-five</h2>
   <div class="shots stack" style="--hw:1.21175;--kx:0;--ky:0;--kc:1"><div class="grp">
@@ -1280,7 +1247,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   </div></div>
 </section>
 
-<!-- 37 · the map, state 10 -->
+<!-- 40 · the map, state 10 -->
 <section class="slide">
   <h2>🗺 which call made it</h2>
   <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="10" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 10: which call made it">
@@ -1345,7 +1312,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
 </svg></div>
 </section>
 
-<!-- 38 · which call made it -->
+<!-- 41 · which call made it -->
 <section class="slide">
   <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="10" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 10: which call made it (here: tr-load! call sites, page data-callsite)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><path class="axm-edge" data-ax="e-wsjoy" d="M178.0,812.0 L560.0,812.0"/><path class="axm-edge" data-ax="e-resolve" d="M780.0,650.0 L1278.1,650.0 L1278.1,576.0"/><path class="axm-edge" data-ax="e-light" d="M1720.0,780.0 L1720.0,286.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-call" x="1436.0" y="234.0" width="302.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-calls" x="757.4" y="532.0" width="194.6" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="joyride" x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/></svg></div>
   <h1>🎯 which call made it</h1>
@@ -1362,7 +1329,7 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   <p class="sub">rewriting between read and eval — a step no Clojure loader has</p>
 </section>
 
-<!-- 39 · eight, or one -->
+<!-- 42 · eight, or one -->
 <section class="slide">
   <h2>🎯 eight, or one</h2>
   <div class="shots pair" style="--hw:0.60588;--kx:1;--ky:0;--kc:1"><div class="grp">
@@ -1371,134 +1338,13 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   </div></div>
 </section>
 
-<!-- 40 · every component, folded -->
+<!-- 43 · the payoff pair -->
 <section class="slide">
-  <h2>🧭 every component, folded</h2>
-  <div class="shots stack" style="--hw:0.11356;--kx:0;--ky:0;--kc:0"><div class="grp">
-    <figure class="shot" style="--wa:1.00000;--wb:8.80583"><span class="frame"><img src="figures/talk/s09-popup-glyphs.png" width="2721" height="309" alt="The overlay on a featured star: page ▸ featured () λ ▸ recipe-card () λ ▸ div ▸ div ▸ rating () λ ▸ star () λ, demo/ui/views.clj:19:1"></span></figure>
-  </div></div>
+  <div class="ax-mini" style="--ax-mini-w:9.08"><svg class="axm axm-arch" data-step="10" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 10: which call made it (here: tr-load! call sites, page data-callsite)"><rect class="axm-region axm-r-lane" data-ax="editor" x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-band" data-ax="dev" x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-eval" d="M160.0,82.0 L430.0,82.0"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><path class="axm-edge" data-ax="e-save" d="M150.0,350.0 L240.0,350.0"/><path class="axm-edge" data-ax="e-poll" d="M368.0,350.0 L420.0,350.0"/><path class="axm-edge" data-ax="e-notify" d="M580.0,382.0 L580.0,620.0"/><path class="axm-edge" data-ax="e-wsreload" d="M780.0,690.0 L1430.0,690.0"/><path class="axm-edge" data-ax="e-reloadpage" d="M1470.0,658.0 L1470.0,286.0"/><path class="axm-edge" data-ax="e-binds" d="M1041.0,304.0 L1041.0,228.0"/><path class="axm-edge" data-ax="e-views" d="M600.0,350.0 L700.0,350.0 L700.0,470.0"/><path class="axm-edge" data-ax="e-deftr" d="M860.0,470.0 L860.0,264.0"/><path class="axm-edge" data-ax="e-click" d="M1680.0,286.0 L1680.0,780.0"/><path class="axm-edge" data-ax="e-wsinsp" d="M780.0,812.0 L1430.0,812.0"/><path class="axm-edge" data-ax="e-codeg" d="M560.0,700.0 L82.0,700.0 L82.0,382.0"/><path class="axm-edge" data-ax="e-wsjoy" d="M178.0,812.0 L560.0,812.0"/><path class="axm-edge" data-ax="e-resolve" d="M780.0,650.0 L1278.1,650.0 L1278.1,576.0"/><path class="axm-edge" data-ax="e-light" d="M1720.0,780.0 L1720.0,286.0"/><rect class="axm-node" data-ax="calva" x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="buffer" x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="nrepl" x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-part axm-row axm-lit" data-ax="page.p-call" x="1436.0" y="234.0" width="302.0" height="44.0" rx="7"/><rect class="axm-node" data-ax="watcher" x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="hub" x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><rect class="axm-node" data-ax="reloadjs" x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/><rect class="axm-node" data-ax="devbody" x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><rect class="axm-node" data-ax="trload" x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><rect class="axm-part axm-cell axm-lit" data-ax="trload.c-calls" x="757.4" y="532.0" width="194.6" height="44.0" rx="7"/><rect class="axm-node" data-ax="overlay" x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="joyride" x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/></svg></div>
+  <h1 class="hero"><span class="green">DEMO</span></h1>
 </section>
 
-<!-- 41 · the map, state 11 -->
-<section class="slide">
-  <h2>🗺 a plain load strips the tags</h2>
-  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="11" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 11: a plain load strips the tags">
-  <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
-  <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
-  <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
-  <g class="ax-region ax-r-band ax-old" data-ax="dev"><rect x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="ax-capbg" x="620.0" y="279.7" width="198.8" height="29.4"/><text class="ax-cap" x="630.0" y="302.1" text-anchor="start" font-size="28">DEV ONLY</text></g>
-  <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
-  <g class="ax-flow-under ax-f-warn" data-flow="calva-load"><path class="ax-hglow" d="M160.0,82.0 L430.0,82.0"/><path class="ax-hglow" d="M505.0,114.0 L505.0,180.0"/><path class="ax-hglow" d="M640.0,212.0 L710.0,212.0"/></g>
-  <g class="ax-flow-under ax-f-warn" data-flow="by-hand"><path class="ax-hglow" d="M1560.0,400.0 L1560.0,286.0"/><path class="ax-hglow" d="M1430.0,82.0 L930.0,82.0"/><path class="ax-hglow" d="M845.0,114.0 L845.0,160.0"/><path class="ax-hglow" d="M990.0,212.0 L1430.0,212.0"/></g>
-  <g class="ax-edge  ax-old ax-changed ax-warn" data-ax="e-eval"><path class="ax-glow" d="M160.0,82.0 L414.0,82.0"/><path class="ax-line" d="M160.0,82.0 L414.0,82.0"/><path class="ax-head" d="M430.0,82.0 L411.0,91.5 L411.0,72.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old ax-changed ax-warn" data-ax="e-repl"><path class="ax-glow" d="M505.0,114.0 L505.0,164.0"/><path class="ax-line" d="M505.0,114.0 L505.0,164.0"/><path class="ax-head" d="M505.0,180.0 L495.5,161.0 L514.5,161.0 Z"/></g>
-  <g class="ax-edge  ax-old ax-changed ax-warn" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
-  <g class="ax-edge ax-k-human ax-old ax-changed ax-new" data-ax="e-f5"><path class="ax-glow" d="M1560.0,400.0 L1560.0,302.0"/><path class="ax-line" d="M1560.0,400.0 L1560.0,302.0"/><path class="ax-head" d="M1560.0,286.0 L1569.5,305.0 L1550.5,305.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
-  <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-binds"><path class="ax-glow" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-line" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-head" d="M1041.0,228.0 L1050.5,247.0 L1031.5,247.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-views"><path class="ax-glow" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-line" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-head" d="M700.0,470.0 L690.5,451.0 L709.5,451.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-deftr"><path class="ax-glow" d="M860.0,470.0 L860.0,280.0"/><path class="ax-line" d="M860.0,470.0 L860.0,280.0"/><path class="ax-head" d="M860.0,264.0 L869.5,283.0 L850.5,283.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-click"><path class="ax-glow" d="M1680.0,286.0 L1680.0,764.0"/><path class="ax-line" d="M1680.0,286.0 L1680.0,764.0"/><path class="ax-head" d="M1680.0,780.0 L1670.5,761.0 L1689.5,761.0 Z"/></g>
-  <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsinsp"><path class="ax-glow" d="M780.0,812.0 L1430.0,812.0"/><path class="ax-line" d="M780.0,812.0 L1430.0,812.0"/></g>
-  <g class="ax-edge  ax-old ax-fallback" data-ax="e-codeg"><path class="ax-glow" d="M560.0,700.0 L82.0,700.0 L82.0,398.0"/><path class="ax-line" d="M560.0,700.0 L82.0,700.0 L82.0,398.0"/><path class="ax-head" d="M82.0,382.0 L91.5,401.0 L72.5,401.0 Z"/></g>
-  <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsjoy"><path class="ax-glow" d="M178.0,812.0 L560.0,812.0"/><path class="ax-line" d="M178.0,812.0 L560.0,812.0"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-resolve"><path class="ax-glow" d="M780.0,650.0 L1278.1,650.0 L1278.1,592.0"/><path class="ax-line" d="M780.0,650.0 L1278.1,650.0 L1278.1,592.0"/><path class="ax-head" d="M1278.1,576.0 L1287.6,595.0 L1268.6,595.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-light"><path class="ax-glow" d="M1720.0,780.0 L1720.0,302.0"/><path class="ax-line" d="M1720.0,780.0 L1720.0,302.0"/><path class="ax-head" d="M1720.0,286.0 L1729.5,305.0 L1710.5,305.0 Z"/></g>
-  <g class="ax-flow ax-f-warn" data-flow="calva-load" data-lands="views.v-main"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-eval" data-pts="160.0,82.0 430.0,82.0" data-ms="1200" data-smin="114.0" data-smax="132.0" data-off="0.0,-31.0"><g class="ax-mpill"><rect x="-98.3" y="-23.0" width="196.6" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">load-file</text></g></g><g class="ax-hop" data-edge="e-repl" data-pts="505.0,114.0 505.0,180.0" data-ms="450"></g><g class="ax-hop" data-edge="e-def" data-pts="640.0,212.0 710.0,212.0" data-ms="450"></g></g>
-  <g class="ax-flow ax-f-warn" data-flow="by-hand" data-lands="page"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-f5" data-pts="1560.0,400.0 1560.0,286.0" data-ms="600"></g><g class="ax-hop" data-edge="e-get" data-pts="1430.0,82.0 930.0,82.0" data-ms="800"></g><g class="ax-hop" data-edge="e-call" data-pts="845.0,114.0 845.0,160.0" data-ms="450"></g><g class="ax-hop" data-edge="e-html" data-pts="990.0,212.0 1430.0,212.0" data-ms="752"></g></g>
-  <g class="ax-pill ax-old" data-ax="p-reload"><rect x="1034.4" y="669.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M1165.6,690.0 L1153.6,683.0 L1153.6,697.0 Z"/><text x="1096.0" y="699.8" text-anchor="middle" font-size="28">reload</text></g>
-  <g class="ax-pill ax-old" data-ax="p-open"><rect x="921.3" y="791.0" width="107.4" height="42.0" rx="21.0"/><path class="ax-tri" d="M931.3,812.0 L943.3,805.0 L943.3,819.0 Z"/><text x="984.0" y="821.8" text-anchor="middle" font-size="28">open</text></g>
-  <g class="ax-pill ax-old" data-ax="p-cursor"><rect x="210.6" y="791.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M341.7,812.0 L329.7,805.0 L329.7,819.0 Z"/><text x="272.1" y="821.8" text-anchor="middle" font-size="28">cursor</text></g>
-  <g class="ax-pill ax-old" data-ax="p-jopen"><rect x="422.2" y="791.0" width="107.4" height="42.0" rx="21.0"/><path class="ax-tri" d="M432.2,812.0 L444.2,805.0 L444.2,819.0 Z"/><text x="485.0" y="821.8" text-anchor="middle" font-size="28">open</text></g>
-  <g class="ax-pill ax-old" data-ax="p-high"><rect x="1152.1" y="791.0" width="191.7" height="42.0" rx="21.0"/><path class="ax-tri" d="M1333.9,812.0 L1321.9,805.0 L1321.9,819.0 Z"/><text x="1239.0" y="821.8" text-anchor="middle" font-size="28">highlight</text></g>
-  <g class="ax-edge ax-elab  ax-old ax-changed ax-warn" data-ax="e-eval"><rect class="ax-lbg" x="198.4" y="97.0" width="193.2" height="31.9" rx="5"/><text class="ax-elabel" x="295.0" y="120.0" text-anchor="middle" font-size="28">Load buffer</text></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-html"><rect class="ax-lbg" x="1225.0" y="227.0" width="100.2" height="31.9" rx="5"/><text class="ax-elabel" x="1275.1" y="250.0" text-anchor="middle" font-size="28">HTML</text></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-save"><rect class="ax-lbg" x="152.6" y="315.0" width="84.8" height="31.9" rx="5"/><text class="ax-elabel" x="195.0" y="338.0" text-anchor="middle" font-size="28">save</text></g>
-  <g class="ax-edge ax-elab  ax-old ax-changed ax-warn" data-ax="e-def"><rect class="ax-lbg" x="643.7" y="177.0" width="62.6" height="31.9" rx="5"/><text class="ax-elabel ax-mono" x="675.0" y="200.0" text-anchor="middle" font-size="28">def</text></g>
-  <g class="ax-edge ax-elab ax-k-human ax-old ax-changed ax-new" data-ax="e-f5"><rect class="ax-lbg" x="1503.4" y="328.0" width="50.6" height="31.9" rx="5"/><text class="ax-elabel" x="1548.0" y="351.0" text-anchor="end" font-size="28">F5</text></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-click"><rect class="ax-lbg" x="1591.0" y="567.4" width="83.0" height="31.9" rx="5"/><text class="ax-elabel" x="1668.0" y="590.4" text-anchor="end" font-size="28">click</text></g>
-  <g class="ax-edge ax-elab  ax-old ax-fallback" data-ax="e-codeg"><rect class="ax-lbg" x="208.2" y="665.0" width="130.0" height="31.9" rx="5"/><text class="ax-elabel ax-mono" x="273.2" y="688.0" text-anchor="middle" font-size="28">code -g</text></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-resolve"><rect class="ax-lbg ax-on-band" x="905.0" y="615.0" width="248.0" height="31.9" rx="5"/><text class="ax-elabel ax-mono" x="1029.0" y="638.0" text-anchor="middle" font-size="28">resolve-cursor</text></g>
-  <g class="ax-node ax-old" data-ax="calva"><rect x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><text class="ax-label" x="87.0" y="95.0" text-anchor="middle" font-size="36">Calva</text></g>
-  <g class="ax-node ax-old" data-ax="buffer"><rect x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><text class="ax-label" x="82.0" y="363.0" text-anchor="middle" font-size="36">buffer</text></g>
-  <g class="ax-node ax-mono ax-old" data-ax="src"><rect x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><text class="ax-label" x="304.0" y="293.2" text-anchor="middle" font-size="34">src/</text></g>
-  <g class="ax-node ax-old" data-ax="nrepl"><rect x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><text class="ax-label" x="505.0" y="95.0" text-anchor="middle" font-size="36">nREPL</text></g>
-  <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
-  <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old ax-changed ax-warn" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
-  <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span / article</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-src"><rect class="ax-hit" x="1439.0" y="149.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="179.5" text-anchor="start" font-size="32">data-src</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-name"><rect class="ax-hit" x="1439.0" y="193.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="223.5" text-anchor="start" font-size="32">data-name</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-call"><rect class="ax-hit" x="1439.0" y="237.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="267.5" text-anchor="start" font-size="32">data-callsite</text></g></g>
-  <g class="ax-node ax-mono ax-old ax-changed ax-warn" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">load-file</text></g>
-  <g class="ax-node ax-old ax-changed ax-new" data-ax="you"><rect x="1500.0" y="400.0" width="120.0" height="64.0" rx="12"/><text class="ax-label" x="1560.0" y="445.0" text-anchor="middle" font-size="36">you</text></g>
-  <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
-  <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text><g class="ax-part ax-row ax-old" data-ax="hub.h-disp"><rect class="ax-hit" x="569.0" y="675.0" width="202.0" height="146.0" rx="7"/><text x="670.0" y="759.5" text-anchor="middle" font-size="32">dispatch</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="reloadjs"><rect x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><text class="ax-label" x="1535.0" y="702.2" text-anchor="middle" font-size="34">reload.js</text></g>
-  <g class="ax-node ax-old" data-ax="seam"><rect x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/></g>
-  <g class="ax-node ax-mono ax-list ax-old" data-ax="devbody"><rect x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><text class="ax-label" x="918.0" y="342.2" font-size="34">dev-body</text><g class="ax-part ax-row ax-mono ax-old" data-ax="devbody.d-script"><rect class="ax-hit" x="909.0" y="359.0" width="202.0" height="38.0" rx="7"/><text x="926.0" y="389.5" text-anchor="start" font-size="32">+&lt;script&gt;</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="devbody.d-tag"><rect class="ax-hit" x="909.0" y="403.0" width="202.0" height="38.0" rx="7"/><text x="926.0" y="433.5" text-anchor="start" font-size="32">tag-tree</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="trload"><rect x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><text class="ax-label" x="638.0" y="508.2" font-size="34">tr-load!</text><g class="ax-pipe"><path d="M734.4,554.0 L743.4,554.0"/><path class="ax-head" d="M752.4,554.0 L741.4,548.0 L741.4,560.0 Z"/></g><g class="ax-pipe"><path d="M957.0,554.0 L966.0,554.0"/><path class="ax-head" d="M975.0,554.0 L964.0,548.0 L964.0,560.0 Z"/></g><g class="ax-pipe"><path d="M1078.5,554.0 L1087.5,554.0"/><path class="ax-head" d="M1096.5,554.0 L1085.5,548.0 L1085.5,560.0 Z"/></g><g class="ax-pipe"><path d="M1199.9,554.0 L1208.9,554.0"/><path class="ax-head" d="M1217.9,554.0 L1206.9,548.0 L1206.9,560.0 Z"/></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-read"><rect x="636.0" y="532.0" width="93.4" height="44.0" rx="8"/><text x="682.7" y="564.1" text-anchor="middle" font-size="28">read</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-calls"><rect x="757.4" y="532.0" width="194.6" height="44.0" rx="8"/><text x="854.7" y="564.1" text-anchor="middle" font-size="28">call sites</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-eval"><rect x="980.0" y="532.0" width="93.4" height="44.0" rx="8"/><text x="1026.8" y="564.1" text-anchor="middle" font-size="28">eval</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-wrap"><rect x="1101.5" y="532.0" width="93.4" height="44.0" rx="8"/><text x="1148.2" y="564.1" text-anchor="middle" font-size="28">wrap</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-index"><rect x="1222.9" y="532.0" width="110.3" height="44.0" rx="8"/><text x="1278.1" y="564.1" text-anchor="middle" font-size="28">index</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="overlay"><rect x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><text class="ax-label" x="1587.0" y="824.2" text-anchor="middle" font-size="34">inspector.js</text></g>
-  <g class="ax-node ax-old" data-ax="joyride"><rect x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/><text class="ax-label" x="96.0" y="825.0" text-anchor="middle" font-size="36">Joyride</text></g>
-  <rect class="ax-tbg ax-note-bg ax-old" data-ax="seam-l" x="1054.0" y="227.0" width="79.4" height="31.9" rx="5"/><text class="ax-note ax-mono ax-old" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28">seam</text>
-  <g class="ax-mark ax-m-shield ax-old" data-ax="m-origin"><path class="ax-glyph" d="M802.0,709.0 L815.6,714.7 L815.6,727.1 Q815.6,738.5 802.0,744.1 Q788.4,738.5 788.4,727.1 L788.4,714.7 Z"/><path class="ax-tick" d="M796.3,727.1 L800.9,731.7 L808.8,721.5"/></g>
-  <g class="ax-mark ax-m-shield ax-old" data-ax="m-resolve"><path class="ax-glyph" d="M802.0,747.0 L815.6,752.7 L815.6,765.1 Q815.6,776.5 802.0,782.1 Q788.4,776.5 788.4,765.1 L788.4,752.7 Z"/><path class="ax-tick" d="M796.3,765.1 L800.9,769.7 L808.8,759.5"/></g>
-  <g class="ax-flow-nums ax-f-warn" data-flow="calva-load"><g class="ax-hopnum ax-hopmsg" transform="translate(292.0 51.0)"><rect x="-98.3" y="-23.0" width="196.6" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">load-file</text></g><g class="ax-hopnum" transform="translate(424.0 142.0)"><rect x="-27.1" y="-21" width="54.2" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">A1</text></g><g class="ax-hopnum" transform="translate(505.0 147.0)"><rect x="-27.1" y="-21" width="54.2" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">A2</text></g><g class="ax-hopnum" transform="translate(675.0 236.0)"><rect x="-27.1" y="-21" width="54.2" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">A3</text></g></g>
-  <g class="ax-flow-nums ax-f-warn" data-flow="by-hand"><g class="ax-hopnum" transform="translate(1590.0 343.0)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B1</text></g><g class="ax-hopnum" transform="translate(1098.7 82.0)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B2</text></g><g class="ax-hopnum" transform="translate(1188.9 212.0)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B3</text></g></g>
-</svg></div>
-</section>
-
-<!-- 42 · the sharp edge -->
-<section class="slide">
-  <h2>The re-def that strips every tag</h2>
-  <p>The tags exist <b>only because the loader applied them</b>.<br>A plain <code>load-file</code> — or your editor’s eval-on-save —<br>re-defs the views untagged. Silently.</p>
-  <p class="note">hooking <code>load</code> (it's <code>^:redef</code>) reaches <code>require</code> — never your editor's eval</p>
-  <p class="rule big">The loader is the <span class="accent">single source of truth</span><br>for how views load.</p>
-  <p class="sub">The moment there are two ways to load a thing, one of them is wrong.</p>
-</section>
-
-<!-- 43 · after a plain load -->
-<section class="slide">
-  <h2>⚠️ after a plain load</h2>
-  <div class="shots stack" style="--hw:0.36792;--kx:0;--ky:2;--kc:3"><div class="grp">
-    <figure class="shot" style="--wa:1.00000;--wb:2.71795"><span class="frame"><img src="figures/talk/s10-plain-before.png" width="2544" height="312" alt="Before: hovering the recipe of the day&#x27;s description shows its box and breadcrumb"></span><figcaption>before</figcaption></figure>
-    <figure class="shot" style="--wa:1.00000;--wb:2.71795"><span class="frame"><img src="figures/talk/s10-plain-dead.png" width="2544" height="312" alt="After a plain load-file and a refresh: the same hover shows nothing"></span><figcaption>after: nothing</figcaption></figure>
-    <figure class="shot" style="--wa:1.00000;--wb:2.71795"><span class="frame"><img src="figures/talk/s10-plain-star.png" width="2544" height="312" alt="After the plain load, a star still answers: rating ▸ star () λ, demo/ui/views.clj:19:1"></span><figcaption>a star, after</figcaption></figure>
-  </div></div>
-</section>
-
-<!-- 44 · the map, state 12 -->
-<section class="slide">
-  <h2>🗺 the inspector doesn't ship</h2>
-  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="12" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 12: the inspector doesn&#x27;t ship">
-  <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
-  <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
-  <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
-  <g class="ax-flow-under ax-f-fwd" data-flow="prod-render"><path class="ax-hglow" d="M1430.0,82.0 L930.0,82.0"/><path class="ax-hglow" d="M845.0,114.0 L845.0,160.0"/><path class="ax-hglow" d="M990.0,212.0 L1430.0,212.0"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-read"><path class="ax-glow" d="M368.0,212.0 L404.0,212.0"/><path class="ax-line" d="M368.0,212.0 L404.0,212.0"/><path class="ax-head" d="M420.0,212.0 L401.0,221.5 L401.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-def"><path class="ax-glow" d="M640.0,212.0 L694.0,212.0"/><path class="ax-line" d="M640.0,212.0 L694.0,212.0"/><path class="ax-head" d="M710.0,212.0 L691.0,221.5 L691.0,202.5 Z"/></g>
-  <g class="ax-flow ax-f-fwd" data-flow="prod-render" data-lands="page.p-el"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-get" data-pts="1430.0,82.0 930.0,82.0" data-ms="800"></g><g class="ax-hop" data-edge="e-call" data-pts="845.0,114.0 845.0,160.0" data-ms="450"></g><g class="ax-hop" data-edge="e-html" data-pts="990.0,212.0 1430.0,212.0" data-ms="752" data-at="51.0" data-with="seam seam-l" data-wms="600"></g></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-html"><rect class="ax-lbg" x="1225.0" y="227.0" width="100.2" height="31.9" rx="5"/><text class="ax-elabel" x="1275.1" y="250.0" text-anchor="middle" font-size="28">HTML</text></g>
-  <g class="ax-node ax-mono ax-old" data-ax="src"><rect x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><text class="ax-label" x="304.0" y="293.2" text-anchor="middle" font-size="34">src/</text></g>
-  <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
-  <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
-  <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span / article</text></g></g>
-  <g class="ax-node ax-mono ax-old ax-changed" data-ax="loader"><rect x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><text class="ax-label" x="530.0" y="224.2" text-anchor="middle" font-size="34">require</text></g>
-  <g class="ax-node ax-old" data-ax="seam"><rect x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/></g>
-  <rect class="ax-tbg ax-note-bg ax-old ax-changed" data-ax="seam-l" x="1054.0" y="227.0" width="146.9" height="31.9" rx="5"/><text class="ax-note ax-mono ax-old ax-changed" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28">identity</text>
-  <g class="ax-flow-nums ax-f-fwd" data-flow="prod-render"><g class="ax-hopnum" transform="translate(1104.7 82.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">1</text></g><g class="ax-hopnum" transform="translate(1351.6 212.0)"><rect x="-21.0" y="-21" width="42.0" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">2</text></g></g>
-</svg></div>
-</section>
-
-<!-- 45 · the inspector doesn't ship -->
+<!-- 44 · the inspector doesn't ship -->
 <section class="slide">
   <div class="ax-mini" style="--ax-mini-w:7.65"><svg class="axm axm-arch" data-step="12" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 12: the inspector doesn&#x27;t ship (here: seam, HTML)"><rect class="axm-region axm-r-store" data-ax="disk" x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="jvm" x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="axm-region axm-r-lane" data-ax="browser" x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><path class="axm-edge" data-ax="e-call" d="M845.0,114.0 L845.0,160.0"/><path class="axm-edge" data-ax="e-get" d="M1430.0,82.0 L930.0,82.0"/><path class="axm-edge" data-ax="e-read" d="M368.0,212.0 L420.0,212.0"/><path class="axm-edge" data-ax="e-def" d="M640.0,212.0 L710.0,212.0"/><path class="axm-edge axm-lit" data-ax="e-html" d="M990.0,212.0 L1430.0,212.0"/><rect class="axm-node" data-ax="src" x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><rect class="axm-node" data-ax="httpkit" x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><rect class="axm-node" data-ax="views" x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><rect class="axm-node" data-ax="page" x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><rect class="axm-node" data-ax="loader" x="420.0" y="180.0" width="220.0" height="64.0" rx="12"/><rect class="axm-node axm-lit" data-ax="seam" x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/></svg></div>
   <h2>The inspector doesn't ship</h2>
@@ -1511,104 +1357,10 @@ svg.axm .axm-lit.axm-edge { stroke: var(--axm-lit-line); stroke-width: calc(3px 
   </ul>
 </section>
 
-<!-- 46 · the map, state 13 -->
+<!-- 45 · close -->
 <section class="slide">
-  <h2>🗺 both directions, one JVM</h2>
-  <div class="figure ax-fig flow-step"><svg class="ax ax-arch" data-step="13" viewBox="0 0 1760 870" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="arch, state 13: both directions, one JVM">
-  <g class="ax-region ax-r-lane ax-old" data-ax="editor"><rect x="0.0" y="16.0" width="196.0" height="846.0" rx="22"/><rect class="ax-capbg" x="16.0" y="3.7" width="154.2" height="29.4"/><text class="ax-cap" x="26.0" y="26.1" text-anchor="start" font-size="28">EDITOR</text></g>
-  <g class="ax-region ax-r-store ax-old" data-ax="disk"><rect x="210.0" y="156.0" width="156.0" height="264.0" rx="22"/><rect class="ax-capbg" x="226.0" y="143.7" width="120.2" height="29.4"/><text class="ax-cap" x="236.0" y="166.1" text-anchor="start" font-size="28">FILES</text></g>
-  <g class="ax-region ax-r-lane ax-old" data-ax="jvm"><rect x="380.0" y="16.0" width="1020.0" height="846.0" rx="22"/><rect class="ax-capbg" x="396.0" y="3.7" width="86.5" height="29.4"/><text class="ax-cap" x="406.0" y="26.1" text-anchor="start" font-size="28">JVM</text></g>
-  <g class="ax-region ax-r-band ax-old" data-ax="dev"><rect x="396.0" y="292.0" width="988.0" height="556.0" rx="16"/><rect class="ax-capbg" x="620.0" y="279.7" width="198.8" height="29.4"/><text class="ax-cap" x="630.0" y="302.1" text-anchor="start" font-size="28">DEV ONLY</text></g>
-  <g class="ax-region ax-r-lane ax-old" data-ax="browser"><rect x="1414.0" y="16.0" width="346.0" height="846.0" rx="22"/><rect class="ax-capbg" x="1430.0" y="3.7" width="199.0" height="29.4"/><text class="ax-cap" x="1440.0" y="26.1" text-anchor="start" font-size="28">BROWSER</text></g>
-  <g class="ax-flow-under ax-f-fwd" data-flow="pixel-paren"><path class="ax-hglow" d="M1680.0,286.0 L1680.0,780.0"/><path class="ax-hglow" d="M1430.0,812.0 L780.0,812.0"/><path class="ax-hglow" d="M560.0,812.0 L178.0,812.0"/></g>
-  <g class="ax-flow-under ax-f-rev" data-flow="cursor-pixel"><path class="ax-hglow" d="M178.0,812.0 L560.0,812.0"/><path class="ax-hglow" d="M780.0,650.0 L1278.1,650.0 L1278.1,576.0"/><path class="ax-hglow" d="M1278.1,576.0 L1278.1,650.0 L780.0,650.0"/><path class="ax-hglow" d="M780.0,812.0 L1430.0,812.0"/><path class="ax-hglow" d="M1720.0,780.0 L1720.0,286.0"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-eval"><path class="ax-glow" d="M160.0,82.0 L414.0,82.0"/><path class="ax-line" d="M160.0,82.0 L414.0,82.0"/><path class="ax-head" d="M430.0,82.0 L411.0,91.5 L411.0,72.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-call"><path class="ax-glow" d="M845.0,114.0 L845.0,144.0"/><path class="ax-line" d="M845.0,114.0 L845.0,144.0"/><path class="ax-head" d="M845.0,160.0 L835.5,141.0 L854.5,141.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-get"><path class="ax-glow" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-line" d="M1430.0,82.0 L946.0,82.0"/><path class="ax-head" d="M930.0,82.0 L949.0,72.5 L949.0,91.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-html"><path class="ax-glow" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-line" d="M990.0,212.0 L1414.0,212.0"/><path class="ax-head" d="M1430.0,212.0 L1411.0,221.5 L1411.0,202.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-save"><path class="ax-glow" d="M150.0,350.0 L224.0,350.0"/><path class="ax-line" d="M150.0,350.0 L224.0,350.0"/><path class="ax-head" d="M240.0,350.0 L221.0,359.5 L221.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-poll"><path class="ax-glow" d="M368.0,350.0 L404.0,350.0"/><path class="ax-line" d="M368.0,350.0 L404.0,350.0"/><path class="ax-head" d="M420.0,350.0 L401.0,359.5 L401.0,340.5 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-notify"><path class="ax-glow" d="M580.0,382.0 L580.0,604.0"/><path class="ax-line" d="M580.0,382.0 L580.0,604.0"/><path class="ax-head" d="M580.0,620.0 L570.5,601.0 L589.5,601.0 Z"/></g>
-  <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsreload"><path class="ax-glow" d="M780.0,690.0 L1430.0,690.0"/><path class="ax-line" d="M780.0,690.0 L1430.0,690.0"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-reloadpage"><path class="ax-glow" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-line" d="M1470.0,658.0 L1470.0,302.0"/><path class="ax-head" d="M1470.0,286.0 L1479.5,305.0 L1460.5,305.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-binds"><path class="ax-glow" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-line" d="M1041.0,304.0 L1041.0,244.0"/><path class="ax-head" d="M1041.0,228.0 L1050.5,247.0 L1031.5,247.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-views"><path class="ax-glow" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-line" d="M600.0,350.0 L700.0,350.0 L700.0,454.0"/><path class="ax-head" d="M700.0,470.0 L690.5,451.0 L709.5,451.0 Z"/></g>
-  <g class="ax-edge  ax-old" data-ax="e-deftr"><path class="ax-glow" d="M860.0,470.0 L860.0,280.0"/><path class="ax-line" d="M860.0,470.0 L860.0,280.0"/><path class="ax-head" d="M860.0,264.0 L869.5,283.0 L850.5,283.0 Z"/></g>
-  <g class="ax-edge  ax-old ax-fwd" data-ax="e-click"><path class="ax-glow" d="M1680.0,286.0 L1680.0,764.0"/><path class="ax-line" d="M1680.0,286.0 L1680.0,764.0"/><path class="ax-head" d="M1680.0,780.0 L1670.5,761.0 L1689.5,761.0 Z"/></g>
-  <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsinsp"><path class="ax-glow" d="M780.0,812.0 L1430.0,812.0"/><path class="ax-line" d="M780.0,812.0 L1430.0,812.0"/></g>
-  <g class="ax-edge  ax-old ax-fallback" data-ax="e-codeg"><path class="ax-glow" d="M560.0,700.0 L82.0,700.0 L82.0,398.0"/><path class="ax-line" d="M560.0,700.0 L82.0,700.0 L82.0,398.0"/><path class="ax-head" d="M82.0,382.0 L91.5,401.0 L72.5,401.0 Z"/></g>
-  <g class="ax-edge ax-k-ws ax-old" data-ax="e-wsjoy"><path class="ax-glow" d="M178.0,812.0 L560.0,812.0"/><path class="ax-line" d="M178.0,812.0 L560.0,812.0"/></g>
-  <g class="ax-edge  ax-old ax-rev" data-ax="e-resolve"><path class="ax-glow" d="M780.0,650.0 L1278.1,650.0 L1278.1,592.0"/><path class="ax-line" d="M780.0,650.0 L1278.1,650.0 L1278.1,592.0"/><path class="ax-head" d="M1278.1,576.0 L1287.6,595.0 L1268.6,595.0 Z"/></g>
-  <g class="ax-edge  ax-old ax-rev" data-ax="e-light"><path class="ax-glow" d="M1720.0,780.0 L1720.0,302.0"/><path class="ax-line" d="M1720.0,780.0 L1720.0,302.0"/><path class="ax-head" d="M1720.0,286.0 L1729.5,305.0 L1710.5,305.0 Z"/></g>
-  <g class="ax-flow ax-f-fwd" data-flow="pixel-paren" data-lands="joyride"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-click" data-pts="1680.0,286.0 1680.0,780.0" data-ms="795"></g><g class="ax-hop" data-edge="e-wsinsp" data-pts="1430.0,812.0 780.0,812.0" data-ms="1200" data-smin="60.0" data-smax="552.0" data-off="0.0,-50.0" data-pill="p-open"><g class="ax-mpill"><rect x="-53.1" y="-23.0" width="106.2" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">open</text></g></g><g class="ax-hop" data-edge="e-wsjoy" data-pts="560.0,812.0 178.0,812.0" data-ms="1200" data-smin="60.0" data-smax="322.0" data-off="0.0,-50.0" data-pill="p-jopen"><g class="ax-mpill"><rect x="-53.1" y="-23.0" width="106.2" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">open</text></g></g></g>
-  <g class="ax-flow ax-f-rev" data-flow="cursor-pixel" data-lands="page.p-el"><g class="ax-token"><circle class="ax-tglow" r="26"/><circle class="ax-tglow2" r="15"/><circle class="ax-tdot" r="8"/></g><g class="ax-hop" data-edge="e-wsjoy" data-pts="178.0,812.0 560.0,812.0" data-ms="1200" data-smin="78.0" data-smax="304.0" data-off="0.0,-50.0" data-pill="p-cursor"><g class="ax-mpill"><rect x="-71.2" y="-23.0" width="142.4" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">cursor</text></g></g><g class="ax-hop" data-edge="e-resolve" data-pts="780.0,650.0 1278.1,650.0 1278.1,576.0" data-ms="858"></g><g class="ax-hop" data-edge="e-resolve" data-pts="1278.1,576.0 1278.1,650.0 780.0,650.0" data-ms="858"></g><g class="ax-hop" data-edge="e-wsinsp" data-pts="780.0,812.0 1430.0,812.0" data-ms="1200" data-smin="144.0" data-smax="544.0" data-off="0.0,-50.0" data-pill="p-high"><g class="ax-mpill"><rect x="-98.3" y="-23.0" width="196.6" height="46" rx="23.0"/><text y="10.8" text-anchor="middle" font-size="30">highlight</text></g></g><g class="ax-hop" data-edge="e-light" data-pts="1720.0,780.0 1720.0,286.0" data-ms="795"></g></g>
-  <g class="ax-pill ax-old" data-ax="p-reload"><rect x="1034.4" y="669.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M1165.6,690.0 L1153.6,683.0 L1153.6,697.0 Z"/><text x="1096.0" y="699.8" text-anchor="middle" font-size="28">reload</text></g>
-  <g class="ax-pill ax-old ax-fwd" data-ax="p-open"><rect x="921.3" y="791.0" width="107.4" height="42.0" rx="21.0"/><path class="ax-tri" d="M931.3,812.0 L943.3,805.0 L943.3,819.0 Z"/><text x="984.0" y="821.8" text-anchor="middle" font-size="28">open</text></g>
-  <g class="ax-pill ax-old ax-rev" data-ax="p-cursor"><rect x="210.6" y="791.0" width="141.2" height="42.0" rx="21.0"/><path class="ax-tri" d="M341.7,812.0 L329.7,805.0 L329.7,819.0 Z"/><text x="272.1" y="821.8" text-anchor="middle" font-size="28">cursor</text></g>
-  <g class="ax-pill ax-old ax-fwd" data-ax="p-jopen"><rect x="422.2" y="791.0" width="107.4" height="42.0" rx="21.0"/><path class="ax-tri" d="M432.2,812.0 L444.2,805.0 L444.2,819.0 Z"/><text x="485.0" y="821.8" text-anchor="middle" font-size="28">open</text></g>
-  <g class="ax-pill ax-old ax-rev" data-ax="p-high"><rect x="1152.1" y="791.0" width="191.7" height="42.0" rx="21.0"/><path class="ax-tri" d="M1333.9,812.0 L1321.9,805.0 L1321.9,819.0 Z"/><text x="1239.0" y="821.8" text-anchor="middle" font-size="28">highlight</text></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-get"><rect class="ax-lbg" x="1133.4" y="47.0" width="93.2" height="31.9" rx="5"/><text class="ax-elabel" x="1180.0" y="70.0" text-anchor="middle" font-size="28">GET /</text></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-html"><rect class="ax-lbg" x="1225.0" y="227.0" width="100.2" height="31.9" rx="5"/><text class="ax-elabel" x="1275.1" y="250.0" text-anchor="middle" font-size="28">HTML</text></g>
-  <g class="ax-edge ax-elab  ax-old" data-ax="e-save"><rect class="ax-lbg" x="152.6" y="315.0" width="84.8" height="31.9" rx="5"/><text class="ax-elabel" x="195.0" y="338.0" text-anchor="middle" font-size="28">save</text></g>
-  <g class="ax-edge ax-elab  ax-old ax-fwd" data-ax="e-click"><rect class="ax-lbg" x="1591.0" y="567.4" width="83.0" height="31.9" rx="5"/><text class="ax-elabel" x="1668.0" y="590.4" text-anchor="end" font-size="28">click</text></g>
-  <g class="ax-edge ax-elab  ax-old ax-fallback" data-ax="e-codeg"><rect class="ax-lbg" x="208.2" y="665.0" width="130.0" height="31.9" rx="5"/><text class="ax-elabel ax-mono" x="273.2" y="688.0" text-anchor="middle" font-size="28">code -g</text></g>
-  <g class="ax-edge ax-elab  ax-old ax-rev" data-ax="e-resolve"><rect class="ax-lbg ax-on-band" x="905.0" y="615.0" width="248.0" height="31.9" rx="5"/><text class="ax-elabel ax-mono" x="1029.0" y="638.0" text-anchor="middle" font-size="28">resolve-cursor</text></g>
-  <g class="ax-node ax-old" data-ax="calva"><rect x="14.0" y="50.0" width="146.0" height="64.0" rx="12"/><text class="ax-label" x="87.0" y="95.0" text-anchor="middle" font-size="36">Calva</text></g>
-  <g class="ax-node ax-old" data-ax="buffer"><rect x="14.0" y="318.0" width="136.0" height="64.0" rx="12"/><text class="ax-label" x="82.0" y="363.0" text-anchor="middle" font-size="36">buffer</text></g>
-  <g class="ax-node ax-mono ax-old" data-ax="src"><rect x="240.0" y="180.0" width="128.0" height="202.0" rx="12"/><text class="ax-label" x="304.0" y="293.2" text-anchor="middle" font-size="34">src/</text></g>
-  <g class="ax-node ax-old" data-ax="nrepl"><rect x="430.0" y="50.0" width="150.0" height="64.0" rx="12"/><text class="ax-label" x="505.0" y="95.0" text-anchor="middle" font-size="36">nREPL</text></g>
-  <g class="ax-node ax-old" data-ax="httpkit"><rect x="760.0" y="50.0" width="170.0" height="64.0" rx="12"/><text class="ax-label" x="845.0" y="95.0" text-anchor="middle" font-size="36">http-kit</text></g>
-  <g class="ax-node ax-old" data-ax="views"><rect x="710.0" y="160.0" width="280.0" height="104.0" rx="12"/><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-main"><rect class="ax-hit" x="719.0" y="163.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="197.5" text-anchor="middle" font-size="32">demo.views</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="views.v-ui"><path class="ax-sep" d="M726.0,212.0 H974.0"/><rect class="ax-hit" x="719.0" y="215.0" width="262.0" height="46.0" rx="7"/><text x="850.0" y="249.5" text-anchor="middle" font-size="32">demo.ui.views</text></g></g>
-  <g class="ax-node ax-list ax-old" data-ax="page"><rect x="1430.0" y="50.0" width="314.0" height="236.0" rx="12"/><text class="ax-label" x="1448.0" y="89.0" font-size="36">page</text><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-el"><rect class="ax-hit" x="1439.0" y="105.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="135.5" text-anchor="start" font-size="32">span / article</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-src"><rect class="ax-hit" x="1439.0" y="149.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="179.5" text-anchor="start" font-size="32">data-src</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-name"><rect class="ax-hit" x="1439.0" y="193.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="223.5" text-anchor="start" font-size="32">data-name</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="page.p-call"><rect class="ax-hit" x="1439.0" y="237.0" width="296.0" height="38.0" rx="7"/><text x="1456.0" y="267.5" text-anchor="start" font-size="32">data-callsite</text></g></g>
-  <g class="ax-node ax-old" data-ax="watcher"><rect x="420.0" y="318.0" width="180.0" height="64.0" rx="12"/><text class="ax-label" x="510.0" y="363.0" text-anchor="middle" font-size="36">watcher</text></g>
-  <g class="ax-node ax-mono ax-old" data-ax="hub"><rect x="560.0" y="620.0" width="220.0" height="212.0" rx="12"/><text class="ax-label" x="670.0" y="658.2" text-anchor="middle" font-size="34">/dev/ws</text><g class="ax-part ax-row ax-old" data-ax="hub.h-disp"><rect class="ax-hit" x="569.0" y="675.0" width="202.0" height="146.0" rx="7"/><text x="670.0" y="759.5" text-anchor="middle" font-size="32">dispatch</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="reloadjs"><rect x="1430.0" y="658.0" width="210.0" height="64.0" rx="12"/><text class="ax-label" x="1535.0" y="702.2" text-anchor="middle" font-size="34">reload.js</text></g>
-  <g class="ax-node ax-old" data-ax="seam"><rect x="1030.0" y="196.0" width="22.0" height="32.0" rx="12"/></g>
-  <g class="ax-node ax-mono ax-list ax-old" data-ax="devbody"><rect x="900.0" y="304.0" width="220.0" height="148.0" rx="12"/><text class="ax-label" x="918.0" y="342.2" font-size="34">dev-body</text><g class="ax-part ax-row ax-mono ax-old" data-ax="devbody.d-script"><rect class="ax-hit" x="909.0" y="359.0" width="202.0" height="38.0" rx="7"/><text x="926.0" y="389.5" text-anchor="start" font-size="32">+&lt;script&gt;</text></g><g class="ax-part ax-row ax-mono ax-old" data-ax="devbody.d-tag"><rect class="ax-hit" x="909.0" y="403.0" width="202.0" height="38.0" rx="7"/><text x="926.0" y="433.5" text-anchor="start" font-size="32">tag-tree</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="trload"><rect x="620.0" y="470.0" width="750.0" height="120.0" rx="12"/><text class="ax-label" x="638.0" y="508.2" font-size="34">tr-load!</text><g class="ax-pipe"><path d="M734.4,554.0 L743.4,554.0"/><path class="ax-head" d="M752.4,554.0 L741.4,548.0 L741.4,560.0 Z"/></g><g class="ax-pipe"><path d="M957.0,554.0 L966.0,554.0"/><path class="ax-head" d="M975.0,554.0 L964.0,548.0 L964.0,560.0 Z"/></g><g class="ax-pipe"><path d="M1078.5,554.0 L1087.5,554.0"/><path class="ax-head" d="M1096.5,554.0 L1085.5,548.0 L1085.5,560.0 Z"/></g><g class="ax-pipe"><path d="M1199.9,554.0 L1208.9,554.0"/><path class="ax-head" d="M1217.9,554.0 L1206.9,548.0 L1206.9,560.0 Z"/></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-read"><rect x="636.0" y="532.0" width="93.4" height="44.0" rx="8"/><text x="682.7" y="564.1" text-anchor="middle" font-size="28">read</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-calls"><rect x="757.4" y="532.0" width="194.6" height="44.0" rx="8"/><text x="854.7" y="564.1" text-anchor="middle" font-size="28">call sites</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-eval"><rect x="980.0" y="532.0" width="93.4" height="44.0" rx="8"/><text x="1026.8" y="564.1" text-anchor="middle" font-size="28">eval</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-wrap"><rect x="1101.5" y="532.0" width="93.4" height="44.0" rx="8"/><text x="1148.2" y="564.1" text-anchor="middle" font-size="28">wrap</text></g><g class="ax-part ax-cell ax-mono ax-old" data-ax="trload.c-index"><rect x="1222.9" y="532.0" width="110.3" height="44.0" rx="8"/><text x="1278.1" y="564.1" text-anchor="middle" font-size="28">index</text></g></g>
-  <g class="ax-node ax-mono ax-old" data-ax="overlay"><rect x="1430.0" y="780.0" width="314.0" height="64.0" rx="12"/><text class="ax-label" x="1587.0" y="824.2" text-anchor="middle" font-size="34">inspector.js</text></g>
-  <g class="ax-node ax-old" data-ax="joyride"><rect x="14.0" y="780.0" width="164.0" height="64.0" rx="12"/><text class="ax-label" x="96.0" y="825.0" text-anchor="middle" font-size="36">Joyride</text></g>
-  <rect class="ax-tbg ax-note-bg ax-old" data-ax="seam-l" x="1054.0" y="227.0" width="79.4" height="31.9" rx="5"/><text class="ax-note ax-mono ax-old" data-ax="seam-l" x="1060.0" y="250.0" text-anchor="start" font-size="28">seam</text>
-  <g class="ax-mark ax-m-shield ax-old" data-ax="m-origin"><path class="ax-glyph" d="M802.0,709.0 L815.6,714.7 L815.6,727.1 Q815.6,738.5 802.0,744.1 Q788.4,738.5 788.4,727.1 L788.4,714.7 Z"/><path class="ax-tick" d="M796.3,727.1 L800.9,731.7 L808.8,721.5"/></g>
-  <g class="ax-mark ax-m-shield ax-old" data-ax="m-resolve"><path class="ax-glyph" d="M802.0,747.0 L815.6,752.7 L815.6,765.1 Q815.6,776.5 802.0,782.1 Q788.4,776.5 788.4,765.1 L788.4,752.7 Z"/><path class="ax-tick" d="M796.3,765.1 L800.9,769.7 L808.8,759.5"/></g>
-  <g class="ax-key ax-key-fwd ax-old" data-ax="k-fwd"><path class="ax-sw" d="M1100.0,106.0 H1136.0"/><text x="1148.0" y="116.1" font-size="28">page → code</text></g>
-  <g class="ax-key ax-key-rev ax-old" data-ax="k-rev"><path class="ax-sw" d="M1100.0,150.0 H1136.0"/><text x="1148.0" y="160.1" font-size="28">code → page</text></g>
-  <g class="ax-flow-nums ax-f-fwd" data-flow="pixel-paren"><g class="ax-hopnum" transform="translate(1680.0 533.0)"><rect x="-27.1" y="-21" width="54.2" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">A1</text></g><g class="ax-hopnum" transform="translate(888.3 812.0)"><rect x="-27.1" y="-21" width="54.2" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">A2</text></g><g class="ax-hopnum" transform="translate(476.0 764.0)"><rect x="-27.1" y="-21" width="54.2" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">A3</text></g></g>
-  <g class="ax-flow-nums ax-f-rev" data-flow="cursor-pixel"><g class="ax-hopnum" transform="translate(281.1 764.0)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B1</text></g><g class="ax-hopnum" transform="translate(1231.6 650.0)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B2</text></g><g class="ax-hopnum" transform="translate(870.3 650.0)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B3</text></g><g class="ax-hopnum" transform="translate(1375.8 812.0)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B4</text></g><g class="ax-hopnum" transform="translate(1720.0 484.8)"><rect x="-27.0" y="-21" width="53.9" height="42" rx="21"/><text y="9.4" text-anchor="middle" font-size="26">B5</text></g></g>
-</svg></div>
-</section>
-
-<!-- 47 · what generalizes -->
-<section class="slide">
-  <h2>What you take home</h2>
-  <ul class="big">
-    <li><b>“Code is data” is tooling leverage</b> — Hiccup is data,<br>so ~450 lines of Clojure bought what JSX needs a build plugin for —<br>and the other direction too</li>
-    <li><b>keep a thread across the boundary</b> — logs → code,<br>errors → UI, data → provenance</li>
-    <li><b>build the inspector your system needs</b> —<br>~800 lines all in, glue included. A weekend.</li>
-  </ul>
-</section>
-
-<!-- 48 · repo -->
-<section class="slide">
-  <h2>Take the same walk</h2>
-  <div class="steps">
-    <div><b>step-0</b> a basic hiccup webserver</div>
-    <div><b>step-4</b> overlay + click→editor</div>
-    <div><b>step-1</b> live reload</div>
-    <div><b>step-5</b> components</div>
-    <div><b>step-2</b> tr-load! keeps the lines</div>
-    <div><b>step-6</b> cursor→browser</div>
-    <div><b>step-3</b> data-src on every element</div>
-    <div><b>step-7</b> call sites</div>
-  </div>
-  <p class="sub">demo repo: branched, step by step — github.com/mapidentity/…<br>the production-shaped version, every trade-off argued:<br><b>Parens to Production</b> — mapidentity.github.io/parens-to-production</p>
-</section>
-
-<!-- 49 · close -->
-<section class="slide">
-  <h1><span class="green">Hiccup is just data.</span><br>So inspect it.</h1>
-  <p class="sub">“Creators need an immediate connection to what they make.” — Bret Victor</p>
-  <p class="sub">Thank you. · questions?</p>
+  <h1><span class="green">Stay connected to what you make.</span><br>Build the tools you miss.</h1>
+  <h2>source available @<br><span class="accent">https://github.com/mapidentity/conj-2026</span></h2>
 </section>
 
 <div class="num" id="num"></div>

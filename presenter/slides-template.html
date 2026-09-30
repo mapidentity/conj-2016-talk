@@ -24,7 +24,7 @@
      as "fits", so test by measuring scrollHeight-clientHeight on every <pre>,
      at 1920x1080, across all slides. At this padding/gap/leading, base 38 clips
      slide 12 (27px, the socket). The binding slides are the tall code blocks —
-     12 (the socket), 20 (the loader) and 27 (a click that travels); the
+     12 (the socket), 21 (the loader) and 29 (a click that travels); the
      numbers move when slides are inserted, the names don't. */
   body {
     font-family: system-ui, sans-serif; font-size: min(3.333vh, 1.875vw);
@@ -54,7 +54,7 @@
   }
   code { padding: .1em .35em; font-size: .92em; }
   /* 1.35 leading, not 1.5: on tall blocks that difference is what buys the
-     larger base above without clipping slides 12, 20 and 27 (see above) */
+     larger base above without clipping slides 12, 21 and 29 (see above) */
   pre { padding: .5em 1em; font-size: .85em; line-height: 1.35; overflow-x: auto; }
   /* box-drawing diagrams: rules must sit tight against their sides to read as a box */
   pre.diagram { line-height: 1.05; font-size: .78em; }
@@ -152,6 +152,12 @@
   ul { padding-left: 1.1em; display: grid; gap: .55em; }
   li::marker { color: #8b7ff5; }
   .big { font-size: 1.35em; }
+  /* {.hero} on a heading: the slide's one word (DEMO), huge and centred on the page —
+     no heading row. Auto margins on every side centre it in the flex column; the
+     second selector outranks the minimap rule above, which zeroes the margin-top of
+     the block after an inset. */
+  .slide > .hero, .slide > .ax-mini:first-child + .hero {
+    margin: auto; text-align: center; font-size: 11em; line-height: 1; letter-spacing: .04em; }
   .rule { border-left: .21em solid #8b7ff5; padding: .4em 0 .4em .8em; }
   /* a remark on the block above — boxed, so it reads as an aside, not as body copy */
   .note { border-left: .18em solid #8b7ff5; background: rgba(139, 127, 245, .10);

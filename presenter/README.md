@@ -194,7 +194,8 @@ for how views load. {.rule .big}
 | `==text==`, `++text++`, `~~text~~` | accent (purple), green, strike spans |
 
 The classes are the ones `slides-template.html` styles: `sub` (muted),
-`big`, `rule` (left bar, for the talk's assertions), `note` (boxed aside —
+`big`, `hero` (on a `#` heading: the slide's one word, huge and centred on
+the page, e.g. DEMO — no heading row), `rule` (left bar, for the talk's assertions), `note` (boxed aside —
 a caption remarking on the block above it), `accent`, `green`, `strike`,
 `steps`, `repl`; for images `pair`, `stack` and `guide`. For a ```` ```diagram ```` fence there are also the flow modes
 `flow-keys` (alias `flow-step`), `flow-auto`, `flow-loop` and `flow-off`, plus `pop`. For a

@@ -251,7 +251,7 @@ demo, not a load path):
 
 **Demo:** change `.badge` color in `resources/style.css`, save → instant.
 
-## §3 · The insight → slides 17–18 (the three facts behind them)
+## §3 · The insight → slides 18–19 (the three facts behind them)
 
 ```clojure
 (meta (read-string "[:div [:span 42]]"))
@@ -314,7 +314,7 @@ demo, not a load path):
        (contains? html-tags (first (str/split (name (first x)) #"[.#]")))))
 ```
 
-**§4c CHECKOUT** (told the file name, the reader stamps `:file` itself — slide 20):
+**§4c CHECKOUT** (told the file name, the reader stamps `:file` itself — slide 21):
 
 ```clojure
 (defn tr-load!
@@ -454,7 +454,7 @@ Walk these three in the JS (60–90s max): `chain` (ancestors with `data-src`),
 **§6b CHECKOUT — two files.** First `dev/dev/socket.clj` gains the peer
 gate (`send1!` after `notify-reload!`, `origin-ok?` before `ws-handler`);
 then `dev/dev/editor.clj` is a **new file** holding the relay
-(the trust boundary + the naive bridge — slide 27):
+(the trust boundary + the naive bridge — slide 29):
 
 ```clojure
 (defn send1! [ch msg]
@@ -510,7 +510,7 @@ block below goes right after it):
            (str/replace origin #"^https?://" "")))))
 ```
 
-**§6d CHECKOUT — the dispatch** (the shape slide 27 shows; it goes in
+**§6d CHECKOUT — the dispatch** (the shape slide 29 shows; it goes in
 `editor.clj`, after `handle-open!` — and it is public: the composition root
 hands it to the socket):
 
@@ -564,7 +564,7 @@ comes right after it):
     h))
 ```
 
-**§7b CHECKOUT** (the var's-meta trick + `::orig` idempotence — slide 31):
+**§7b CHECKOUT** (the var's-meta trick + `::orig` idempotence — slide 34):
 
 ```clojure
 (defn instrument-var!

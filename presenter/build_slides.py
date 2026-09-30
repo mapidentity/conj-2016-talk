@@ -177,7 +177,7 @@ def parse_blocks(lines):
 def render_block(kind, classes, payload):
     if kind == "heading":
         level, body = payload
-        return f"<h{level}>{text(body)}</h{level}>"
+        return f"<h{level}{cls(classes)}>{text(body)}</h{level}>"
     if kind == "para":
         body = list(payload)
         body[-1], tail = split_attr(body[-1])
