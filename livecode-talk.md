@@ -128,6 +128,9 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 <!-- slide 2 · the app -->
 
+```minimap arch 1 views,e-html,page
+```
+
 ![The recipe app: header, stats, the recipe of the day, filters, the first cards](figures/talk/s01-app.png)
 <!-- /slide -->
 
@@ -204,6 +207,9 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 <!-- slide 4 · crooked -->
 ## 🌶️
 
+```minimap arch 1 page
+```
+
 ![The recipe of the day's title row: the NEW badge, and the spicy pill hanging lower](figures/talk/s01-crooked-zoom.png) {.guide}
 <!-- /slide -->
 
@@ -217,6 +223,9 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 <!-- slide 5 · right-click, inspect -->
 ## 🔍
+
+```minimap arch 1 page,src
+```
 
 {.stack}
 ![Chrome's inspect highlight on the spicy pill: span.badge.hot](figures/talk/s01-devtools-page.png)
@@ -252,6 +261,9 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 <!-- slide 6 · edit, save, refresh -->
 ## 🖮💾⟳
 
+```minimap arch 1 buffer,src,page
+```
+
 ```diff
 -       [:span.badge.hot "🌶 " t])]
 +       [:span.badge.hot "🌶🔥 " t])]
@@ -274,6 +286,9 @@ payoff, continue. Nobody will mind; do not debug on stage for more than 30s.
 
 <!-- slide 7 · load the file, refresh again -->
 ## 🔁
+
+```minimap arch 1 e-eval,nrepl,views.v-main,page
+```
 
 {.repl}
 ```clojure
@@ -384,6 +399,9 @@ user=> (load-file "src/demo/views.clj")
 <!-- slide 12 · the socket -->
 # 💌🌐
 
+```minimap arch 3 hub,e-wsreload
+```
+
 ```clojure from=1 cursor=7:22
 (defn broadcast! [msg]
   (let [s (json/write-str msg)]
@@ -457,8 +475,10 @@ ws.onmessage = function (e) {
 -->
 
 <!-- slide 15 · the question -->
-# What do we need to point at an element\
-and ask ==which Clojure form made it==?
+## 🮰
+
+```minimap arch 3 page,views.v-main
+```
 
 ![The overlay on the crooked pill: its box, and the breadcrumb main ▸ section ▸ article ▸ div ▸ h2 ▸ span, demo/views.clj:21:8](figures/talk/s06-popup-plain.png)
 
@@ -470,8 +490,6 @@ and ask ==which Clojure form made it==?
        [:span.badge.hot "🌶 " t])]
     [:p description]
 ```
-
-`demo/views.clj`: the click lands on line 21, column 8 {.note}
 <!-- /slide -->
 
 **[SLIDE 15: the question — say it twice]** "Lets quickly get back to our original question. Where did this badge come from?"
@@ -499,6 +517,9 @@ and ask ==which Clojure form made it==?
 
 <!-- slide 17 · why not: render deletes the structure -->
 ## 🤔
+
+```minimap arch 4 e-html,page.p-el
+```
 
 ## What we have
 ```clojure
@@ -561,6 +582,9 @@ and ask ==which Clojure form made it==?
 ## clojure.tools reader\
 ==indexing-push-back-reader==
 
+```minimap arch 4 loader,e-read,src
+```
+
 ```clojure from=1 cursor=4:17
 (with-open [r (clojure.tools.reader.reader-types/indexing-push-back-reader
                "[:span.badge.hot
@@ -602,6 +626,9 @@ and ask ==which Clojure form made it==?
 <!-- slide 21 · the loader -->
 ## 🚚
 
+```minimap arch 5 trload,views
+```
+
 ```clojure from=1
 (defn tr-load!
   [file]
@@ -639,6 +666,9 @@ HTML tag keyword."
 
 <!-- slide 22 · ask the value -->
 ## ⌨️ ask the value
+
+```minimap arch 5 e-eval,nrepl,views.v-main
+```
 
 {.repl}
 ```clojure
@@ -745,6 +775,9 @@ on the classpath."
 <!-- slide 26 · minute one · now -->
 ## 🏷 minute one · now
 
+```minimap arch 6 page.p-src
+```
+
 {.stack}
 ![DevTools at minute one: the span, class badge hot](figures/talk/s01-devtools-plain.png "minute one")
 ![DevTools now: the same span, with data-name and data-src demo/views.clj:21:8](figures/talk/s05-devtools-data.png "now")
@@ -752,6 +785,9 @@ on the classpath."
 
 <!-- slide 27 · eight cards, one line -->
 ## 🗂️ eight cards, one line
+
+```minimap arch 6 page.p-src
+```
 
 ![DevTools: the eight card roots, every one data-src demo/views.clj:14:3](figures/talk/s05-devtools-cards.png)
 <!-- /slide -->
@@ -850,6 +886,9 @@ has one flaw we fix when the editor joins the conversation."
 <!-- slide 30 · pixel → paren -->
 ## 🖱
 
+```minimap arch 7 page.p-src,buffer
+```
+
 ![The overlay on the crooked pill: its box, and the breadcrumb main ▸ section ▸ article ▸ div ▸ h2 ▸ span, demo/views.clj:21:8](figures/talk/s06-popup-plain.png)
 
 ```clojure from=17 cursor=21:8
@@ -893,6 +932,9 @@ it came from `[:span.badge.hot …]`, so `.hot` is the hook."
 
 <!-- slide 32 · one rule less -->
 ## 📏 one rule less
+
+```minimap arch 7 page.p-el
+```
 
 {.stack}
 ![The title row with top: .45rem: the spicy pill hangs below NEW's edges](figures/talk/s01-crooked-zoom.png "`top: .45rem`") {.guide}
@@ -985,6 +1027,9 @@ tagged root back, not your literal. The original is one lookup away, under
 
 <!-- slide 35 · the whole tower, named -->
 ## 🧩 the whole tower, named
+
+```minimap arch 8 page.p-name
+```
 
 {.stack}
 ![The overlay on the spicy pill: page ▸ featured ▸ recipe-card ▸ div ▸ h2 ▸ span, demo/views.clj:21:8](figures/talk/s07-popup-pill.png)
@@ -1094,6 +1139,10 @@ demoted to a fallback."
 <!-- slide 39 · forty-five -->
 ## ⭐ forty-five
 
+{.rev}
+```minimap arch 9 joyride,page.p-el
+```
+
 ![Cursor in star's body, in the UI-kit namespace: all 45 stars on the page lit](figures/talk/s08-cursor-stars.png "`star`'s body, `demo/ui/views.clj` line 23")
 <!-- /slide -->
 
@@ -1183,6 +1232,10 @@ state."
 
 <!-- slide 42 · eight, or one -->
 ## 🎯 eight, or one
+
+{.rev}
+```minimap arch 10 joyride,page.p-call
+```
 
 {.pair}
 ![Cursor on the grid's call of recipe-card: the eight grid cards lit, the featured card dark](figures/talk/s09-callsite-grid.png "the grid's `(recipe-card r)`, line 81 → eight")
