@@ -24,7 +24,7 @@
      as "fits", so test by measuring scrollHeight-clientHeight on every <pre>,
      at 1920x1080, across all slides. At this padding/gap/leading, base 38 clips
      slide 13 (27px, the socket). The binding slides are the tall code blocks —
-     13 (the socket), 22 (the loader), 24 (tag-tree) and 30 (a click that travels); the
+     13 (the socket), 22 (the loader), 24 (tag-tree) and 29 (a click that travels); the
      numbers move when slides are inserted, the names don't. */
   body {
     font-family: system-ui, sans-serif; font-size: min(3.333vh, 1.875vw);
@@ -54,7 +54,7 @@
   }
   code { padding: .1em .35em; font-size: .92em; }
   /* 1.35 leading, not 1.5: on tall blocks that difference is what buys the
-     larger base above without clipping slides 13, 22, 24 and 30 (see above) */
+     larger base above without clipping slides 13, 22, 24 and 29 (see above) */
   pre { padding: .5em 1em; font-size: .85em; line-height: 1.35; overflow-x: auto; }
   /* box-drawing diagrams: rules must sit tight against their sides to read as a box */
   pre.diagram { line-height: 1.05; font-size: .78em; }
