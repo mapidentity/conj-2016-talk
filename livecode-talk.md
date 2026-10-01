@@ -607,7 +607,7 @@ ws.onmessage = function (e) {
 
 ---
 
-## §4 · Keep the structure: `tr-load!` (12:16–14:24) — slides 21–23 → `step-2`
+## §4 · Keep the structure: `tr-load!` (12:16–14:24) — slides 21–22 → `step-2`
 
 <!-- page "The map — tr-load! keeps the lines" @12:16
   slide 21
@@ -667,48 +667,30 @@ HTML tag keyword."
 "From now on views load through this loader, and nothing else does."
 
 <!-- page "A runtime value that knows its source" @13:40
-  slide 23
 -->
 
-<!-- slide 23 · ask the value -->
-## ⌨️ ask the value
-
-```minimap arch 5 e-eval,nrepl,views.v-main
-```
-
-{.repl}
-```clojure
-user=> (dev.watcher/load-views!)
-nil
-user=> (meta (demo.views/recipe-card (first demo.main/recipes)))
-{:file "demo/views.clj", :line 14, :column 3, :end-line 31, :end-column 64}
-```
-<!-- /slide -->
-
-> Slide 23 replaces the REPL beat below (on the finished app this meta is nil).
-
-**[demo — REPL]** `(dev.watcher/load-views!)`, then
-`(meta (demo.views/recipe-card (first demo.main/recipes)))` →
-`{:file "demo/views.clj", :line 14, :column 3, …}`. "A runtime value that
+**[demo — REPL]** `(meta (last (demo.views/recipe-card (first demo.main/recipes))))`
+→ `{:file "demo/views.clj", :line 16, :column 4, …}` — point at line 16 in the
+editor: the card's `[:div …]` body. "A runtime value that
 knows its source. The hard part of this talk is already done — and yet
 nothing visible has changed. The *value* knows; the browser has no idea,
 because Clojure metadata doesn't survive into an HTML string. How does the
 knowledge cross the wire?"
 
-*(This form works here and nowhere later. From §7 the views are instrumented,
-and the wrapper rebuilds the root vector — `into` drops metadata, so the
-position moves out of the meta and into the `data-src` attribute. If you
-re-run this at a later step, ask for `(:data-src (second …))` instead.)*
+*(Ask for the `last` element, the card's body. On the finished app the
+component wrapper from §7 rebuilds the root vector and `into` drops its
+metadata, so `(meta (recipe-card …))` itself is `nil`; the literals inside keep
+theirs. Verified on `main`.)*
 
 ---
 
-## §5 · Carry it to the DOM: `tag-tree` (14:24–17:09) — slides 24–28 → `step-3`
+## §5 · Carry it to the DOM: `tag-tree` (14:24–17:09) — slides 23–28 → `step-3`
 
 <!-- page "The map — metadata becomes attributes" @14:24
-  slide 24
+  slide 23
 -->
 
-<!-- slide 24 · the map, state 6 -->
+<!-- slide 23 · the map, state 6 -->
 {.flow-step}
 ```diagram arch 6
 ```
@@ -719,6 +701,46 @@ re-run this at a later step, ask for `(:data-src (second …))` instead.)*
 > file:line:col — the lookup is still by hand.
 
 > `a` plays tag-render, → next slide.
+
+<!-- page "How tag-tree walks the tree"
+  slide 24
+-->
+
+<!-- slide 24 · tag-tree walks the tree -->
+## 🌳
+
+```minimap arch 6 devbody.d-tag,page.p-src
+```
+
+```clojure from=1
+(defn tag-tree [node]
+  (cond
+    (vector? node)
+    (let [m (meta node)
+          children (mapv tag-tree node)]
+      (if (and (:line m) (:file m) (element? node))
+        (let [has-attrs? (map? (second children))
+              attrs (if has-attrs? (second children) {})
+              body (subvec children (if has-attrs? 2 1))]
+          (into [(first children)
+                 (assoc attrs
+                   :data-src (str (:file m) ":" (:line m) ":" (or (:column m) 1))
+                   :data-name (first (str/split (name (first node)) #"[.#]")))]
+                body))
+        children))
+
+    (seq? node) (doall (map tag-tree node))
+
+    :else node))
+```
+
+```clojure from=1 cursor=2:9
+(defn dev-body [body]
+  (list (inspector/tag-tree body)
+        [:script {:src "/dev/reload.js"}]))
+```
+
+<!-- /slide -->
 
 <!-- page "The inspector shows file:line:col" [demo]
   slide 25
