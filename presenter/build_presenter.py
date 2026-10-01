@@ -158,7 +158,12 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
 .slide pre .cx { display:block; color:#8d86a4; }
 .slide pre .ad { display:block; color:#e8fff5; background:rgba(52,211,153,.12);
                  box-shadow:-4mm 0 0 rgba(52,211,153,.12), 4mm 0 0 rgba(52,211,153,.12); }
-.slide pre .rm { display:block; color:#f6d9d9; background:rgba(248,113,113,.12); }
+.slide pre .rm { display:block; color:#f6d9d9; background:rgba(248,113,113,.12);
+                 box-shadow:-4mm 0 0 rgba(248,113,113,.12), 4mm 0 0 rgba(248,113,113,.12); }
+/* ```diff inline (build_slides.py): the changed characters marked in place */
+.slide pre .ch { display:block; color:#ece9f1; }
+.slide pre .ins { color:#e8fff5; background:rgba(52,211,153,.3); border-radius:.15em; }
+.slide pre .del { color:#f6d9d9; background:rgba(248,113,113,.22); border-radius:.15em; text-decoration:line-through; }
 /* inline figures (```svg fences) */
 .slide .figure { margin:2mm 0; }
 .slide .figure svg { width:100%; height:auto; display:block; }

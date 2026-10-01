@@ -712,28 +712,22 @@ theirs. Verified on `main`.)*
 ```minimap arch 6 devbody.d-tag,page.p-src
 ```
 
-```clojure from=1 cursor=10:10
+```clojure from=1 cursor=7:11
 (defn tag-tree [node]
   (cond
     (vector? node)
     (let [m (meta node)
           children (mapv tag-tree node)]
-      (if (and (element? node) …)
-        (let [attrs … body …]
-          (into [(first children)
-                 (assoc attrs
-                   :data-src (str (:file m) ":" (:line m) ":" (or (:column m) 1))
-                   …)]
-                body))
-        children))
+      … (assoc attrs
+          :data-src (str (:file m) ":" (:line m) ":" (or (:column m) 1))) …)
     (seq? node) (doall (map tag-tree node))
     :else node))
 ```
 
-```diff
+```diff inline
 (defn dev-body [body]
 -  (list body
-+  (list (inspector/tag-tree body)
++  (list (tag-tree body)
         [:script {:src "/dev/reload.js"}]))
 ```
 

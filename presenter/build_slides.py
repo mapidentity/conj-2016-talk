@@ -56,7 +56,8 @@ import html, re, sys
 from pathlib import Path
 from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from highlight import highlight, HL
+from highlight import highlight, HL, esc
+import difflib
 import diagram
 DIAGRAMS = {}                                        # name -> diagram.Diagram, filled by slides()
 
@@ -224,19 +225,22 @@ def render_block(kind, classes, payload):
 
 # ------------------------------------------------------------ code fences ---
 FENCE_OPTS = ("from", "cursor")
+FENCE_FLAGS = ("inline",)                    # ```diff inline: see inline_diff
 
 def fence_info(info):
     """'clojure from=17 cursor=21:8' → ('clojure', {'from': 17, 'cursor': (21, 8)})."""
     words = (info or "").split()
     lang, opts = (words[0] if words else None), {}
     for w in words[1:]:
+        if w in FENCE_FLAGS: opts[w] = True; continue
         k, eq, v = w.partition("=")
         if not eq or k not in FENCE_OPTS:
-            raise SystemExit(f"{SRC.name}: fence ```{info}: unknown option {w!r} (known: {', '.join(k + '=' for k in FENCE_OPTS)})")
+            raise SystemExit(f"{SRC.name}: fence ```{info}: unknown option {w!r} (known: {', '.join([k + '=' for k in FENCE_OPTS] + list(FENCE_FLAGS))})")
         if k == "from" and v.isdigit(): opts[k] = int(v)
         elif k == "cursor" and re.fullmatch(r"\d+:\d+", v): opts[k] = tuple(int(x) for x in v.split(":"))
         else: raise SystemExit(f"{SRC.name}: fence ```{info}: want from=N / cursor=LINE:COL, got {w!r}")
-    if opts and lang == "diff": raise SystemExit(f"{SRC.name}: fence ```{info}: a diff takes no from= / cursor=")
+    if lang == "diff" and set(opts) - {"inline"}: raise SystemExit(f"{SRC.name}: fence ```{info}: a diff takes no from= / cursor=")
+    if "inline" in opts and lang != "diff": raise SystemExit(f"{SRC.name}: fence ```{info}: `inline` is for ```diff fences")
     return lang, opts
 
 SPAN = re.compile(r"<span[^>]*>|</span>")
@@ -264,9 +268,39 @@ def at_column(h, col, mark):
     if n == col - 1: return h + mark
     raise SystemExit(f"{SRC.name}: cursor= column {col} is past the end of its line ({n} characters)")
 
+def inline_diff(body):
+    """```diff inline: a `-` line followed by a `+` line whose change only adds characters
+    (or only removes them) becomes ONE row, the change marked in place (.ins / .del) and
+    nothing padded, so every column stays put. The sign goes; where the context lines
+    carry unified diff's leading space, a space takes its place, so the row lines up with
+    them. A pair that changes more keeps its two lines (the build prints a note), and
+    every other line renders as a plain ```diff does."""
+    ctx = [l for l in body if l and l[0] not in "+-"]
+    pad = " " if ctx and all(l.startswith(" ") for l in ctx) else ""
+    rows, k = [], 0
+    while k < len(body):
+        ln = body[k]
+        if ln.startswith("-") and k + 1 < len(body) and body[k + 1].startswith("+"):
+            a, b = ln[1:], body[k + 1][1:]
+            ops = difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes()
+            if {op for op, *_ in ops} - {"equal"} in ({"insert"}, {"delete"}):
+                row = "".join(esc(a[i1:i2]) if op == "equal"
+                              else f'<span class="ins">{esc(b[j1:j2])}</span>' if op == "insert"
+                              else f'<span class="del">{esc(a[i1:i2])}</span>'
+                              for op, i1, i2, j1, j2 in ops)
+                rows.append(f'<span class="ch">{pad}{row}</span>')
+                k += 2
+                continue
+            print(f"  note: ```diff inline: {ln.strip()!r} → {body[k + 1].strip()!r} does more than add or remove — kept as two lines")
+        rows.append(HL["diff"](ln))
+        k += 1
+    return "".join(rows)                             # block spans, as hl_diff joins them
+
 def code_html(classes, lang, body, opts):
     """A fenced block. {.repl}: `user=> ` lines are input, the rest output. from= / cursor=:
     each line becomes a block span (a gutter number; the cursor line banded, a caret)."""
+    if opts.get("inline"):
+        return f"<pre{cls(classes)}><code>{inline_diff(body)}</code></pre>"
     if "repl" in classes:
         rows = [f'<span class="rp">user=&gt;</span> {highlight(l[7:], lang)}' if l.startswith("user=> ")
                 else f'<span class="ro">{highlight(l, lang)}</span>' for l in body]

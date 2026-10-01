@@ -62,7 +62,14 @@
   pre .cx { display: block; color: #8d86a4; }
   pre .ad { display: block; color: #e8fff5; background: rgba(52, 211, 153, .12);
             box-shadow: -1em 0 0 rgba(52, 211, 153, .12), 1em 0 0 rgba(52, 211, 153, .12); }
-  pre .rm { display: block; color: #f6d9d9; background: rgba(248, 113, 113, .12); }
+  pre .rm { display: block; color: #f6d9d9; background: rgba(248, 113, 113, .12);
+            box-shadow: -1em 0 0 rgba(248, 113, 113, .12), 1em 0 0 rgba(248, 113, 113, .12); }
+  /* ```diff inline: a -/+ pair that only adds (or only removes) characters is one row,
+     the change marked in place. No padding: every column stays where it is. */
+  pre .ch { display: block; color: #ece9f1; }
+  pre .ins { color: #e8fff5; background: rgba(52, 211, 153, .3); border-radius: .15em; }
+  pre .del { color: #f6d9d9; background: rgba(248, 113, 113, .22); border-radius: .15em;
+             text-decoration: line-through; }
   /* {.repl} fences: `user=> ` lines are input (the prompt recedes), the rest is output */
   pre.repl .rp { color: #6f6890; }
   pre.repl .ro { opacity: .72; }
