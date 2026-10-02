@@ -281,6 +281,12 @@ const PLANS = {
     { name: 's06-popup-plain', viewport: V720, dpr: 3, inspect: 'on',
       hover: { sel: '.featured .badge.hot' }, clip: { rule: 'popup', card: '.featured', until: 'p' },
       expect: 'main ▸ section ▸ article ▸ div ▸ h2 ▸ span demo/views.clj:21:8' },
+    // slide 34's "before": the featured star at step-4, the crumb of bare tags,
+    // in exactly s07-popup-names' frame (same hover, clip and style), so the
+    // two flip on one star — the tower before and after it is named
+    { name: 's06-popup-star', viewport: V720, dpr: 3, inspect: 'on', style: STRAIGHT,
+      hover: { sel: '.featured .rating .star', at: 'corner' }, clip: { rule: 'popup', card: '.featured', until: 'ul.tags' },
+      expect: 'main ▸ section ▸ article ▸ div ▸ div ▸ div ▸ svg demo/ui/views.clj:23:3' },
   ],
   'step-5': [
     // slide 32: the pill and a star, the whole tower named. The star is

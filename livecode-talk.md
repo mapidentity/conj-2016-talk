@@ -964,7 +964,7 @@ it came from `[:span.badge.hot …]`, so `.hot` is the hook."
 ```
 
 {.stack}
-![The overlay on the spicy pill: page ▸ featured ▸ recipe-card ▸ div ▸ h2 ▸ span, demo/views.clj:21:8](figures/talk/s07-popup-pill.png)
+![The overlay on a featured star before names: main ▸ section ▸ article ▸ div ▸ div ▸ div ▸ svg, demo/ui/views.clj:23:3](figures/talk/s06-popup-star.png)
 ![The overlay on a featured star: page ▸ featured ▸ recipe-card ▸ div ▸ div ▸ rating ▸ star, demo/ui/views.clj:19:1](figures/talk/s07-popup-names.png)
 <!-- /slide -->
 
