@@ -98,7 +98,7 @@ const CLIPS = {
     const x = h2.left - 16, y = Math.min(lab.top, h2.top) - 12;
     return { x, y, width: Math.max(lab.right, box.right) + 16 - x, height: end.top - y };
   },
-  // Slide 41: the cards one call site lit, in the row of the hovered card —
+  // Slide 42: the cards one call site lit, in the row of the hovered card —
   // from the cards' top edge (so the green outline reads as a box) and the
   // hovered pill's popup down to that card's description, across both.
   litCards: ({ card }) => {
@@ -302,7 +302,7 @@ const PLANS = {
     ...[['s08-cursor-desc', 'demo/views.clj', 22, 10],       // [:p description] -> nine
         ['s08-cursor-new', 'demo/views.clj', 19, 12],        // [:span.badge "NEW"] -> three
         ['s08-cursor-stars', 'demo/ui/views.clj', 23, 6],    // star's body -> 45
-        // slide 40: the two call sites of recipe-card
+        // slide 41: the two call sites of recipe-card
         ['s09-callsite-grid', 'demo/views.clj', 81, 10],     // the grid's (recipe-card r) -> eight
         ['s09-callsite-featured', 'demo/views.clj', 38, 6],  // featured's (recipe-card r) -> one
     ].map(([name, file, line, col]) => ({ name, viewport: { width: 1280, height: 1700 }, dpr: 2,
@@ -329,7 +329,7 @@ const PLANS = {
   // The finished app as it runs on stage — what only main has (the overlay's
   // Alt-walk: inspector.js on main, after step-7).
   'main': [
-    // slide 41: recipe-card's two call sites. The editor cursor on one call —
+    // slide 42: recipe-card's two call sites. The editor cursor on one call —
     // `featured`'s (line 38) or the grid's (line 81) — lights the cards that
     // call rendered. The Pad Thai pill inside is hovered and its path walked
     // out four steps (span → h2 → div → recipe-card λ → recipe-card ()), so the

@@ -951,7 +951,7 @@ it came from `[:span.badge.hot …]`, so `.hot` is the hook."
 
 ---
 
-## §7 · Components: name what produced it (20:07–22:33) — slides 34–36 → `step-5`
+## §7 · Components: name what produced it (20:07–22:33) — slides 34–37 → `step-5`
 
 <!-- page "The whole tower, named"
   slide 34
@@ -1036,8 +1036,17 @@ tagged root back, not your literal. The original is one lookup away, under
 
 > Run checkout step-5.
 
-<!-- page "The breadcrumb names the whole tower" @21:46
+<!-- page "The breadcrumb names the whole tower" @21:46 [demo]
+  slide 37
 -->
+
+<!-- slide 37 · the whole tower, live -->
+{.hero}
+## ++DEMO++
+
+```minimap arch 8 watcher,e-views,trload.c-wrap,e-deftr,views,e-html,page.p-name
+```
+<!-- /slide -->
 
 > Slide 34 instead of the live hover and the card-root click (live crumbs show () λ).
 
@@ -1052,16 +1061,16 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 
 ---
 
-## §8 · The reverse direction: your cursor drives the browser (22:33–25:43) — slides 37–41 → `step-6`
+## §8 · The reverse direction: your cursor drives the browser (22:33–25:43) — slides 38–42 → `step-6`
 
 > THE KNOCKOUT. Protect it (see the hard gate in the cuts section), and when
 > the stars light, stop talking for three full seconds.
 
 <!-- page "The map — your cursor drives the browser" @22:33
-  slide 37
+  slide 38
 -->
 
-<!-- slide 37 · the map, state 9 -->
+<!-- slide 38 · the map, state 9 -->
 {.flow-step}
 ```diagram arch 9
 ```
@@ -1074,10 +1083,10 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 > `a` plays cursor, → next slide.
 
 <!-- page "An index, an agent, a highlighter" @22:48
-  slide 38
+  slide 39
 -->
 
-<!-- slide 38 · the other direction -->
+<!-- slide 39 · the other direction -->
 ## ↩
 
 {.rev}
@@ -1105,7 +1114,7 @@ view-index =>
 ```
 <!-- /slide -->
 
-**[SLIDE 38: the other direction]** "This is the half I wanted most: let the
+**[SLIDE 39: the other direction]** "This is the half I wanted most: let the
 code point back at everything it rendered. Three small things — an index, an
 agent in the editor, and a highlighter."
 
@@ -1125,10 +1134,10 @@ demoted to a fallback."
 > Run checkout step-6. Then run *Joyride: Run Workspace Script*.
 
 <!-- page "Your cursor drives the browser" @24:07 [demo]
-  slide 39
+  slide 40
 -->
 
-<!-- slide 39 · the other direction -->
+<!-- slide 40 · the other direction -->
 {.hero}
 ## ++DEMO++
 
@@ -1138,10 +1147,10 @@ demoted to a fallback."
 <!-- /slide -->
 
 <!-- page "Eight grid cards, or just the featured one" [demo]
-  slide 40
+  slide 41
 -->
 
-<!-- slide 40 · eight, or one -->
+<!-- slide 41 · eight, or one -->
 ## ()
 
 {.pair}
@@ -1150,10 +1159,10 @@ demoted to a fallback."
 <!-- /slide -->
 
 <!-- page "The knockout — all forty-five stars" @24:49 [the knockout]
-  slide 41
+  slide 42
 -->
 
-<!-- slide 41 · the pill, both places -->
+<!-- slide 42 · the pill, both places -->
 ## ()
 
 ```clojure from=36 cursor=38:5
@@ -1184,13 +1193,13 @@ one*?" **[point at the featured card]**
 
 ---
 
-## §9 · Call sites: telling instances apart (25:43–29:57) — slides 42–45 → `step-7`
+## §9 · Call sites: telling instances apart (25:43–29:57) — slides 43–46 → `step-7`
 
 <!-- page "The map — which call made it" @25:43
-  slide 42
+  slide 43
 -->
 
-<!-- slide 42 · the map, state 10 -->
+<!-- slide 43 · the map, state 10 -->
 {.flow-step}
 ```diagram arch 10
 ```
@@ -1203,10 +1212,10 @@ one*?" **[point at the featured card]**
 > `a` plays callsite-load, `a` plays callsite-render, → next slide.
 
 <!-- page "Same function, two call sites, told apart" @25:53
-  slide 43
+  slide 44
 -->
 
-<!-- slide 43 · which call made it -->
+<!-- slide 44 · which call made it -->
 ## ()
 
 ```minimap arch 10 trload.c-calls,page.p-call
@@ -1227,7 +1236,7 @@ one*?" **[point at the featured card]**
 ```
 <!-- /slide -->
 
-**[SLIDE 43: which call made it]** "Three `(stat …)` calls, three identical
+**[SLIDE 44: which call made it]** "Three `(stat …)` calls, three identical
 roots — and nothing in the DOM records which call made which one. So while
 we're loading, each call to a view function gets rewritten to carry its own
 invocation site."
@@ -1247,10 +1256,10 @@ engine, re-tagged the views, and reloaded the page. One command, whole
 state."
 
 <!-- page "The payoff pair" [demo]
-  slide 44
+  slide 45
 -->
 
-<!-- slide 44 · the payoff pair -->
+<!-- slide 45 · the payoff pair -->
 {.hero}
 ## ++DEMO++
 
@@ -1258,7 +1267,7 @@ state."
 ```
 <!-- /slide -->
 
-> Live; slide 40 as backup.
+> Live; slide 41 as backup.
 
 **[demo — the payoff pair]** `recipe-card` is called from TWO places: the
 grid's `for`, and `featured`.
@@ -1271,10 +1280,10 @@ grid's `for`, and `featured`.
    word and leave the grid alone."
 
 <!-- page "One rule less" [demo]
-  slide 45
+  slide 46
 -->
 
-<!-- slide 45 · one rule less -->
+<!-- slide 46 · one rule less -->
 ## 🌶️
 
 ```minimap arch 7 page.p-el
@@ -1285,7 +1294,7 @@ grid's `for`, and `featured`.
 ![The title row with the rule removed: the spicy pill sits on NEW's edges](figures/talk/s06-straight-zoom.png "") {.guide}
 <!-- /slide -->
 
-> Live fix with inspect mode off; slide 45 if it misbehaves. After the talk: `git -C demo checkout resources/style.css`.
+> Live fix with inspect mode off; slide 46 if it misbehaves. After the talk: `git -C demo checkout resources/style.css`.
 
 Remove the `top: .45rem` rule from `.badge.hot` in `style.css`, save → the
 pill straightens, NEW stays where it was.
@@ -1296,13 +1305,13 @@ What *made* this thing?"
 
 ---
 
-## §11 · What it generalizes to + close (33:59–38:00) — slide 46
+## §11 · What it generalizes to + close (33:59–38:00) — slide 47
 
 <!-- page "Stay connected to what you make. Build the tools you miss." @35:44
-  slide 46
+  slide 47
 -->
 
-<!-- slide 46 · close -->
+<!-- slide 47 · close -->
 # ++Stay connected to what you make.++\
 Build the tools you miss.
 
@@ -1315,7 +1324,7 @@ Build the tools you miss.
 ```
 <!-- /slide -->
 
-**[SLIDE 46: close]** "We started with Bret Victor's principle — an
+**[SLIDE 47: close]** "We started with Bret Victor's principle — an
 immediate connection to what you make — and the one place our stack broke
 it: a crooked pill nobody could trace. Now the connection runs both ways,
 and the gap between the tools you have and the tools you can imagine turned
@@ -1341,7 +1350,7 @@ silence. Never rush the stars.
 2. §9's third beat, the cross-namespace `(ui/stat …)` proof — the payoff
    pair already made the point; this one is reassurance, not revelation.
 3. §10's REPL beat (the seam is `identity`) — one spoken sentence instead.
-4. §9's guard narration (slide 43) — show the slide, say "three guards keep
+4. §9's guard narration (slide 44) — show the slide, say "three guards keep
    it safe", checkout, go straight to the payoff pair. (Never cut the payoff
    pair; it's the talk's most distinctive 40 seconds.)
 5. §7's slide narration — checkout, hover a star, let the breadcrumb make the
