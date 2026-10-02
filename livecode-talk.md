@@ -346,7 +346,7 @@ user=> (load-file "src/demo/views.clj")
 -->
 
 <!-- slide 11 · deps.edn, one alias -->
-# 🔧
+## 🔧
 
 ```minimap arch 3 dev
 ```
@@ -371,7 +371,7 @@ user=> (load-file "src/demo/views.clj")
 -->
 
 <!-- slide 12 · the watcher -->
-# 📂👀
+## 📂👀
 
 ```minimap arch 3 watcher,e-poll,e-dep,e-notify
 ```
@@ -398,7 +398,7 @@ user=> (load-file "src/demo/views.clj")
 -->
 
 <!-- slide 13 · the socket -->
-# 💌🌐
+## 💌🌐
 
 ```minimap arch 3 hub,e-wsreload
 ```
@@ -423,7 +423,7 @@ sends a `reload` message to all connected clients {.note}
 -->
 
 <!-- slide 14 · the browser side -->
-# ⟳
+## ⟳
 
 ```minimap arch 3 devbody.d-script,seam,e-binds,reloadjs,e-reloadpage
 ```
@@ -457,7 +457,7 @@ ws.onmessage = function (e) {
 
 <!-- slide 15 · the page follows -->
 {.hero}
-# ++DEMO++
+## ++DEMO++
 
 ```minimap arch 3 watcher,e-poll,e-dep,e-notify,hub,e-wsreload,devbody.d-script,seam,e-binds,reloadjs,e-reloadpage
 ```
@@ -1071,7 +1071,7 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 
 ```clojure
 (.onDidChangeTextEditorSelection vscode/window 
-  (fn [_] ... (ws-send! {:type "cursor" :file file :line line :col col})))
+  (fn [_] … (ws-send! {:type "cursor" :file file :line line :col col})))
 ```
 
 ```clojure
@@ -1141,10 +1141,10 @@ demoted to a fallback."
 <!-- slide 40 · the pill, both places -->
 ## ()
 
-```clojure from=36 cursor=38:4
+```clojure from=36 cursor=38:5
   [:section.featured
    [:div.featured-label "recipe of the day"]
-   (recipe-card r)])
+    (recipe-card r)])
 ```
 
 ```clojure from=79 cursor=81:4
