@@ -454,7 +454,7 @@ Walk these three in the JS (60–90s max): `chain` (ancestors with `data-src`),
 **§6b CHECKOUT — two files.** First `dev/dev/socket.clj` gains the peer
 gate (`send1!` after `notify-reload!`, `origin-ok?` before `ws-handler`);
 then `dev/dev/editor.clj` is a **new file** holding the relay
-(the trust boundary + the naive bridge — slide 29):
+(the trust boundary + the naive bridge — slide 28):
 
 ```clojure
 (defn send1! [ch msg]
@@ -510,7 +510,7 @@ block below goes right after it):
            (str/replace origin #"^https?://" "")))))
 ```
 
-**§6d CHECKOUT — the dispatch** (the shape slide 29 shows; it goes in
+**§6d CHECKOUT — the dispatch** (the shape slide 28 shows; it goes in
 `editor.clj`, after `handle-open!` — and it is public: the composition root
 hands it to the socket):
 
@@ -564,7 +564,7 @@ comes right after it):
     h))
 ```
 
-**§7b CHECKOUT** (the var's-meta trick + `::orig` idempotence — slide 34):
+**§7b CHECKOUT** (the var's-meta trick + `::orig` idempotence — slide 33):
 
 ```clojure
 (defn instrument-var!
