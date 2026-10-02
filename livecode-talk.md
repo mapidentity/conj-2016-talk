@@ -229,8 +229,8 @@ some line. The page we render has none."
 
 {.big}
 - **given** an element on the page
-- **find** the form that made it, and the call that put it there
-- **without** changing how we write views
+- **find** the form that made it, and how it got there
+- **without** changing how I write views
 <!-- /slide -->
 
 > Draft narration — rewrite it in your own words.
