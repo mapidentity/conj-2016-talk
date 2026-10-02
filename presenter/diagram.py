@@ -78,7 +78,8 @@ DSL — one statement per line, `#` starts a comment:
         stays there as a struck-through cue.
         How a slide plays them is the slide's business: {.flow-auto} (default),
         {.flow-keys} (= {.flow-step}: only the a / p keys), {.flow-loop},
-        {.flow-off} on the line before the fence (diagram.js, DIAGRAM.md).
+        {.flow-off}, plus {.flow-keep} (a finished flow's result stays lit) on the line
+        before the fence (diagram.js, DIAGRAM.md).
 
   every element also takes
     @S  @S-E  @S-E,K…             visible from S on / S..E / several ranges

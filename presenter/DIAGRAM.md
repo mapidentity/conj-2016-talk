@@ -7,6 +7,17 @@ first state, so nothing ever moves: a hard cut between two map slides changes on
 what was added. States follow the talk's **sections**, not git branches. There is
 no branch chip.
 
+The run-sheet holds a second diagram, `nav`, in the same appendix, after the map's
+block. It is the reverse direction's wanted outcome, shown once, on §8's first slide
+(```` ```diagram nav 1``` ````), before the map shows how it works: one state, the
+lines of `recipe-card` in an EDITOR lane, a mock of the page in a BROWSER lane, and
+one `cursor` wire between them. Its lanes share the map's outer edges, so the cut to
+the next map slide keeps the frame. Each of its flows is one cursor position: the
+code row lights (a station), the message crosses, and what the form under the cursor
+renders on main lands (`lands=`); the slide is `flow-keep`, so each result stays lit
+until the next key. It uses the same DSL, the same look and the same keys as the map;
+everything below holds for both.
+
 Who holds what:
 
 | file | holds |
@@ -172,7 +183,8 @@ swap ID @K : out ID,ID… ; in ID,ID…
   - `valign=top` puts the label at the top of a tall box.
 - **`row` / `cell`**: the parts of the node written just above. Their id is
   `node.PART`.
-  - Rows stack.
+  - Rows stack. A row's words are drawn as written, spaces included, so a code row
+    keeps its indentation (`nav`'s lines of `recipe-card`).
   - Cells form a left-to-right pipeline under the title, with arrows between them.
     An absent cell keeps its slot, so a cell added later appears without anything
     moving.
@@ -362,7 +374,7 @@ browser's, and a held key does not repeat):
 | key | behaviour |
 | --- | --- |
 | `a` | Nothing playing: plays the flow at the cursor.<br>Playing: restarts that flow from its start, while its token travels. In the 0.9 s hold after the token has gone in, the flow looks done and counts as done: `a` plays the next flow (after the last one: replays it).<br>A swap never rewinds: `a` while it plays finishes it at once (see "Swaps").<br>A second `a` within 250 ms of the last one is a key bounce or double tap and is ignored. |
-| `p` | One stop back.<br>Playing: stops, back to the start of that flow (nothing lit).<br>Idle at the start of flow k > 1: to the start of flow k−1.<br>Idle after the last flow: to the start of the last one.<br>At the start of flow 1: nothing.<br>It also clears the bounce guard, so the `a` right after it always counts. |
+| `p` | One stop back.<br>Playing: stops, back to the start of that flow (nothing lit).<br>Idle at the start of flow k > 1: to the start of flow k−1.<br>Idle after the last flow: to the start of the last one.<br>At the start of flow 1: nothing.<br>It also clears the bounce guard, so the `a` right after it always counts.<br>On a `flow-keep` slide it also clears the result that rests (nothing lit). |
 
 The stops are the start of each flow, plus "after the last". Arriving on a slide
 (by →, ←, `#N` or a reload) puts the cursor on flow 1 with nothing playing and
@@ -379,12 +391,13 @@ The class line before the ` ```diagram ``` ` fence decides what happens without 
 | `flow-auto` (default) | The first flow plays by itself, 2 s after the cut, as if `a` had been pressed; the cursor then moves on to flow 2, and the rest is `flow-keys`. An `a` or `p` before or during it takes over. |
 | `flow-loop` | Plays every flow, 0.6 s apart, rests 2 s, and repeats while the slide is up. The first `a` or `p` stops the loop: from then on the slide is `flow-keys`. Not for the talk: it keeps moving while the speaker talks, and it is costly on a software-rendered browser. |
 | `flow-off` | Only the static picture: no progress line, and the keys do nothing. |
+| `flow-keep` (combines with `flow-keys` or `flow-auto`) | A finished flow does not clear after its 0.9 s hold: its end picture rests — its stations and `lands=` lit, its wires in the trail look, the token gone and a twin pill back in place — until the next `a` (the next flow starts from a clear picture), `p` (back to that flow's start, nothing lit) or leaving the slide. For a slide whose point is the result (`nav`: three small pills among nine cards need longer than 0.9 s). Under reduced motion `a` shows that end picture with the flow's numbered hops. No effect with `flow-loop`. |
 | `pop` (combines with the others) | On a forward arrival, the state's new parts pop for 220 ms (scale 1.08 → 1 and a brightness flash; opacity never changes). |
 
 ### The progress line
 
 Under a map with flows, a hairline runs along the very bottom of the projector
-slide, as wide as the figure and below the `N / 49` counter. It is for the speaker,
+slide, as wide as the figure and below the `N / 48` counter. It is for the speaker,
 not the audience:
 - One segment per flow or swap, each as long as it takes (a flow's 0.9 s hold included).
   When the state has two or more flows, a small dot marks each boundary; a dot is
@@ -408,7 +421,8 @@ not the audience:
   station that is a flow's first item lights from the press, through the first door's
   wait: 710 ms (0.26 s + 450 ms), the token hidden meanwhile;
 - between two legs the token is gone for 0.6 s (`LEG` in `diagram.js`);
-- the path stays lit for 0.9 s after arrival.
+- the path stays lit for 0.9 s after arrival (on a `flow-keep` slide the end picture
+  then rests until the next key).
 
 **Reduced motion, print, and the deck:** nothing moves.
 - The picture is static, plus a print layer: each hop is numbered in its flow's
@@ -420,8 +434,9 @@ not the audience:
   `inspector.js`: open and highlight) it never sits beside the wrong one. It also
   keeps 10 units more from a mark's glyph than from words (`NUM_MARK_GAP`), so state
   4's hop number 2 sits clear of the ✕ instead of reading as "2✕".
-- Under reduced motion, `a` reveals the cursor flow's numbered hops instead, and
-  moves the progress line one whole segment on; `p` hides them and steps back one
+- Under reduced motion, `a` reveals the cursor flow's numbered hops instead (on a
+  `flow-keep` slide together with its end picture), and moves the progress line one
+  whole segment on; `p` hides them and steps back one
   stop. A swap is applied at once instead. `flow-auto` shows flow 1's numbers on
   arrival (its autoplay, the line one segment on). `flow-loop` shows every flow's
   numbers at once (the line full); its first `a` starts over at flow 1, its first `p`

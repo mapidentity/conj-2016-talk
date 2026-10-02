@@ -41,6 +41,8 @@ svg.ax .ax-cell rect { fill: #16141f; stroke: #6b6490; stroke-width: 2; }
 svg.ax .ax-pipe path { fill: none; stroke: #7a72a3; stroke-width: 2.5; }
 svg.ax .ax-pipe .ax-head { fill: #7a72a3; stroke: none; }
 svg.ax .ax-list .ax-row text { fill: #9d94b8; }
+/* a row's words as written: a code row keeps its indentation (diagram.py measures the spaces too) */
+svg.ax .ax-row text { white-space: pre; }
 
 /* --- edges: what flows, one way; labels get a halo so they stay legible over lines */
 svg.ax .ax-edge .ax-line { fill: none; stroke: #7a72a3; stroke-width: 3; stroke-linejoin: round; }

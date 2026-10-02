@@ -21,7 +21,8 @@ Syntax (documented in README.md, "Slides"):
                           (diagram.py, DIAGRAM.md), full size; the fence body
                           stays empty. A {.flow-keys|.flow-step|.flow-auto|
                           .flow-loop|.flow-off} line before it picks how the
-                          state's flows play; {.pop} pops its new parts
+                          state's flows play; {.flow-keep} keeps each finished
+                          flow's result lit; {.pop} pops its new parts
   ```minimap NAME K ID,…``` state K as a small you-are-here inset with those
                           parts lit, top right beside the heading, out of the
                           flow (one per slide; {.rev} / {.warn} light them green /

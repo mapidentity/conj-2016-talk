@@ -98,7 +98,7 @@ const CLIPS = {
     const x = h2.left - 16, y = Math.min(lab.top, h2.top) - 12;
     return { x, y, width: Math.max(lab.right, box.right) + 16 - x, height: end.top - y };
   },
-  // Slide 42: the cards one call site lit, in the row of the hovered card —
+  // Slide 43: the cards one call site lit, in the row of the hovered card —
   // from the cards' top edge (so the green outline reads as a box) and the
   // hovered pill's popup down to that card's description, across both.
   litCards: ({ card }) => {
@@ -112,7 +112,7 @@ const CLIPS = {
     const y0 = Math.min(lab.top, ...row.map((r) => r.top)) - 12;
     return { x: x0, y: y0, width: x1 - x0, height: c.querySelector('p').getBoundingClientRect().top - y0 };
   },
-  // Slide 43: one frame for the three shots of the §10 sharp edge, on the
+  // The §10 sharp edge (no slide uses it now): one frame for its three shots, on the
   // recipe of the day (its breadcrumbs fit inside the card, so no neighbour
   // shows): from the breadcrumb over the title row down to the top of the
   // tag row, and across the hovered description's box. Taken on the first
@@ -194,7 +194,7 @@ async function loadFireEdit() {
   if (out !== "#'demo.views/layout") throw new Error('unexpected load-file result: ' + out);
 }
 
-// Slide 43 — the §10 sharp edge, at step-7: a plain load of the real file
+// The §10 sharp edge (no slide uses it now), at step-7: a plain load of the real file
 // (what Calva's "Load/Evaluate buffer" does). It re-defs the views with the
 // default reader, so every tag from views.clj is gone, while the UI kit
 // (demo/ui/views.clj, not reloaded) keeps its tags. The watcher stays silent:
@@ -298,20 +298,20 @@ const PLANS = {
       expect: 'page ▸ featured ▸ recipe-card ▸ div ▸ div ▸ rating ▸ star demo/ui/views.clj:19:1' },
   ],
   'step-7': [
-    // slides 35/36 (backups): the editor cursor lights the page
+    // backups no slide uses now: the editor cursor lights the page
     ...[['s08-cursor-desc', 'demo/views.clj', 22, 10],       // [:p description] -> nine
         ['s08-cursor-new', 'demo/views.clj', 19, 12],        // [:span.badge "NEW"] -> three
         ['s08-cursor-stars', 'demo/ui/views.clj', 23, 6],    // star's body -> 45
-        // slide 41: the two call sites of recipe-card
+        // slide 42: the two call sites of recipe-card
         ['s09-callsite-grid', 'demo/views.clj', 81, 10],     // the grid's (recipe-card r) -> eight
         ['s09-callsite-featured', 'demo/views.clj', 38, 6],  // featured's (recipe-card r) -> one
     ].map(([name, file, line, col]) => ({ name, viewport: { width: 1280, height: 1700 }, dpr: 2,
       inspect: 'on', cursor: { file, line, col }, clip: 'reverse' })),
-    // slide 40 (backup): every component folded into name + () λ
+    // a backup no slide uses now: every component folded into name + () λ
     { name: 's09-popup-glyphs', viewport: V720, dpr: 3, inspect: 'on',
       hover: { sel: '.featured .rating .star', at: 'corner' }, clip: { rule: 'popup', card: '.featured', until: 'ul.tags' },
       expect: 'page ▸ featured () λ ▸ recipe-card () λ ▸ div ▸ div ▸ rating () λ ▸ star () λ demo/ui/views.clj:19:1' },
-    // slide 43 (backup): the §10 sharp edge, on the recipe of the day, in one
+    // a backup no slide uses now: the §10 sharp edge, on the recipe of the day, in one
     // frame. REPL-mutating: last in its step.
     // Before: the card's description is inspectable …
     { name: 's10-plain-before', viewport: V720, dpr: 3, inspect: 'on',
@@ -329,7 +329,7 @@ const PLANS = {
   // The finished app as it runs on stage — what only main has (the overlay's
   // Alt-walk: inspector.js on main, after step-7).
   'main': [
-    // slide 42: recipe-card's two call sites. The editor cursor on one call —
+    // slide 43: recipe-card's two call sites. The editor cursor on one call —
     // `featured`'s (line 38) or the grid's (line 81) — lights the cards that
     // call rendered. The Pad Thai pill inside is hovered and its path walked
     // out four steps (span → h2 → div → recipe-card λ → recipe-card ()), so the

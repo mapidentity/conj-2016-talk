@@ -199,7 +199,7 @@ The classes are the ones `slides-template.html` styles: `sub` (muted),
 the page, e.g. DEMO — no heading row), `rule` (left bar, for the talk's assertions), `note` (boxed aside —
 a caption remarking on the block above it), `accent`, `green`, `strike`,
 `steps`, `repl`, `qr` (on an ```` ```svg ```` QR code: a fixed scannable size); for images `pair`, `stack` and `guide`. For a ```` ```diagram ```` fence there are also the flow modes
-`flow-keys` (alias `flow-step`), `flow-auto`, `flow-loop` and `flow-off`, plus `pop`. For a
+`flow-keys` (alias `flow-step`), `flow-auto`, `flow-loop` and `flow-off`, plus `flow-keep` and `pop`. For a
 ```` ```minimap ```` fence there are `rev` and `warn`. Add a class
 there when a slide needs a new look; add markdown syntax here only when the
 content cannot be said with the above. `slides.html` still opens standalone in
@@ -281,7 +281,11 @@ swap loader-swap @5 : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-d
   drawn from the same geometry, and an element is simply absent before its first
   state, so a cut between two map slides changes only what was added. States follow
   the talk's sections; there is no branch chip, and `chip` / `branch=` are build
-  errors.
+  errors. The appendix holds a second block after the map's, `nav`: the reverse
+  direction's wanted outcome (§8's first slide, ```` ```diagram nav 1``` ````), one
+  state whose three flows each light a code row, cross a `cursor` wire and land on a
+  mock of the page, where the result stays lit (`flow-keep`). Same DSL, look and keys
+  (`DIAGRAM.md`, at the top).
 - **A full map on a slide:** an empty ```` ```diagram NAME K ```` fence inside a
   slide block, with a flow-mode class line before it. Give the slide a one-line
   `##` heading (`## 🗺 caption` on the talk's map slides), so the map sits at the
@@ -348,7 +352,7 @@ swap loader-swap @5 : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-d
   on the presenting machine, or the flows only show as numbers. The line sits in
   the bottom ~12 px at 1080p: check that the projector does not overscan.
 - **The progress line.** Under a map with flows, a hairline along the very bottom of
-  the slide (below the `N / 49` counter) shows the speaker where the flows are: one
+  the slide (below the `N / 48` counter) shows the speaker where the flows are: one
   segment per flow, as long as the flow; a small dot between two flows; a thicker
   fill that grows with the animation's own clock and rests at the cursor when idle.
   It is quiet on purpose (the audience should hardly notice it). Print, the deck and
@@ -362,6 +366,9 @@ swap loader-swap @5 : out loader, e-read, e-dep, e-repl, e-def ; in e-views, e-d
   - `{.flow-loop}`: plays and repeats; the first `a` or `p` stops the loop. Not for
     the talk.
   - `{.flow-off}`: the static picture only; no line, and the keys do nothing.
+  - `{.flow-keep}` combines with `flow-keys` or `flow-auto`: a finished flow's end
+    picture (stations and `lands=` lit) rests after the 0.9 s hold, until the next `a`,
+    `p` or leaving the slide — for a slide whose point is the result (`nav`).
   - `{.pop}` combines with any of them: the new parts pop on a forward arrival.
 
   The deck and the PDF show the static picture with numbered hops instead. Under

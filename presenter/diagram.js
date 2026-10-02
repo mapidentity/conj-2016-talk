@@ -58,9 +58,14 @@
                           is up; the first a or p stops the loop and from then on it is
                           flow-keys
      flow-off             never animates: no line, the keys do nothing
+     flow-keep            (with flow-keys or flow-auto) a finished flow's end picture stays — its
+                          stations and lands lit, its wires in the trail look, the token gone —
+                          until the next a, p, or leaving the slide: the result is the point
+                          (nav's cursor positions). Without it the hold ends and all clears
 
    Reduced motion: nothing moves. a shows the cursor flow's numbered hops (the print
-   layer) and moves the line one whole segment on; p hides them and steps back one stop.
+   layer; with flow-keep also its end picture) and moves the line one whole segment on;
+   p hides them and steps back one stop.
    A swap is applied at once on a (its end state), and p puts the "before" back.
    flow-auto shows flow 1's numbers on arrival (its "autoplay"; the line one segment on).
    flow-loop shows every flow's numbers at once on arrival (the line full); its first a
@@ -77,7 +82,7 @@
   var START = 2000,  // flow-auto/-loop: after the hard cut, before autoplay: the audience finds the new parts first
       PRE = 260,     // the token waits at the first door
       DWELL = 170,   // … and at every node between hops
-      HOLD = 900,    // after the last hop, the whole path stays lit (the token has gone in)
+      HOLD = 900,    // after the last hop, the whole path stays lit (the token has gone in); flow-keep: and then stays so (S.kept)
       LEG = 600,     // between two legs of a flow (`|`): the token has gone in; it comes out elsewhere
       GAP = 600,     // flow-loop: between two flows of one slide
       REST = 2000,   // flow-loop: the static picture between rounds
@@ -237,11 +242,13 @@
   function advance(t) {
     while (S && S.run && t >= S.run.at + S.anims[S.run.j].dur) {
       var j = S.run.j, end = S.run.at + S.anims[j].dur, last = j + 1 === S.anims.length;
-      S.stop = j + 1; S.run = null;
+      S.stop = j + 1; S.run = null; S.kept = keepable(j);
       if (!S.auto || S.mode !== 'loop') { S.auto = false; break; }
       S.run = { j: last ? 0 : j + 1, at: end + (last ? REST : GAP) };
     }
   }
+  // flow-keep: flow j has finished, so its end picture rests (a swap's end state rests anyway)
+  function keepable(j) { return S.keep && !S.anims[j].swap ? j : -1; }
   // how far along the line (ms of flow time) the clock is: inside a run, or at the cursor's stop
   function along(t) {
     var r = S.run;
@@ -360,8 +367,10 @@
   function render(t) {
     if (!S || S.mode === 'off') return;
     var fr = frame(t), acc = { lit: [], trail: [], off: [], land: [], beat: [], pulse: [] };
+    // flow-keep, idle: the flow that just finished rests at its end (as in its hold, for good)
+    var kept = !fr && S.kept >= 0 && S.kept === S.stop - 1 ? S.kept : -1;
     S.anims.forEach(function (f, j) {
-      var u = fr && fr.j === j ? fr.u : null;
+      var u = fr && fr.j === j ? fr.u : j === kept ? f.end : null;
       if (!f.swap) paint(f, u, acc);
       else if (u !== null) swapAt(f, u);
       else swapRest(f, !(fr ? j < fr.j : j < S.stop));  // played: an earlier one than the one playing, or before the cursor
@@ -423,7 +432,7 @@
     if (raf) cancelAnimationFrame(raf); clearTimeout(timer); raf = 0; timer = 0;
     frozen = null;
     if (S) {
-      S.run = null; S.auto = false; S.stop = 0; render(0);
+      S.run = null; S.auto = false; S.stop = 0; S.kept = -1; render(0);
       S.svgs.forEach(function (svg) { cls(svg, 'ax-static', false); });
       S.anims.forEach(function (f) { cls(f.nums, 'ax-shown', false); if (f.swap) unswap(f); });
     }
@@ -475,6 +484,7 @@
     }); });
     return { slide: slide, svgs: svgs, anims: flows, edges: edges, pills: pills, lands: lands, beats: beats, marks: marks, mode: mode,
              line: mode === 'off' ? null : line(fig, flows),
+             keep: fc.contains('flow-keep') && mode !== 'loop', kept: -1,   // flow-keep: which flow's end picture rests (-1: none)
              stop: 0, run: null, auto: false, lastA: -Infinity, shown: -1, playing: false };
   }
 
@@ -493,7 +503,7 @@
         S.stop = sw + 1; render(now()); return;         // the cursor after the last one, nothing plays by itself
       }
       if (reduced()) {                                  // no motion: the print look instead
-        if (S.mode === 'auto') { S.shown = 0; reveal(0); S.stop = 1; }                          // "autoplays" flow 1
+        if (S.mode === 'auto') { S.shown = 0; reveal(0); S.stop = 1; S.kept = keepable(0); }    // "autoplays" flow 1
         else if (S.mode === 'loop') { S.shown = 'all'; reveal('all'); S.stop = S.anims.length; } // all of them, at rest
         render(now()); return;
       }
@@ -512,12 +522,13 @@
       if (reduced()) {                                  // reveal the cursor flow's numbers, one whole segment on
         if (S.shown === 'all') S.stop = 0;              // from flow-loop's overview: start over at flow 1
         var k = Math.min(S.stop, n - 1);
-        S.shown = k; reveal(k); S.stop = k + 1; render(t); return true;
+        S.shown = k; reveal(k); S.stop = k + 1; S.kept = keepable(k); render(t); return true;
       }
       var fr = frame(t);
       // a swap never rewinds: a while it plays finishes it at once (its end state), and the next a plays on
       if (fr && S.anims[fr.j].swap) { S.stop = fr.j + 1; S.run = null; tick(); return true; }
       if (fr && fr.u >= S.anims[fr.j].end) { S.stop = fr.j + 1; fr = null; }   // the hold: its token has gone in, it is done
+      S.kept = -1;                                      // flow-keep: the next run starts from a clear picture
       S.run = { j: fr ? fr.j : Math.min(S.stop, n - 1), at: t };
       tick(); return true;
     },
@@ -528,6 +539,7 @@
       S.lastA = -Infinity;                              // p, then a at once is on purpose, not a bounce
       if (frozen === null) advance(t);
       S.auto = false;
+      S.kept = -1;                                      // flow-keep: back to a flow's start, nothing lit
       if (reduced()) {
         if (S.shown !== -1) { S.shown = -1; reveal(-1); }
         if (S.stop > 0) S.stop--;
@@ -552,7 +564,7 @@
     info: function () {
       if (!S) return null;
       var t = now(), n = S.anims.length;
-      return { mode: S.mode, playing: S.playing, stop: S.stop, cursor: Math.min(S.stop, n - 1), auto: S.auto,
+      return { mode: S.mode, playing: S.playing, stop: S.stop, cursor: Math.min(S.stop, n - 1), auto: S.auto, keep: S.keep, kept: S.kept,
         running: S.run ? S.run.j : null, since: S.run ? t - S.run.at : null, shown: S.shown,
         line: S.line ? { B: S.line.B, total: S.line.total, at: S.mode === 'off' ? 0 : along(t) / S.line.total } : null,
         swaps: S.anims.filter(function (f) { return f.swap; }).map(function (f) { return { id: f.id, state: f.state }; }),

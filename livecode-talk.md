@@ -12,13 +12,14 @@
 > `livecode-cheatsheet.md` (keep it on a second screen or printed) — for
 > reference while you talk, and as a paste source if a checkout misbehaves.
 > Nothing in it is typed on stage.
-> Slides (49) are defined **in this file**, each as a
+> Slides (48) are defined **in this file**, each as a
 > `<!-- slide N · name -->` … `<!-- /slide -->` block after the page marker
 > that first shows it; `slides.html` is generated from them (projector tab).
 > They carry the code now — but still no plan slide and no step list until
 > the end: the problem chain is the map.
 > The architecture map (one diagram, drawn state by state on the map
-> slides) is defined once, in *The map (diagram source)* at the end.
+> slides) is defined once, in *The map (diagram source)* at the end; so is
+> `nav`, the cursor's wanted outcome on §8's first slide.
 
 ---
 
@@ -577,7 +578,7 @@ ws.onmessage = function (e) {
 ## Add location metadata
 ```diff inline
 - (hiccup2/html [:span.badge.hot "🌶 " t])
-+ (hiccup2/html {:data-src "demo/views.clj:21:8"} [:span.badge.hot "🌶 " t])
++ (hiccup2/html [:span.badge.hot {:data-src "demo/views.clj:21:8"} "🌶 " t])
 ```
 ```diff inline
 - <span class="badge hot">🌶 spicy</span>
@@ -613,8 +614,8 @@ ws.onmessage = function (e) {
 
 ```clojure
 (read-string "[:span.badge.hot \"🌶 \" t]")
-→ [:span.badge.hot \"🌶 \" t]
-(meta …) → nil
+=> [:span.badge.hot "🌶 " t]
+(meta …) => nil
 ```
 <!-- /slide -->
 
@@ -639,7 +640,7 @@ ws.onmessage = function (e) {
   (-> (clojure.tools.reader/read r)
       (nth 2)
       (#(vector % (meta %)))))
-→ [t {:column 17, :end-column 18, :end-line 3, :line 3}]
+=> [t {:column 17, :end-column 18, :end-line 3, :line 3}]
 ```
 <!-- /slide -->
 
@@ -759,7 +760,8 @@ theirs. Verified on `main`.)*
     (let [m (meta node)
           children (mapv tag-tree node)]
       … (assoc attrs
-          :data-src (str (:file m) ":" (:line m) ":" (or (:column m) 1))) …)
+          :data-src (str (:file m) ":" (:line m) ":" (or (:column m) 1)))
+          :data-name (first (str/split (name (first node)) #"[.#]")) …)
     (seq? node) (doall (map tag-tree node))
     :else node))
 ```
@@ -793,7 +795,7 @@ on the classpath."
 -->
 
 <!-- slide 27 · minute one · now -->
-## 🏷
+## 🏷️
 
 ```minimap arch 6 page.p-src
 ```
@@ -804,7 +806,7 @@ on the classpath."
 <!-- /slide -->
 
 <!-- slide 28 · eight cards, one line -->
-## 🏷
+## 🏷️
 
 ```minimap arch 6 page.p-src
 ```
@@ -848,7 +850,7 @@ tell?"
 -->
 
 <!-- slide 30 · pixel → paren -->
-## 🖱
+## 🖱️
 
 ![The overlay on the crooked pill: its box, and the breadcrumb main ▸ section ▸ article ▸ div ▸ h2 ▸ span, demo/views.clj:21:8](figures/talk/s06-popup-plain.png)
 
@@ -885,7 +887,7 @@ tell?"
 -->
 
 <!-- slide 32 · a click that travels -->
-## 🖱
+## 🖱️
 
 ```minimap arch 7 overlay,e-wsinsp,hub.h-disp,e-codeg
 ```
@@ -958,7 +960,7 @@ it came from `[:span.badge.hot …]`, so `.hot` is the hook."
 -->
 
 <!-- slide 34 · the whole tower, named -->
-## 🧩
+## λ
 
 ```minimap arch 8 page.p-name
 ```
@@ -988,7 +990,7 @@ it came from `[:span.badge.hot …]`, so `.hot` is the hook."
 -->
 
 <!-- slide 36 · what made this -->
-## 🧩
+## λ
 
 ```minimap arch 8 trload.c-wrap,views
 ```
@@ -1002,15 +1004,6 @@ it came from `[:span.badge.hot …]`, so `.hot` is the hook."
         nm   (str (ns-name (:ns m)) "/" (:name m))]
     (alter-var-root v (constantly
       … (fn [& args] (tag-hiccup (apply orig args) src nm)) …))))
-```
-
-```diff inline
-(defn tag-tree [node]
-  …
-  (assoc attrs
-    :data-src (str (:file m) ":" (:line m) ":" (or (:column m) 1))
-+    :data-name (first (str/split (name (first node)) #"[.#]")))
-  …)
 ```
 <!-- /slide -->
 
@@ -1061,16 +1054,38 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 
 ---
 
-## §8 · The reverse direction: your cursor drives the browser (22:33–25:43) — slides 38–42 → `step-6`
+## §8 · The reverse direction: your cursor drives the browser (22:33–25:43) — slides 38–43 → `step-6`
 
 > THE KNOCKOUT. Protect it (see the hard gate in the cuts section), and when
 > the stars light, stop talking for three full seconds.
 
-<!-- page "The map — your cursor drives the browser" @22:33
+<!-- page "Your cursor, on the page" @22:33
   slide 38
 -->
 
-<!-- slide 38 · the map, state 9 -->
+<!-- slide 38 · the wanted outcome -->
+{.flow-step .flow-keep}
+```diagram nav 1
+```
+<!-- /slide -->
+
+> The wanted outcome, before any of the machinery: the form under the cursor
+> lights everything it rendered. On `[:span.badge.hot …]` → the three spicy
+> pills (the recipe of the day, the grid's Pad Thai, Tacos al Pastor); on
+> `[:p description]` → all nine descriptions; on the `(defn recipe-card`
+> line, inside the defn but on no element → all nine cards.
+> Live it is the form under the cursor, not the line: in line 21's
+> indentation (before the `[`, column 8) the enclosing `[:h2 …` lights the
+> nine titles instead.
+
+> `a` plays spicy-pills, `a` plays descriptions, `a` plays cards (each result
+> stays lit until the next key), → next slide.
+
+<!-- page "The map — your cursor drives the browser"
+  slide 39
+-->
+
+<!-- slide 39 · the map, state 9 -->
 {.flow-step}
 ```diagram arch 9
 ```
@@ -1083,10 +1098,10 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 > `a` plays cursor, → next slide.
 
 <!-- page "An index, an agent, a highlighter" @22:48
-  slide 39
+  slide 40
 -->
 
-<!-- slide 39 · the other direction -->
+<!-- slide 40 · the other direction -->
 ## ↩
 
 {.rev}
@@ -1114,7 +1129,7 @@ view-index =>
 ```
 <!-- /slide -->
 
-**[SLIDE 39: the other direction]** "This is the half I wanted most: let the
+**[SLIDE 40: the other direction]** "This is the half I wanted most: let the
 code point back at everything it rendered. Three small things — an index, an
 agent in the editor, and a highlighter."
 
@@ -1134,10 +1149,10 @@ demoted to a fallback."
 > Run checkout step-6. Then run *Joyride: Run Workspace Script*.
 
 <!-- page "Your cursor drives the browser" @24:07 [demo]
-  slide 40
+  slide 41
 -->
 
-<!-- slide 40 · the other direction -->
+<!-- slide 41 · the other direction -->
 {.hero}
 ## ++DEMO++
 
@@ -1147,10 +1162,10 @@ demoted to a fallback."
 <!-- /slide -->
 
 <!-- page "Eight grid cards, or just the featured one" [demo]
-  slide 41
+  slide 42
 -->
 
-<!-- slide 41 · eight, or one -->
+<!-- slide 42 · eight, or one -->
 ## ()
 
 {.pair}
@@ -1159,10 +1174,10 @@ demoted to a fallback."
 <!-- /slide -->
 
 <!-- page "The knockout — all forty-five stars" @24:49 [the knockout]
-  slide 42
+  slide 43
 -->
 
-<!-- slide 42 · the pill, both places -->
+<!-- slide 43 · the pill, both places -->
 ## ()
 
 ```clojure from=36 cursor=38:5
@@ -1193,13 +1208,13 @@ one*?" **[point at the featured card]**
 
 ---
 
-## §9 · Call sites: telling instances apart (25:43–29:57) — slides 43–46 → `step-7`
+## §9 · Call sites: telling instances apart (25:43–29:57) — slides 44–47 → `step-7`
 
 <!-- page "The map — which call made it" @25:43
-  slide 43
+  slide 44
 -->
 
-<!-- slide 43 · the map, state 10 -->
+<!-- slide 44 · the map, state 10 -->
 {.flow-step}
 ```diagram arch 10
 ```
@@ -1212,10 +1227,10 @@ one*?" **[point at the featured card]**
 > `a` plays callsite-load, `a` plays callsite-render, → next slide.
 
 <!-- page "Same function, two call sites, told apart" @25:53
-  slide 44
+  slide 45
 -->
 
-<!-- slide 44 · which call made it -->
+<!-- slide 45 · which call made it -->
 ## ()
 
 ```minimap arch 10 trload.c-calls,page.p-call
@@ -1236,7 +1251,7 @@ one*?" **[point at the featured card]**
 ```
 <!-- /slide -->
 
-**[SLIDE 44: which call made it]** "Three `(stat …)` calls, three identical
+**[SLIDE 45: which call made it]** "Three `(stat …)` calls, three identical
 roots — and nothing in the DOM records which call made which one. So while
 we're loading, each call to a view function gets rewritten to carry its own
 invocation site."
@@ -1256,10 +1271,10 @@ engine, re-tagged the views, and reloaded the page. One command, whole
 state."
 
 <!-- page "The payoff pair" [demo]
-  slide 45
+  slide 46
 -->
 
-<!-- slide 45 · the payoff pair -->
+<!-- slide 46 · the payoff pair -->
 {.hero}
 ## ++DEMO++
 
@@ -1267,7 +1282,7 @@ state."
 ```
 <!-- /slide -->
 
-> Live; slide 41 as backup.
+> Live; slide 42 as backup.
 
 **[demo — the payoff pair]** `recipe-card` is called from TWO places: the
 grid's `for`, and `featured`.
@@ -1280,10 +1295,10 @@ grid's `for`, and `featured`.
    word and leave the grid alone."
 
 <!-- page "One rule less" [demo]
-  slide 46
+  slide 47
 -->
 
-<!-- slide 46 · one rule less -->
+<!-- slide 47 · one rule less -->
 ## 🌶️
 
 ```minimap arch 7 page.p-el
@@ -1294,7 +1309,7 @@ grid's `for`, and `featured`.
 ![The title row with the rule removed: the spicy pill sits on NEW's edges](figures/talk/s06-straight-zoom.png "") {.guide}
 <!-- /slide -->
 
-> Live fix with inspect mode off; slide 46 if it misbehaves. After the talk: `git -C demo checkout resources/style.css`.
+> Live fix with inspect mode off; slide 47 if it misbehaves. After the talk: `git -C demo checkout resources/style.css`.
 
 Remove the `top: .45rem` rule from `.badge.hot` in `style.css`, save → the
 pill straightens, NEW stays where it was.
@@ -1305,13 +1320,13 @@ What *made* this thing?"
 
 ---
 
-## §11 · What it generalizes to + close (33:59–38:00) — slide 47
+## §11 · What it generalizes to + close (33:59–38:00) — slide 48
 
 <!-- page "Stay connected to what you make. Build the tools you miss." @35:44
-  slide 47
+  slide 48
 -->
 
-<!-- slide 47 · close -->
+<!-- slide 48 · close -->
 # ++Stay connected to what you make.++\
 Build the tools you miss.
 
@@ -1324,7 +1339,7 @@ Build the tools you miss.
 ```
 <!-- /slide -->
 
-**[SLIDE 47: close]** "We started with Bret Victor's principle — an
+**[SLIDE 48: close]** "We started with Bret Victor's principle — an
 immediate connection to what you make — and the one place our stack broke
 it: a crooked pill nobody could trace. Now the connection runs both ways,
 and the gap between the tools you have and the tools you can imagine turned
@@ -1350,7 +1365,7 @@ silence. Never rush the stars.
 2. §9's third beat, the cross-namespace `(ui/stat …)` proof — the payoff
    pair already made the point; this one is reassurance, not revelation.
 3. §10's REPL beat (the seam is `identity`) — one spoken sentence instead.
-4. §9's guard narration (slide 44) — show the slide, say "three guards keep
+4. §9's guard narration (slide 45) — show the slide, say "three guards keep
    it safe", checkout, go straight to the payoff pair. (Never cut the payoff
    pair; it's the talk's most distinctive 40 seconds.)
 5. §7's slide narration — checkout, hover a star, let the breadcrumb make the
@@ -1575,7 +1590,7 @@ node overlay "inspector.js" 1430,780 314x64  mono  @7
 edge e-click  page:b=1680 -> overlay:t=1680  "click"  left  t=.6  @7
 edge e-wsinsp hub:r=812 -- overlay:l          ws  @7
 pill p-open  on e-wsinsp "open"  <  t=.3  @7
-edge e-codeg  hub:l=700 -> buffer:b=82       "code -g"  t=.6  @7  +9-:fallback
+edge e-codeg  hub:l=700 -> buffer:b=82       "code --goto"  t=.6  @7  +9-:fallback
 mark m-origin  shield "origin-ok?"   802,726   @7  9:
 mark m-resolve shield "resolve-src"  802,764   @7  9:
 
@@ -1623,5 +1638,83 @@ flow by-hand warn @11 lands=page      : e-f5, e-get, e-call, e-html
 flow prod-render @12 lands=page.p-el  : e-get, e-call, e-html at seam+seam-l
 flow pixel-paren @13 lands=joyride    : e-click, e-wsinsp< "open", e-wsjoy< "open"
 flow cursor-pixel rev @13 lands=page.p-el : e-wsjoy "cursor", e-resolve, e-resolve<, e-wsinsp "highlight", e-light
+```
+<!-- /diagram -->
+
+> The second diagram, `nav`: the reverse direction's wanted outcome, shown
+> once, on §8's first slide (```` ```diagram nav 1``` ````), before the map
+> shows how. One state; each flow is one cursor position: its code row
+> lights, the `cursor` message crosses, and what the form under the cursor
+> renders on main lands on the page and stays lit (`flow-keep`). Not
+> spoken, not in the deck.
+
+<!-- diagram nav · the reverse direction's wanted outcome: the form under the cursor lights what it rendered; §8's first slide shows it -->
+```text
+canvas 1760x870
+
+# one state; each flow is one cursor position (a plays the next). What lands is main's behaviour:
+# resolve-cursor answers {:component "demo.views/recipe-card" :element "demo/views.clj:L:C"}, the
+# innermost element at the cursor's line AND column, and inspector.js lights every [data-src=element],
+# or, with no element under the cursor, every [data-name=component]: each instance of recipe-card
+step 1  "your cursor, on the page"  +rev:e-cursor,p-cursor
+
+# ---- lanes: the map's outer edges (EDITOR's left, BROWSER's right, both tops and bottoms), so the cut to it stays put
+region editor  lane "EDITOR"   0,16    658x846
+region browser lane "BROWSER"  784,16  976x846
+
+# ---- the editor: recipe-card from demo/views.clj (lines 10–31), as indented there; … for what is left out
+node code "demo/views.clj"  16,56  626x544  mono list
+  row c-defn  "(defn recipe-card"                mono
+  row c-args  "  …"                              mono
+  row c-root  "  [:article.card"                 mono
+  row c-body  "   …"                             mono
+  row c-h2    "    [:h2 name"                    mono
+  row c-when  "     (when new?"                  mono
+  row c-new   '       [:span.badge "NEW"])'      mono
+  row c-let   "     (when-let [t …]"             mono
+  row c-hot   "       [:span.badge.hot … t])]"   mono
+  row c-desc  "    [:p description]"             mono
+  row c-rest  "    …"                            mono
+
+# ---- the page: the recipe of the day (the first new? recipe), then the grid, in demo.main's order.
+# A card's badges follow its name, 12 past the name in bold (a landed card's label is bold).
+note featured "recipe of the day"  800,82
+node feat      "Pad Thai"          800,96    944x104  list
+  row desc     "Rice noodles with tamarind, lime and peanuts."  mono
+node feat-new  "NEW"               1005,100  108x44
+node feat-hot  "spicy"             1121,100  120x44
+node shak      "Shakshuka"         800,248   464x104  list
+  row desc     "Eggs poached in a …"      mono
+node pad       "Pad Thai"          1280,248  464x104  list
+  row desc     "Rice noodles with …"      mono
+node pad-new   "NEW"               1485,252  108x44
+node pad-hot   "spicy"             1601,252  120x44
+node rata      "Ratatouille"       800,380   464x104  list
+  row desc     "Summer vegetables, …"     mono
+node okono     "Okonomiyaki"       1280,380  464x104  list
+  row desc     "Savoury cabbage …"        mono
+node okono-new "NEW"               1573,384  108x44
+node mush      "Mushroom Risotto"  800,512   464x104  list
+  row desc     "Slow-stirred …"           mono
+node tacos     "Tacos al Pastor"   1280,512  464x104  list
+  row desc     "Chile-marinated …"        mono
+node tacos-hot "spicy"             1614,516  120x44
+node gazp      "Gazpacho"          800,644   464x104  list
+  row desc     "Cold-blended …"           mono
+node chana     "Chana Masala"      1280,644  464x104  list
+  row desc     "Chickpeas simmered …"     mono
+
+# ---- the cursor's way, editor → page, at the height of the map's cursor wire (how it travels: the map's state 9)
+edge e-cursor code:b=330 -> browser:l=812
+pill p-cursor on e-cursor "cursor" >  t=.48
+
+# ---- flows: the cursor's row lights, "cursor" crosses, what the form under the cursor rendered lands.
+# The slide is flow-keep: each result stays lit until the next a or p.
+# [:span.badge.hot …] (21:8 on): one literal, three renders: the recipe of the day, the grid's Pad Thai, Tacos al Pastor
+flow spicy-pills rev @1 lands=feat-hot,pad-hot,tacos-hot : code.c-hot, e-cursor "cursor"
+# [:p description] (22:5 on): one per card, all nine
+flow descriptions rev @1 lands=feat.desc,shak.desc,pad.desc,rata.desc,okono.desc,mush.desc,tacos.desc,gazp.desc,chana.desc : code.c-desc, e-cursor "cursor"
+# the defn line (10:1): inside recipe-card, on no element: every instance of the component, all nine cards, badges and all
+flow cards rev @1 lands=feat,feat-new,feat-hot,shak,pad,pad-new,pad-hot,rata,okono,okono-new,mush,tacos,tacos-hot,gazp,chana : code.c-defn, e-cursor "cursor"
 ```
 <!-- /diagram -->
