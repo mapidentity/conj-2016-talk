@@ -1238,10 +1238,9 @@ state."
 
 <!-- slide 43 · the payoff pair -->
 {.hero}
-# ++DEMO++
+## ++DEMO++
 
-{.rev}
-```minimap arch 10 joyride,e-wsjoy,hub,e-resolve,trload.c-index,trload.c-calls,e-wsinsp,overlay,e-light,page.p-call
+```minimap arch 10 trload.c-calls,page.p-call
 ```
 <!-- /slide -->
 
