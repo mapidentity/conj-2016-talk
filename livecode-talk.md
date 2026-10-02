@@ -1037,7 +1037,7 @@ Can the conversation go the other way — can the *code* point at the *page*?"
 
 ---
 
-## §8 · The reverse direction: your cursor drives the browser (22:33–25:43) — slides 36–39 → `step-6`
+## §8 · The reverse direction: your cursor drives the browser (22:33–25:43) — slides 36–40 → `step-6`
 
 > THE KNOCKOUT. Protect it (see the hard gate in the cuts section), and when
 > the stars light, stop talking for three full seconds.
@@ -1122,11 +1122,23 @@ demoted to a fallback."
 ```
 <!-- /slide -->
 
-<!-- page "The knockout — all forty-five stars" @24:49 [the knockout]
+<!-- page "Eight grid cards, or just the featured one" [demo]
   slide 39
 -->
 
-<!-- slide 39 · the pill, both places -->
+<!-- slide 39 · eight, or one -->
+## ()
+
+{.pair}
+![Cursor on the grid's call of recipe-card: the eight grid cards lit, the featured card dark](figures/talk/s09-callsite-grid.png "the grid's `(recipe-card r)` @ line 81")
+![Cursor on featured's call of recipe-card: only the featured card lit](figures/talk/s09-callsite-featured.png "`featured`'s `(recipe-card r)` @ line 38")
+<!-- /slide -->
+
+<!-- page "The knockout — all forty-five stars" @24:49 [the knockout]
+  slide 40
+-->
+
+<!-- slide 40 · the pill, both places -->
 ## ()
 
 ```clojure from=36 cursor=38:4
@@ -1157,13 +1169,13 @@ one*?" **[point at the featured card]**
 
 ---
 
-## §9 · Call sites: telling instances apart (25:43–29:57) — slides 40–43 → `step-7`
+## §9 · Call sites: telling instances apart (25:43–29:57) — slides 41–43 → `step-7`
 
 <!-- page "The map — which call made it" @25:43
-  slide 40
+  slide 41
 -->
 
-<!-- slide 40 · the map, state 10 -->
+<!-- slide 41 · the map, state 10 -->
 {.flow-step}
 ```diagram arch 10
 ```
@@ -1176,10 +1188,10 @@ one*?" **[point at the featured card]**
 > `a` plays callsite-load, `a` plays callsite-render, → next slide.
 
 <!-- page "Same function, two call sites, told apart" @25:53
-  slide 41
+  slide 42
 -->
 
-<!-- slide 41 · which call made it -->
+<!-- slide 42 · which call made it -->
 ## ()
 
 ```minimap arch 10 trload.c-calls,page.p-call
@@ -1191,7 +1203,7 @@ one*?" **[point at the featured card]**
 ```
 
 ```clojure
-(defn- wrap-callsites [names file form wrap?]
+(defn wrap-callsites [names file form wrap?]
   …
   (if (and wrap? (call-head names form) (form-span form))
     (with-meta                                  ; ← re-attach, or the
@@ -1201,7 +1213,7 @@ one*?" **[point at the featured card]**
 ```
 <!-- /slide -->
 
-**[SLIDE 41: which call made it]** "Three `(stat …)` calls, three identical
+**[SLIDE 42: which call made it]** "Three `(stat …)` calls, three identical
 roots — and nothing in the DOM records which call made which one. So while
 we're loading, each call to a view function gets rewritten to carry its own
 invocation site."
@@ -1220,22 +1232,6 @@ Point at the terminal while it lands: "the watcher just loaded the new
 engine, re-tagged the views, and reloaded the page. One command, whole
 state."
 
-<!-- page "Eight grid cards, or just the featured one" @27:17 [demo]
-  slide 42
--->
-
-<!-- slide 42 · eight, or one -->
-## ()
-
-{.rev}
-```minimap arch 10 joyride,page.p-call
-```
-
-{.pair}
-![Cursor on the grid's call of recipe-card: the eight grid cards lit, the featured card dark](figures/talk/s09-callsite-grid.png "the grid's `(recipe-card r)`, line 81 → eight")
-![Cursor on featured's call of recipe-card: only the featured card lit](figures/talk/s09-callsite-featured.png "`featured`'s `(recipe-card r)`, line 38 → one")
-<!-- /slide -->
-
 <!-- page "The payoff pair" [demo]
   slide 43
 -->
@@ -1249,7 +1245,7 @@ state."
 ```
 <!-- /slide -->
 
-> Live; slide 42 as backup.
+> Live; slide 39 as backup.
 
 **[demo — the payoff pair]** `recipe-card` is called from TWO places: the
 grid's `for`, and `featured`.
@@ -1304,7 +1300,7 @@ silence. Never rush the stars.
 2. §9's third beat, the cross-namespace `(ui/stat …)` proof — the payoff
    pair already made the point; this one is reassurance, not revelation.
 3. §10's REPL beat (the seam is `identity`) — one spoken sentence instead.
-4. §9's guard narration (slide 41) — show the slide, say "three guards keep
+4. §9's guard narration (slide 42) — show the slide, say "three guards keep
    it safe", checkout, go straight to the payoff pair. (Never cut the payoff
    pair; it's the talk's most distinctive 40 seconds.)
 5. §7's slide narration — checkout, hover a star, let the breadcrumb make the
@@ -1569,7 +1565,7 @@ flow click-open @7 lands=buffer       : page.p-src, e-click, e-wsinsp< "open", h
 flow wrap-load @8 lands=views         : e-views, trload.c-read, trload.c-eval, trload.c-wrap, e-deftr "ns/fn"
 flow cursor rev @9 lands=page.p-el    : e-wsjoy "cursor", e-resolve, e-resolve<, e-wsinsp "highlight", e-light
 # §9: call sites are rewritten while loading (between read and eval); at render the rewritten call, in the views, stamps its site
-flow callsite-load @10 lands=views    : e-views, trload.c-read, trload.c-calls, trload.c-eval, e-deftr
+flow callsite-load @10 lands=views    : e-views, trload.c-read, trload.c-calls, trload.c-eval, trload.c-wrap, trload.c-index, e-deftr "callsite"
 flow callsite-render @10 lands=page.p-call : e-get, e-call, views.v-main+views.v-ui, e-html
 flow calva-load warn @11 lands=views.v-main : e-eval "load-file", e-repl, e-def
 flow by-hand warn @11 lands=page      : e-f5, e-get, e-call, e-html
