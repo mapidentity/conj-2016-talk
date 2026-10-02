@@ -4,7 +4,7 @@
 #   bash talk/presenter/refresh.sh              # screenshots + HTML + PDF + overflow check
 #   bash talk/presenter/refresh.sh --deck-only  # skip the screenshots (text-only edits)
 #
-# Capturing boots the demo at step-0/3/4/5/7 (detached checkouts) on port
+# Capturing boots the demo at step-0/3/4/5/7 and main (detached checkouts) on port
 # $CAPTURE_PORT (default 8090 — never the REPL's 8080), with a socket REPL on
 # $CAPTURE_REPL_PORT (5557) and the DevTools frontend on $CAPTURE_DEVTOOLS_PORT
 # (9333), so it needs those ports free and the demo working tree clean; the
@@ -13,7 +13,7 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEMO="$(cd "$HERE/../.." && pwd)/demo"
-STEPS=(step-0 step-3 step-4 step-5 step-7)   # the steps whose shots differ (see capture.cjs)
+STEPS=(step-0 step-3 step-4 step-5 step-7 main)   # the steps whose shots differ (see capture.cjs)
 cd "$HERE"
 export NODE_PATH="${NODE_PATH:-$(npm root -g)}"
 PORT="${CAPTURE_PORT:-8090}"

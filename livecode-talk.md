@@ -527,21 +527,22 @@ ws.onmessage = function (e) {
 ```minimap arch 4 e-html,page.p-el
 ```
 
-## What we have
+## Origin?
 ```clojure
 (hiccup2/html [:span.badge.hot "🌶 " t])
 ```
-
 ```html
 <span class="badge hot">🌶 spicy</span>
 ```
 
-## What we need
-```clojure
-(hiccup2/html {:data-src "demo/views.clj:21:8"} [:span.badge.hot "🌶 " t])
+## Add location metadata
+```diff inline
+- (hiccup2/html [:span.badge.hot "🌶 " t])
++ (hiccup2/html {:data-src "demo/views.clj:21:8"} [:span.badge.hot "🌶 " t])
 ```
-```html
-<span class="badge hot" data-src="demo/views.clj:21:8">🌶 spicy</span>
+```diff inline
+- <span class="badge hot">🌶 spicy</span>
++ <span class="badge hot" data-src="demo/views.clj:21:8">🌶 spicy</span>
 ```
 <!-- /slide -->
 
@@ -638,10 +639,10 @@ ws.onmessage = function (e) {
 ```clojure from=1
 (defn tr-load!
   [file]
-  (let [rdr (rt/indexing-push-back-reader …)
-        …]
+  (let [rdr  (rt/indexing-push-back-reader …)
+        body …]
     (binding [*ns* *ns*, *file* file, …]
-      (eval ns-form) ; ns form first so that ::aliases resolve at read time
+      …
       (doseq [form body]
         (eval form)))))
 ```
@@ -765,18 +766,18 @@ on the classpath."
 -->
 
 <!-- slide 26 · minute one · now -->
-## 🏷 minute one · now
+## 🏷
 
 ```minimap arch 6 page.p-src
 ```
 
 {.stack}
-![DevTools at minute one: the span, class badge hot](figures/talk/s01-devtools-plain.png "minute one")
-![DevTools now: the same span, with data-name and data-src demo/views.clj:21:8](figures/talk/s05-devtools-data.png "now")
+![DevTools at minute one: the span, class badge hot](figures/talk/s01-devtools-plain.png "before")
+![DevTools now: the same span, with data-name and data-src demo/views.clj:21:8](figures/talk/s05-devtools-data.png "after")
 <!-- /slide -->
 
 <!-- slide 27 · eight cards, one line -->
-## 🗂️ eight cards, one line
+## 🏷
 
 ```minimap arch 6 page.p-src
 ```
@@ -840,7 +841,7 @@ function sendOpen(src) {                  // src is "file:line:col"
 (defn handle-msg! [… msg]
   …
   (case (:type msg)
-    "open" (shell/sh "code" "-g" (str (.getPath file) ":" line ":" col))
+    "open" (shell/sh "code" "--goto" (str (.getPath file) ":" line ":" col))
     …))
 ```
 <!-- /slide -->
@@ -1073,6 +1074,13 @@ Can the conversation go the other way — can the *code* point at the *page*?"
   (fn [_] ... (ws-send! {:type "cursor" :file file :line line :col col})))
 ```
 
+```clojure
+view-index =>
+{:name "demo.views/recipe-card" :span [10 1 31 65]}   ; the whole defn
+{:key  "demo/views.clj:14:3"    :span [14 3 31 64]}   ; [:article.card …]
+{:key  "demo/views.clj:21:8"    :span [21 8 21 33]}   ; [:span.badge.hot "🌶 " t]
+```
+
 ```clojure from=1 cursor=4:7
 (defn resolve-cursor [file line col]
   (when-let [{:keys [defns elements]} (get @view-index file)]
@@ -1080,9 +1088,6 @@ Can the conversation go the other way — can the *code* point at the *page*?"
       {:component (:name d)                                 ; matches data-name
        :element   (:key (innermost elements line col))})))  ; matches data-src
 ```
-
-the index is built by the same read pass — that's what the\
-`:end-line`/`:end-column` were for {.note}
 <!-- /slide -->
 
 **[SLIDE 37: the other direction]** "This is the half I wanted most: let the
@@ -1121,14 +1126,24 @@ demoted to a fallback."
   slide 39
 -->
 
-<!-- slide 39 · forty-five -->
-## ⭐ forty-five
+<!-- slide 39 · the pill, both places -->
+## ()
 
-{.rev}
-```minimap arch 9 joyride,page.p-el
+```clojure from=36 cursor=38:4
+  [:section.featured
+   [:div.featured-label "recipe of the day"]
+   (recipe-card r)])
 ```
 
-![Cursor in star's body, in the UI-kit namespace: all 45 stars on the page lit](figures/talk/s08-cursor-stars.png "`star`'s body, `demo/ui/views.clj` line 23")
+```clojure from=79 cursor=81:4
+[:section.cards
+ (for [r shown]
+   (recipe-card r))]
+```
+
+{.stack}
+![Cursor on featured's call of recipe-card, line 38: the recipe of the day lit; the popup's recipe-card () selected, demo/views.clj:38:4](figures/talk/s08-call-featured.png "the recipe of the day")
+![Cursor on the grid's call of recipe-card, line 81: the grid cards lit; the popup's recipe-card () selected, demo/views.clj:81:9](figures/talk/s08-call-grid.png "the grid")
 <!-- /slide -->
 
 Then the knockout: switch files to
@@ -1149,8 +1164,6 @@ one*?" **[point at the featured card]**
 -->
 
 <!-- slide 40 · the map, state 10 -->
-## 🗺 which call made it
-
 {.flow-step}
 ```diagram arch 10
 ```
@@ -1167,14 +1180,14 @@ one*?" **[point at the featured card]**
 -->
 
 <!-- slide 41 · which call made it -->
-# 🎯 which call made it
+## ()
 
 ```minimap arch 10 trload.c-calls,page.p-call
 ```
 
 ```clojure
 ;; during the load, each call to a view fn is rewritten:
-(recipe-card r)  →  (tag-callsite "demo/views.clj:81:9" (recipe-card r))
+(recipe-card r)  =>  (tag-callsite "demo/views.clj:81:9" (recipe-card r))
 ```
 
 ```clojure
@@ -1186,10 +1199,6 @@ one*?" **[point at the featured card]**
       (meta form))                              ;    element tags break
     walked))
 ```
-
-guards: only known view fns · never inside `->` or `quote` {.note}
-
-rewriting between read and eval — a step no Clojure loader has {.sub}
 <!-- /slide -->
 
 **[SLIDE 41: which call made it]** "Three `(stat …)` calls, three identical
@@ -1216,7 +1225,7 @@ state."
 -->
 
 <!-- slide 42 · eight, or one -->
-## 🎯 eight, or one
+## ()
 
 {.rev}
 ```minimap arch 10 joyride,page.p-call

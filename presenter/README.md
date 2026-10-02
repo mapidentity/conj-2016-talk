@@ -79,7 +79,7 @@ cd conj/talk/presenter
 export NODE_PATH="$(npm root -g)"
 
 # 1. (only if the demo app / a shot changed) re-capture the figures:
-for t in step-0 step-3 step-4 step-5 step-7; do bash run-tag.sh "$t"; done
+for t in step-0 step-3 step-4 step-5 step-7 main; do bash run-tag.sh "$t"; done
 # leaves ../../demo on a detached HEAD — restore it afterwards:
 git -C ../../demo switch -q -f main
 

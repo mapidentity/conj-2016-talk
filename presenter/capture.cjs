@@ -98,6 +98,20 @@ const CLIPS = {
     const x = h2.left - 16, y = Math.min(lab.top, h2.top) - 12;
     return { x, y, width: Math.max(lab.right, box.right) + 16 - x, height: end.top - y };
   },
+  // Slide 39: the cards one call site lit, in the row of the hovered card —
+  // from the cards' top edge (so the green outline reads as a box) and the
+  // hovered pill's popup down to that card's description, across both.
+  litCards: ({ card }) => {
+    const c = document.querySelector(card), cr = c.getBoundingClientRect();
+    const lab = document.querySelector('.insp-label').getBoundingClientRect();
+    const row = [...document.querySelectorAll('.insp-hl')].map((e) => e.getBoundingClientRect())
+      .filter((r) => Math.abs(r.top - cr.top) < 4);
+    if (!row.length) throw new Error(`litCards: no lit box in the row of ${card}`);
+    const x0 = Math.max(0, Math.min(lab.left, ...row.map((r) => r.left)) - 12);
+    const x1 = Math.min(innerWidth, Math.max(lab.right, ...row.map((r) => r.right)) + 12);
+    const y0 = Math.min(lab.top, ...row.map((r) => r.top)) - 12;
+    return { x: x0, y: y0, width: x1 - x0, height: c.querySelector('p').getBoundingClientRect().top - y0 };
+  },
   // Slide 43: one frame for the three shots of the §10 sharp edge, on the
   // recipe of the day (its breadcrumbs fit inside the card, so no neighbour
   // shows): from the breadcrumb over the title row down to the top of the
@@ -204,6 +218,11 @@ async function plainLoad() {
 //   expect: 'crumb' | null     -> the overlay label's text must equal this
 //                                 (whitespace ignored), or be hidden (null)
 //   cursor: {file,line,col}    -> inject an editor WS cursor (reverse dir)
+//   walk: n                    -> after the hover: hold Alt (the overlay freezes the
+//                                 path) and wheel it n steps outward, one gesture
+//                                 per step; Alt stays down through the shot (main's
+//                                 inspector only)
+//   walkTo: 'file:line:col'    -> the selected step's location must equal this
 //   clip: selectors[]          -> clip to the union bbox of these (+16)
 //         'name'               -> a CLIPS rule
 //         {rule, …}            -> a CLIPS rule with arguments
@@ -302,6 +321,24 @@ const PLANS = {
       hover: { sel: '.featured .rating .star', at: 'corner' }, clipAs: 's10-plain-before',
       expect: 'rating ▸ star () λ demo/ui/views.clj:19:1' },
   ],
+  // The finished app as it runs on stage — what only main has (the overlay's
+  // Alt-walk: inspector.js on main, after step-7).
+  'main': [
+    // slide 39: recipe-card's two call sites. The editor cursor on one call —
+    // `featured`'s (line 38) or the grid's (line 81) — lights the cards that
+    // call rendered. The Pad Thai pill inside is hovered and its path walked
+    // out four steps (span → h2 → div → recipe-card λ → recipe-card ()), so the
+    // popup's selected crumb is the call site — the line the cursor is on —
+    // and the box frames the card, while the tower still ends at 21:8.
+    ...[['s08-call-featured', 38, 5, '.featured article.card', 'demo/views.clj:38:4',
+         'page ▸ featured () λ ▸ recipe-card () λ ▸ div ▸ h2 ▸ span demo/views.clj:21:8'],
+        ['s08-call-grid', 81, 10, '.cards > article.card:nth-child(2)', 'demo/views.clj:81:9',
+         'page ▸ section ▸ recipe-card () λ ▸ div ▸ h2 ▸ span demo/views.clj:21:8'],
+    ].map(([name, line, col, card, walkTo, expect]) => ({
+      name, viewport: { width: 1280, height: 900 }, dpr: 3, inspect: 'on', style: STRAIGHT,
+      hover: { sel: card + ' .badge.hot' }, expect, walk: 4, walkTo,
+      cursor: { file: 'demo/views.clj', line, col }, clip: { rule: 'litCards', card } })),
+  ],
 };
 
 // ---------------------------------------------------------------------------
@@ -397,6 +434,22 @@ async function drive(page, shot) {
     }
   }
 
+  if (shot.walk) {
+    await page.keyboard.down('Alt');
+    for (let k = 0; k < shot.walk; k++) {          // > WALK_GAP apart: one step each
+      await page.mouse.wheel(0, -100);
+      await page.waitForTimeout(250);
+    }
+    const sel = await page.evaluate(() => {
+      const l = document.querySelector('.insp-label'), c = l.querySelector('.insp-crumb.sel');
+      return { frozen: l.classList.contains('frozen'), crumb: c && c.textContent,
+               loc: (l.querySelector('.insp-loc') || {}).textContent };
+    });
+    console.log(`   walk ${shot.walk} -> ${JSON.stringify(sel)}`);
+    if (!sel.frozen || (shot.walkTo && sel.loc !== shot.walkTo))
+      throw new Error(`walk: ${JSON.stringify(sel)}, expected the frozen path at ${shot.walkTo}`);
+  }
+
   if (shot.cursor) await sendCursor(page, shot.cursor);
 
   const outs = [{ name: shot.name, clip: shot.clip, clipAs: shot.clipAs }, ...(shot.more || [])];
@@ -408,6 +461,7 @@ async function drive(page, shot) {
     await page.screenshot(clip ? { path: file, clip } : { path: file });
     console.log(`   wrote ${file}${clip ? ' clip ' + JSON.stringify(roundRect(clip)) : ''}`);
   }
+  if (shot.walk) await page.keyboard.up('Alt');
 }
 
 const roundRect = (c) => Object.fromEntries(Object.entries(c).map(([k, v]) => [k, +v.toFixed(1)]));
