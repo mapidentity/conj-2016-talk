@@ -291,7 +291,7 @@ CSS += r"""
 .slide > .ax-mini.ax-alone { position:static; margin:.5mm -3mm 2.5mm auto; }
 /* {.hero} headings: the slide's one word, big and centred on the card (the projector's
    is page-centred, slides-template.html) */
-.slide h1.hero { font-size:54pt; line-height:1; letter-spacing:.04em; text-align:center; margin:0; padding:16mm 0; }
+.slide .hero { font-size:54pt; line-height:1; letter-spacing:.04em; text-align:center; margin:0; padding:16mm 0; }
 /* {.repl} fences and ```lang from= cursor= fences (build_slides.py): scoped to the slide
    card, because .repl is also the deck's own REPL card class */
 .slide pre.repl .rp { color:#6f6890; } .slide pre.repl .ro { opacity:.72; }
