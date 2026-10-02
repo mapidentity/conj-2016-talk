@@ -231,13 +231,12 @@ async function plainLoad() {
 //                                 (devtools: [{name, x}], other columns)
 //   kind: 'devtools' | 'devtools-page' -> see DEVTOOLS
 //
-// The pill after §6. The talk fixes the crooked pill live in §6 (remove the
-// `top: .45rem` rule from `.badge.hot` in style.css, save) and never reverts
-// it: only the finished app runs on stage, so from then on the audience sees
-// a straight pill. That edit is on no branch, so every shot of a later moment
-// (step-5 and step-7: slides 32, 35, 36, 39, 40, 43) applies it to the
-// page's inline stylesheet (style.css is inlined per request), exactly as
-// slide 29's s06-straight-zoom does.
+// The pill stays crooked. The talk fixes it live only at the end, on "one
+// rule less" (remove the `top: .45rem` rule from `.badge.hot` in style.css,
+// save), right before the close; until then the audience sees it crooked, so
+// every shot keeps the page as it is. The one exception is that slide's own
+// s06-straight-zoom, the fix itself: the edit is on no branch, so it is applied
+// to the page's inline stylesheet (style.css is inlined per request).
 const STRAIGHT = [['position: relative; top: .45rem;', 'position: relative;']];
 const PLANS = {
   'step-0': [
@@ -284,17 +283,17 @@ const PLANS = {
     // slide 34's "before": the featured star at step-4, the crumb of bare tags,
     // in exactly s07-popup-names' frame (same hover, clip and style), so the
     // two flip on one star — the tower before and after it is named
-    { name: 's06-popup-star', viewport: V720, dpr: 3, inspect: 'on', style: STRAIGHT,
+    { name: 's06-popup-star', viewport: V720, dpr: 3, inspect: 'on',
       hover: { sel: '.featured .rating .star', at: 'corner' }, clip: { rule: 'popup', card: '.featured', until: 'ul.tags' },
       expect: 'main ▸ section ▸ article ▸ div ▸ div ▸ div ▸ svg demo/ui/views.clj:23:3' },
   ],
   'step-5': [
     // slide 32: the pill and a star, the whole tower named. The star is
     // hovered at its corner, off the path, so the leaf is the svg (`star`).
-    { name: 's07-popup-pill', viewport: V720, dpr: 3, inspect: 'on', style: STRAIGHT,
+    { name: 's07-popup-pill', viewport: V720, dpr: 3, inspect: 'on',
       hover: { sel: '.featured .badge.hot' }, clip: { rule: 'popup', card: '.featured', until: 'p' },
       expect: 'page ▸ featured ▸ recipe-card ▸ div ▸ h2 ▸ span demo/views.clj:21:8' },
-    { name: 's07-popup-names', viewport: V720, dpr: 3, inspect: 'on', style: STRAIGHT,
+    { name: 's07-popup-names', viewport: V720, dpr: 3, inspect: 'on',
       hover: { sel: '.featured .rating .star', at: 'corner' }, clip: { rule: 'popup', card: '.featured', until: 'ul.tags' },
       expect: 'page ▸ featured ▸ recipe-card ▸ div ▸ div ▸ rating ▸ star demo/ui/views.clj:19:1' },
   ],
@@ -307,23 +306,23 @@ const PLANS = {
         ['s09-callsite-grid', 'demo/views.clj', 81, 10],     // the grid's (recipe-card r) -> eight
         ['s09-callsite-featured', 'demo/views.clj', 38, 6],  // featured's (recipe-card r) -> one
     ].map(([name, file, line, col]) => ({ name, viewport: { width: 1280, height: 1700 }, dpr: 2,
-      inspect: 'on', style: STRAIGHT, cursor: { file, line, col }, clip: 'reverse' })),
+      inspect: 'on', cursor: { file, line, col }, clip: 'reverse' })),
     // slide 40 (backup): every component folded into name + () λ
-    { name: 's09-popup-glyphs', viewport: V720, dpr: 3, inspect: 'on', style: STRAIGHT,
+    { name: 's09-popup-glyphs', viewport: V720, dpr: 3, inspect: 'on',
       hover: { sel: '.featured .rating .star', at: 'corner' }, clip: { rule: 'popup', card: '.featured', until: 'ul.tags' },
       expect: 'page ▸ featured () λ ▸ recipe-card () λ ▸ div ▸ div ▸ rating () λ ▸ star () λ demo/ui/views.clj:19:1' },
     // slide 43 (backup): the §10 sharp edge, on the recipe of the day, in one
     // frame. REPL-mutating: last in its step.
     // Before: the card's description is inspectable …
-    { name: 's10-plain-before', viewport: V720, dpr: 3, inspect: 'on', style: STRAIGHT,
+    { name: 's10-plain-before', viewport: V720, dpr: 3, inspect: 'on',
       hover: { sel: '.featured p' }, clip: { rule: 'plainEdge', card: '.featured', until: 'ul.tags' },
       expect: 'page ▸ featured () λ ▸ recipe-card () λ ▸ div ▸ p demo/views.clj:22:5' },
     // … after a plain (load-file "src/demo/views.clj") and a reload, the same
     // hover finds nothing …
-    { name: 's10-plain-dead', viewport: V720, dpr: 3, inspect: 'on', style: STRAIGHT,
+    { name: 's10-plain-dead', viewport: V720, dpr: 3, inspect: 'on',
       before: plainLoad, hover: { sel: '.featured p' }, clipAs: 's10-plain-before', expect: null },
     // … while a star, from the untouched UI kit, still answers.
-    { name: 's10-plain-star', viewport: V720, dpr: 3, inspect: 'on', style: STRAIGHT,
+    { name: 's10-plain-star', viewport: V720, dpr: 3, inspect: 'on',
       hover: { sel: '.featured .rating .star', at: 'corner' }, clipAs: 's10-plain-before',
       expect: 'rating ▸ star () λ demo/ui/views.clj:19:1' },
   ],
@@ -341,7 +340,7 @@ const PLANS = {
         ['s08-call-grid', 81, 10, '.cards > article.card:nth-child(2)', 'demo/views.clj:81:9',
          'page ▸ section ▸ recipe-card () λ ▸ div ▸ h2 ▸ span demo/views.clj:21:8'],
     ].map(([name, line, col, card, walkTo, expect]) => ({
-      name, viewport: { width: 1280, height: 900 }, dpr: 3, inspect: 'on', style: STRAIGHT,
+      name, viewport: { width: 1280, height: 900 }, dpr: 3, inspect: 'on',
       hover: { sel: card + ' .badge.hot' }, expect, walk: 4, walkTo,
       cursor: { file: 'demo/views.clj', line, col }, clip: { rule: 'litCards', card } })),
   ],
