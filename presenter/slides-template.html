@@ -129,6 +129,9 @@
   .figure { display: flex; justify-content: flex-start; }
   /* em, not rem: rem is the html root and would not follow the scaled body size */
   .figure svg { width: 100%; max-width: 36.6em; height: auto; }
+  /* {.qr} before an ```svg QR code: a fixed size, big enough to scan from the room
+     (~270 px at 1080p); the SVG carries its own white tile and quiet zone */
+  .figure.qr svg { width: 7.5em; max-width: none; border-radius: .2em; }
   /* ```diagram NAME K``` figures: the growing map. It takes all the room the heading
      leaves (1766x879 at 1080p, the canvas is 1760x870: 1 unit = 1 screen px), so
      every map slide lays out identically — a hard cut between two states then

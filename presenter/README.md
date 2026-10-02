@@ -198,7 +198,7 @@ The classes are the ones `slides-template.html` styles: `sub` (muted),
 `big`, `hero` (on a `#` heading: the slide's one word, huge and centred on
 the page, e.g. DEMO — no heading row), `rule` (left bar, for the talk's assertions), `note` (boxed aside —
 a caption remarking on the block above it), `accent`, `green`, `strike`,
-`steps`, `repl`; for images `pair`, `stack` and `guide`. For a ```` ```diagram ```` fence there are also the flow modes
+`steps`, `repl`, `qr` (on an ```` ```svg ```` QR code: a fixed scannable size); for images `pair`, `stack` and `guide`. For a ```` ```diagram ```` fence there are also the flow modes
 `flow-keys` (alias `flow-step`), `flow-auto`, `flow-loop` and `flow-off`, plus `pop`. For a
 ```` ```minimap ```` fence there are `rev` and `warn`. Add a class
 there when a slide needs a new look; add markdown syntax here only when the
@@ -210,6 +210,20 @@ It references its screenshots relatively (`figures/talk/NAME.png`), so the
 slide is kept in the URL hash (`slides.html#3`), so a reload — e.g. after
 `refresh.sh` rebuilt the file — stays on that slide, and `#N` jumps straight
 to slide N.
+
+### The QR code on the close
+
+The close carries the repo link as a QR code: a ```` ```svg ```` block, generated once with
+[segno](https://pypi.org/project/segno/) (dark modules on a white tile with the 4-module
+quiet zone, `crispEdges` so no seams show between rows). The build needs nothing for it.
+If the URL changes, regenerate and paste the SVG over the old one:
+
+```bash
+pip install --target /tmp/segno segno
+PYTHONPATH=/tmp/segno python3 -c "import segno, sys; q = segno.make_qr(sys.argv[1], error='m', boost_error=False); q.save(sys.stdout.buffer, kind='svg', border=4, dark='#16141f', light='#ffffff', xmldecl=False, nl=False, omitsize=True, svgclass=None, lineclass=None)" https://github.com/mapidentity/conj-2026
+```
+
+(then add `shape-rendering="crispEdges"` and an `aria-label` to the `<svg>` tag, as the current one has).
 
 ### Screenshots on slides
 

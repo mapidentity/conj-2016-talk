@@ -1271,6 +1271,10 @@ Build the tools you miss.
 ## source available @\
 ==https://github.com/mapidentity/conj-2026==
 
+{.qr}
+```svg
+<svg shape-rendering="crispEdges" role="img" aria-label="QR code: https://github.com/mapidentity/conj-2026" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37"><path fill="#fff" d="M0 0h37v37h-37z"/><path stroke="#16141f" d="M4 4.5h7m1 0h1m1 0h1m1 0h2m2 0h1m1 0h1m3 0h7m-29 1h1m5 0h1m1 0h1m2 0h1m2 0h1m1 0h1m1 0h3m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m2 0h2m1 0h1m3 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h6m4 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m2 0h1m5 0h3m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m3 0h3m3 0h2m2 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-20 1h3m1 0h3m2 0h3m-21 1h1m2 0h6m2 0h2m3 0h2m1 0h1m1 0h1m2 0h1m1 0h3m-29 1h3m6 0h3m3 0h1m2 0h2m1 0h1m1 0h2m1 0h2m-28 1h1m1 0h1m3 0h1m1 0h1m4 0h3m1 0h1m5 0h2m1 0h1m-26 1h3m1 0h1m3 0h1m1 0h1m3 0h1m1 0h1m2 0h4m1 0h1m2 0h1m-28 1h1m2 0h1m1 0h1m1 0h2m2 0h1m1 0h1m1 0h1m3 0h1m1 0h2m4 0h1m-29 1h1m1 0h2m1 0h1m3 0h1m1 0h1m1 0h1m1 0h4m3 0h7m-29 1h1m1 0h1m1 0h1m1 0h1m7 0h2m1 0h1m1 0h4m1 0h1m1 0h1m1 0h1m-28 1h2m4 0h1m6 0h2m2 0h2m3 0h2m1 0h1m1 0h1m-27 1h2m1 0h2m2 0h1m1 0h1m2 0h1m4 0h3m3 0h1m-26 1h2m1 0h3m4 0h2m3 0h1m1 0h1m1 0h1m4 0h1m1 0h2m-28 1h3m2 0h3m5 0h3m1 0h1m1 0h1m4 0h2m2 0h1m-29 1h4m1 0h1m3 0h1m2 0h4m2 0h2m2 0h1m2 0h2m-27 1h2m1 0h2m1 0h4m1 0h1m1 0h1m1 0h3m2 0h8m-20 1h3m2 0h3m1 0h2m1 0h1m3 0h2m-26 1h7m1 0h2m3 0h1m1 0h6m1 0h1m1 0h2m-26 1h1m5 0h1m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h2m3 0h1m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h1m2 0h1m2 0h7m1 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m2 0h1m2 0h2m5 0h1m6 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m2 0h3m4 0h2m1 0h2m1 0h3m-29 1h1m5 0h1m3 0h1m5 0h1m1 0h1m3 0h2m1 0h2m1 0h1m-29 1h7m1 0h2m1 0h1m1 0h1m2 0h1m2 0h2m1 0h1m1 0h1"/></svg>
+```
 <!-- /slide -->
 
 **[SLIDE 44: close]** "We started with Bret Victor's principle — an

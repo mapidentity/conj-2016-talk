@@ -167,6 +167,7 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
 /* inline figures (```svg fences) */
 .slide .figure { margin:2mm 0; }
 .slide .figure svg { width:100%; height:auto; display:block; }
+.slide .figure.qr svg { width:32mm; border-radius:1mm; }
 .slide .sub { color:#9d94b8; } .slide .big { font-size:1.12em; }
 .slide .rule { border-left:4px solid #8b7ff5; padding:.5mm 0 .5mm 3.5mm; }
 /* a remark on the block above — boxed, so it reads as an aside, not as body copy */
